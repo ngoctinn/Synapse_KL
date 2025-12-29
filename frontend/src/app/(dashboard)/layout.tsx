@@ -1,31 +1,43 @@
 import { AppSidebar } from "@/shared/components/app-sidebar"
 import { Separator } from "@/shared/ui/separator"
 import {
-    SidebarInset,
-    SidebarProvider,
-    SidebarTrigger,
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
 } from "@/shared/ui/sidebar"
 import { ChevronRight } from "lucide-react"
 import React from "react"
+import { UserRole } from "@/shared/types"
+import { cookies } from "next/headers"
+import { BottomNav } from "@/shared/components/bottom-nav"
 
-/**
- * Dashboard Layout (Unified Console)
- * Quản lý việc hiển thị các Parallel Routes dựa trên Slot.
- */
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
-  manager,
-  receptionist,
-  technician,
 }: {
   children: React.ReactNode
-  manager: React.ReactNode
-  receptionist: React.ReactNode
-  technician: React.ReactNode
 }) {
+  // Lấy role từ cookie (Server-side)
+  const cookieStore = await cookies()
+  const userRole = (cookieStore.get("user-role")?.value as UserRole) || "manager"
+
+  const isCustomer = userRole === "customer"
+
+  if (isCustomer) {
+    return (
+      <div className="flex min-h-svh flex-col bg-background">
+        <main className="flex-1 pb-20 p-4">
+          <div className="mx-auto max-w-md w-full">
+            {children}
+          </div>
+        </main>
+        <BottomNav />
+      </div>
+    )
+  }
+
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar role={userRole} />
       <SidebarInset className="bg-background">
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger />
@@ -38,35 +50,13 @@ export default function DashboardLayout({
         </header>
 
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 max-w-[1600px] w-full mx-auto">
-          {/* Children thường là nội dung mặc định hoặc Dashboard tổng */}
+          {/* Main content area */}
           <div className="rounded-xl border p-6 bg-card shadow-sm">
             {children}
-          </div>
-
-          <div className="mt-8 grid gap-8 border-t pt-8">
-            <div className="rounded-lg border p-4 bg-card shadow-sm">
-              <h2 className="mb-4 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                Manager View Slot
-              </h2>
-              {manager}
-            </div>
-
-            <div className="rounded-lg border p-4 bg-card shadow-sm">
-              <h2 className="mb-4 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                Receptionist View Slot
-              </h2>
-              {receptionist}
-            </div>
-
-            <div className="rounded-lg border p-4 bg-card shadow-sm">
-              <h2 className="mb-4 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                Technician View Slot
-              </h2>
-              {technician}
-            </div>
           </div>
         </main>
       </SidebarInset>
     </SidebarProvider>
   )
 }
+

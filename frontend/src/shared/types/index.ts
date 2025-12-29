@@ -3,6 +3,15 @@
 
 export type ID = string;
 
+export type UserRole = "manager" | "receptionist" | "technician" | "customer";
+
+export const USER_ROLES: Record<string, UserRole> = {
+  MANAGER: "manager",
+  RECEPTIONIST: "receptionist",
+  TECHNICIAN: "technician",
+  CUSTOMER: "customer",
+} as const;
+
 export interface BaseEntity {
   id: ID;
   createdAt: string;
