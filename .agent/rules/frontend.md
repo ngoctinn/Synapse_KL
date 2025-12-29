@@ -1,3 +1,8 @@
+---
+trigger: always_on
+glob: "frontend/**/*"
+description: Quy tắc phát triển Frontend (Next.js 16, Shadcn/ui, FSD).
+---
 # Frontend Rules (Next.js 16 + Shadcn/ui)
 
 > Tài liệu này là **LUẬT BẮT BUỘC** khi sinh code frontend. Không có ngoại lệ.
@@ -177,6 +182,17 @@
 - PHẢI dùng Vitest cho unit tests
 - PHẢI test với browser automation (không chỉ curl)
 - PHẢI verify runtime errors, không chỉ HTTP status
+
+---
+
+## 16. AI AGENT GUIDELINES (MANDATORY)
+
+- **Zero Emoji Policy**: No emojis/icons in code, comments, or commit messages.
+- **Commenting Philosophy**:
+  - NEVER comment "What" the code does (e.g., `// set loading to false`).
+  - ALWAYS comment "Why" for complex logic, workarounds, or business rules.
+- **Minimalist Logic**: Prefer simple, flat code over deep abstractions that AI might struggle to maintain.
+- **Verification**: Proactively run `npm run build` or tests after major changes.
 
 ---
 
