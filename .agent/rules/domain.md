@@ -2,6 +2,7 @@
 trigger: always_on
 description: Bối cảnh dự án và bài toán lập lịch Spa.
 ---
+
 # Tài liệu Miền giá trị (Domain) - Dự án Synapse
 
 ## 1. Thông tin Dự án
@@ -15,7 +16,7 @@ description: Bối cảnh dự án và bài toán lập lịch Spa.
 - **Công cụ**: Google OR-Tools (thư viện CP-SAT).
 
 ## 3. Mục tiêu Lập lịch
-- **Mục tiêu chính**: Tìm lịch **khả thi (Feasible)**. Phải đảm bảo không trùng lịch nhân viên, phòng và thiết bị.
+- **Mục tiêu chính**: Tìm lịch **khả thi (Feasible)**. Phải đảm bảo không trùng lịch nhân viên, giường và thiết bị.
 - **Mục tiêu phụ**:
   - Cân bằng tải (Load balancing) giữa các nhân viên.
   - Đảm bảo tính công bằng trong phân bổ công việc.
@@ -24,7 +25,7 @@ description: Bối cảnh dự án và bài toán lập lịch Spa.
 ## 4. Ràng buộc chính (Constraints)
 - **Tài nguyên (Resources)**:
   - Nhân viên (Kỹ thuật viên) với kỹ năng phù hợp.
-  - Phòng chức năng.
+  - Giường chức năng.
   - Thiết bị chuyên dụng.
 - **Thời gian (Time)**:
   - Giờ mở cửa của Spa.
