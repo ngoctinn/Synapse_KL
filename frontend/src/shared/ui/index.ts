@@ -27,5 +27,6 @@ export { Toaster } from "./sonner";
 export * from "./switch";
 export * from "./table";
 export * from "./tabs";
+export * from "./time-picker-dropdown";
 export * from "./tooltip"; // Thêm tooltip vì sidebar phụ thuộc vào nó
 

@@ -14,17 +14,18 @@ description: Lộ trình nghiên cứu, thiết kế và triển khai frontend c
 ## Task Breakdown
 
 ### Phase 1: Common UI Components
-- [ ] **Task 1.1:** Phát triển `TimePickerDropdown` (Fixed optionsHH:mm, step 30m).
-- [ ] **Task 1.2:** Đảm bảo target size h-10 và accessibility.
+- [x] **Task 1.1:** Phát triển `TimePickerDropdown` (Fixed optionsHH:mm, step 30m).
+- [x] **Task 1.2:** Đảm bảo target size h-10 và accessibility.
 
 ### Phase 2: Functional Features (Mocked)
-- [ ] **Task 2.1:** Triển khai `OperatingHoursForm` quản lý `regular_operating_hours`.
-- [ ] **Task 2.2:** Triển khai `ExceptionDatesManager` quản lý `exception_dates`.
-- [ ] **Task 2.3:** Tạo Mock Service API để giả lập tương tác dữ liệu.
+- [x] **Task 2.1:** Triển khai `OperatingHoursForm` quản lý `regular_operating_hours`.
+    - *Note:* MVP Scope - Chỉ hỗ trợ 1 khung giờ (period) mỗi ngày. Logic đa khung giờ đã được loại bỏ để đơn giản hóa.
+- [x] **Task 2.2:** Triển khai `ExceptionDatesManager` quản lý `exception_dates`.
+- [x] **Task 2.3:** Tạo Mock Service API để giả lập tương tác dữ liệu.
 
 ### Phase 3: Integration & Polish
-- [ ] **Task 3.1:** Kết hợp các thành phần vào trang Dashboard Manager.
-- [ ] **Task 3.2:** Hoàn thiện logic Manual Save và thông báo Toast.
+- [x] **Task 3.1:** Kết hợp các thành phần vào trang Dashboard Manager.
+- [x] **Task 3.2:** Hoàn thiện logic Manual Save và thông báo Toast.
 
 ## Timeline & Estimates
 - **Phase 1:** 4 giờ (Nghiên cứu & Thiết kế).
