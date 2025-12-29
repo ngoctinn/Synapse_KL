@@ -7,7 +7,11 @@ import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 
 export default function CompleteRawInventory() {
-    const form = useForm()
+    const form = useForm({
+        defaultValues: {
+            username: "",
+        },
+    })
     const [mounted, setMounted] = React.useState(false)
 
     React.useEffect(() => {
@@ -76,7 +80,7 @@ export default function CompleteRawInventory() {
             {/* 5. Calendar */}
             <Section title="5. Calendar">
                 <div style={{ border: '1px solid #ddd', width: 'fit-content', borderRadius: '8px' }}>
-                    <UI.Calendar mode="single" selected={new Date()} className="rounded-md border" />
+                    <UI.Calendar mode="single" selected={mounted ? new Date() : undefined} className="rounded-md border" />
                 </div>
             </Section>
 
