@@ -195,10 +195,10 @@ export function OperatingHoursForm({
                         <Button
                           type="button"
                           variant="ghost"
-                          size="icon-sm"
+                          size="icon"
                           onClick={() => copyHours(index)}
                           className={cn(
-                            lastCopiedIndex === index ? "text-emerald-600 bg-emerald-50" : "text-muted-foreground"
+                            lastCopiedIndex === index ? "text-primary bg-primary/10" : "text-muted-foreground"
                           )}
                         >
                           {lastCopiedIndex === index ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
@@ -207,7 +207,7 @@ export function OperatingHoursForm({
                           <Button
                             type="button"
                             variant={pastedIndices.has(index) ? "default" : "secondary"}
-                            size="icon-sm"
+                            size="icon"
                             onClick={() => pasteHours(index)}
                           >
                             <ClipboardPaste className="h-4 w-4" />
@@ -293,21 +293,28 @@ export function OperatingHoursForm({
 
                           {/* Overlap warning - visible on mobile too */}
                           {(() => {
-                               const prevIndex = (index === 0 ? fields.length - 1 : index - 1);
-                               const prevDay = watchedValues[prevIndex];
-                               const currentDay = watchedValues[index];
-                               const isPrevOvernight = !prevDay.is_closed && prevDay.close_time < prevDay.open_time;
-                               const isCurrentOpen = !currentDay.is_closed;
+                            const getOverlapError = (idx: number) => {
+                              const prevIdx = (idx === 0 ? fields.length - 1 : idx - 1);
+                              const prevDay = watchedValues[prevIdx];
+                              const currentDay = watchedValues[idx];
+                              const isPrevOvernight = !prevDay.is_closed && prevDay.close_time < prevDay.open_time;
+                              const isCurrentOpen = !currentDay.is_closed;
 
-                               if (isPrevOvernight && isCurrentOpen && prevDay.close_time > currentDay.open_time) {
-                                 return (
-                                   <Badge variant="error" className="h-8 px-2 text-[9px] gap-1 shrink-0">
-                                     <AlertCircle className="size-3" />
-                                     Xung đột
-                                   </Badge>
-                                 );
-                               }
-                               return null;
+                              if (isPrevOvernight && isCurrentOpen && prevDay.close_time > currentDay.open_time) {
+                                return true;
+                              }
+                              return false;
+                            };
+
+                            if (getOverlapError(index)) {
+                               return (
+                                 <Badge variant="error" className="h-8 px-2 text-[9px] gap-1 shrink-0">
+                                   <AlertCircle className="size-3" />
+                                   Xung đột
+                                 </Badge>
+                               );
+                            }
+                            return null;
                           })()}
                         </div>
                       </div>
@@ -319,11 +326,11 @@ export function OperatingHoursForm({
                       <Button
                         type="button"
                         variant="ghost"
-                        size="icon-sm"
+                        size="icon"
                         onClick={() => copyHours(index)}
                         className={cn(
                           "transition-colors",
-                          lastCopiedIndex === index ? "text-emerald-600 bg-emerald-50" : "text-muted-foreground"
+                          lastCopiedIndex === index ? "text-primary bg-primary/10" : "text-muted-foreground"
                         )}
                         title="Sao chép giờ"
                       >
@@ -334,7 +341,7 @@ export function OperatingHoursForm({
                           <Button
                             type="button"
                             variant={pastedIndices.has(index) ? "default" : "secondary"}
-                            size="icon-sm"
+                            size="icon"
                             onClick={() => pasteHours(index)}
                             className={cn(
                               "transition-all",
@@ -347,7 +354,7 @@ export function OperatingHoursForm({
                           <Button
                             type="button"
                             variant="ghost"
-                            size="icon-sm"
+                            size="icon"
                             onClick={() => {
                               setClipboard(null);
                               setLastCopiedIndex(null);

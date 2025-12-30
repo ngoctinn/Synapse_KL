@@ -27,3 +27,4 @@ glob: "frontend/src/shared/ui/**/*"
 - **Priority**: Custom classes MUST be at the end of `cn(...)`.
 - **Pattern**: `cn("default-classes", className)`
 - **Check**: Audit `asChild` usage for className collision.
+- **Layout**: Large Card wrapping Tabs is a valid pattern.

@@ -41,3 +41,4 @@ trigger: always_on
 - **Verif**: Proactively run `npm run build` after major changes.
 
 - **No Nested Cards**: Avoid placing Cards inside other Cards/Tabs. Use flat divisions (div + header) for cleaner UI.
+  - *Exception*: A single large Card wrapping a Tabs component is allowed.

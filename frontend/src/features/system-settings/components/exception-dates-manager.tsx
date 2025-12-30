@@ -141,7 +141,7 @@ export function ExceptionDatesManager({
         <div className="space-y-1">
           <h3 className="text-sm font-medium">Danh sách ngày ngoại lệ</h3>
           <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            <span className="w-1.5 h-1.5 rounded-full bg-alert-warning-border" />
             Các thiết lập tại đây sẽ ghi đè lên Giờ hoạt động định kỳ.
           </p>
         </div>
@@ -298,16 +298,21 @@ export function ExceptionDatesManager({
                       )}
                     </span>
                     {(() => {
-                      const dayOfWeek = getDay(new Date(item.date));
-                      const regHour = regularHours.find(h => h.day_of_week === dayOfWeek);
-                      if (regHour && !regHour.is_closed) {
-                        return (
-                          <span className="text-[10px] text-muted-foreground italic">
-                            (Ghi đè: {regHour.open_time}-{regHour.close_time})
-                          </span>
-                        );
-                      }
-                      return null;
+                      const getOverrideInfo = (dateStr: string) => {
+                        const dayOfWeek = getDay(new Date(dateStr));
+                        const regHour = regularHours.find(h => h.day_of_week === dayOfWeek);
+                        if (regHour && !regHour.is_closed) {
+                          return `(Ghi đè: ${regHour.open_time}-${regHour.close_time})`;
+                        }
+                        return null;
+                      };
+
+                      const overrideText = getOverrideInfo(item.date);
+                      return overrideText ? (
+                        <span className="text-[10px] text-muted-foreground italic">
+                          {overrideText}
+                        </span>
+                      ) : null;
                     })()}
                   </div>
                   <p className="text-xs text-muted-foreground">{item.reason}</p>
