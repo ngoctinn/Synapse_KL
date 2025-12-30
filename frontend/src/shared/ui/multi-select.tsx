@@ -1,11 +1,12 @@
 "use client"
 
-import { Check, ChevronsUpDown, X } from "lucide-react"
+import { ChevronsUpDown, X } from "lucide-react"
 import * as React from "react"
 
 import { cn } from "@/shared/lib/utils"
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
+import { Checkbox } from "@/shared/ui/checkbox"
 import {
   Command,
   CommandEmpty,
@@ -66,11 +67,11 @@ export function MultiSelect({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
+          variant="secondary"
           role="combobox"
           aria-expanded={open}
           className={cn(
-            "w-full justify-between h-auto min-h-9 px-3 py-2 font-normal hover:bg-accent/20",
+            "w-full justify-between h-auto min-h-12 px-4 py-2 font-normal",
             className
           )}
         >
@@ -82,14 +83,17 @@ export function MultiSelect({
                   return (
                     <Badge
                       key={value}
-                      variant="secondary"
-                      className="gap-1 rounded-sm py-0 h-6"
+                      variant="default"
+                      className="gap-1 rounded-md py-0.5 px-2 h-7 bg-primary/10 text-primary border-0 font-medium"
                     >
                       {option?.label}
-                      <button
-                        className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                      <span
+                        role="button"
+                        className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
                         onKeyDown={(e) => {
-                          if (e.key === "Enter") {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault()
+                            e.stopPropagation()
                             handleUnselect(value)
                           }
                         }}
@@ -97,15 +101,19 @@ export function MultiSelect({
                           e.preventDefault()
                           e.stopPropagation()
                         }}
-                        onClick={() => handleUnselect(value)}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          handleUnselect(value)
+                        }}
                       >
-                        <X className="h-3 w-3 hover:text-destructive" />
-                      </button>
+                        <X className="h-3 w-3 text-primary/70 hover:text-primary" />
+                      </span>
                     </Badge>
                   )
                 })}
                 {selected.length > maxCount && (
-                  <Badge variant="secondary" className="h-6">
+                  <Badge variant="default" className="h-7 bg-primary/10 text-primary border-0 font-medium">
                     +{selected.length - maxCount} mục khác
                   </Badge>
                 )}
@@ -129,18 +137,9 @@ export function MultiSelect({
                   <CommandItem
                     key={option.value}
                     onSelect={() => handleSelect(option.value)}
-                    className="flex items-center gap-2 px-2 py-1.5 cursor-pointer aria-selected:bg-accent/50"
+                    className="flex items-center gap-2 px-2 py-1.5 cursor-pointer aria-selected:bg-accent"
                   >
-                    <div
-                      className={cn(
-                        "flex h-4 w-4 items-center justify-center rounded-sm border border-input transition-colors",
-                        isSelected
-                          ? "bg-primary border-primary text-primary-foreground"
-                          : "bg-transparent"
-                      )}
-                    >
-                      {isSelected && <Check className="h-3 w-3 stroke-primary-foreground" />}
-                    </div>
+                    <Checkbox checked={isSelected} onCheckedChange={() => handleSelect(option.value)} />
                     <span>{option.label}</span>
                   </CommandItem>
                 )

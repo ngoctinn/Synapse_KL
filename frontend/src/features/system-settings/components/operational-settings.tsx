@@ -113,7 +113,7 @@ export function OperationalSettings() {
               <p className="text-sm font-medium text-orange-600">Bạn có thay đổi chưa lưu</p>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" onClick={handleReset} disabled={isSaving}>
+              <Button variant="outline" onClick={handleReset} disabled={isSaving}>
                 Hủy
               </Button>
 

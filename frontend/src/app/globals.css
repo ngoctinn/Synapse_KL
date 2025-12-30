@@ -11,62 +11,87 @@
 :root {
   --radius: 0.75rem; /* 12px - Softer, friendlier look */
 
-  /* Base Colors - Cool Gray / Slate Tone (Medical & Clean) */
-  --background: oklch(0.97 0.01 260); /* #F4F6F9 - Pale Blue Gray */
-  --foreground: oklch(0.25 0.04 260); /* #272833 - Deep Blue Gray */
+  /* ===== NEUTRALS - Deep Charcoal Teal ===== */
+  --neutral-100: #102027;
+  --neutral-90: #263238;
+  --neutral-80: #37474F;
+  --neutral-70: #455A64;
+  --neutral-60: #546E7A;
+  --neutral-50: #607D8B;
+  --neutral-40: #78909C;
+  --neutral-30: #90A4AE;
+  --neutral-20: #B0BEC5;
+  --neutral-10: #CFD8DC;
+  --neutral-0: #FFFFFF;
 
-  /* Card & Popover - Pure White Surface to pop against background */
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.25 0.04 260);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.25 0.04 260);
+  /* ===== SUBTEXT COLORS ===== */
+  --subtext-100: #626C7A;
+  --subtext-90: #707986;
+  --subtext-80: #7D8591;
+  --subtext-70: #8C939C;
+  --subtext-60: #999FA7;
+  --subtext-50: #A6ABB2;
 
-  /* Professional Teal - Slightly more muted and sophisticated */
-  --primary: oklch(0.52 0.11 195);
-  --primary-foreground: oklch(0.98 0.01 260);
+  /* ===== BACKGROUND GREYS ===== */
+  --bg-pale: #F4F6F9;
+  --bg-neutral: #E7E7EB; /* Neutral Grey */
+  --bg-hover: #F0F9FF; /* Hover Grey: Giữ ánh Teal nhưng cực kỳ sáng */
 
-  /* Secondary: Soft Cool Gray */
-  --secondary: oklch(0.97 0.01 260);
-  --secondary-foreground: oklch(0.30 0.04 260);
+  /* ===== SEMANTIC COLORS ===== */
+  --background: #F4F6F9; /*
+  --foreground: #102027; /* Deep Charcoal Teal */
 
-  /* Muted & Accent - Creating "Visual Silence" */
-  --muted: oklch(0.97 0.01 260);
-  --muted-foreground: oklch(0.50 0.03 260);
+  /* Card & Popover - Pure White Surface */
+  --card: #FFFFFF;
+  --card-foreground: #102027;
+  --popover: #FFFFFF;
+  --popover-foreground: #102027;
 
-  --accent: oklch(0.96 0.02 195);            /* Subtle, high-end tint */
-  --accent-foreground: oklch(0.35 0.08 195);
+  /* Primary - Vibrant Cyan-Teal #0097A7 */
+  --primary: #0097A7;
+  --primary-foreground: #FFFFFF;
 
-  /* Utilities - Borders are cooler and softer */
-  --border: oklch(0.92 0.01 260);
-  --input: oklch(0.92 0.01 260);
-  --ring: oklch(0.52 0.11 195);
+  /* Secondary: Soft Pale Porcelain */
+  --secondary: #F2F8F9;
+  --secondary-foreground: #37474F;
 
-  /* Destructive - Softened Red */
-  --destructive: oklch(0.60 0.15 25);
-  --destructive-foreground: oklch(0.98 0.01 260);
+  /* Muted & Accent */
+  --muted: #F2F8F9;
+  --muted-foreground: #546E7A;
 
-  /* Sidebar - High-end white with smoky teal accents */
-  --sidebar-background: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.40 0.04 260);
-  --sidebar-primary: oklch(0.52 0.11 195);
-  --sidebar-primary-foreground: oklch(0.98 0.01 260);
-  --sidebar-accent: oklch(0.94 0.025 195);       /* Slightly more "depth" than pure white */
-  --sidebar-accent-foreground: oklch(0.45 0.10 195);
-  --sidebar-border: oklch(0.94 0.01 260);
-  --sidebar-ring: oklch(0.52 0.11 195);
+  --accent: #F0F9FF; /* Hover Grey mới */
+  --accent-foreground: --primary; /* Giữ nguyên màu chữ Deep Charcoal Teal khi hover */
 
-  /* Alerts - Refined status colors */
-  --alert-warning: oklch(0.97 0.03 85);
-  --alert-warning-foreground: oklch(0.55 0.15 75);
-  --alert-success: oklch(0.97 0.03 160);
-  --alert-success-foreground: oklch(0.50 0.12 165);
-  --alert-info: oklch(0.97 0.03 240);
-  --alert-info-foreground: oklch(0.50 0.12 245);
+  /* Utilities */
+  --border: #E7E7EB; /* Neutral_10 */
+  --input: #E7E7EB;
+  --ring: #0097A7;
+
+  /* Destructive */
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+
+  --sidebar-background: #FFFFFF;
+  --sidebar-foreground: #546E7A;
+  --sidebar-primary: #0097A7;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #E0F2F1;
+  --sidebar-accent-foreground: #102027;
+  --sidebar-border: #CFD8DC;
+  --sidebar-ring: #0097A7;
+
+  /* Alerts */
+  --alert-warning: #FFF9C4;
+  --alert-warning-foreground: #F57F17;
+  --alert-success: #E8F5E9;
+  --alert-success-foreground: #2E7D32;
+  --alert-info: #E0F7FA;
+  --alert-info-foreground: #00838F; /* Derived from #4DD0E1 */
 
   /* Alert Borders */
-  --alert-warning-border: oklch(0.92 0.04 85);
-  --alert-success-border: oklch(0.92 0.04 160);
-  --alert-info-border: oklch(0.92 0.04 240);
+  --alert-warning-border: #FFF176;
+  --alert-success-border: #81C784;
+  --alert-info-border: #4DD0E1; /* Static Blue mới */
 }
 
 
@@ -115,12 +140,52 @@
   --radius-sm: calc(var(--radius) - 4px); /* 8px */
   --radius-md: calc(var(--radius) - 2px); /* 10px */
   --radius-lg: var(--radius);             /* 12px */
+
+  /* Neutral & Subtext Utility Mappings */
+  --color-neutral-100: var(--neutral-100);
+  --color-neutral-90: var(--neutral-90);
+  --color-neutral-80: var(--neutral-80);
+  --color-neutral-70: var(--neutral-70);
+  --color-neutral-60: var(--neutral-60);
+  --color-neutral-50: var(--neutral-50);
+  --color-neutral-40: var(--neutral-40);
+  --color-neutral-30: var(--neutral-30);
+  --color-neutral-20: var(--neutral-20);
+  --color-neutral-10: var(--neutral-10);
+  --color-neutral-0: var(--neutral-0);
+
+  --color-subtext-100: var(--subtext-100);
+  --color-subtext-90: var(--subtext-90);
+  --color-subtext-80: var(--subtext-80);
+  --color-subtext-70: var(--subtext-70);
+  --color-subtext-60: var(--subtext-60);
+  --color-subtext-50: var(--subtext-50);
 }
 
 @layer base {
   * { @apply border-border outline-primary/50; }
   body { @apply bg-background text-foreground antialiased; }
   button:not(:disabled), [role="button"]:not(:disabled) { cursor: pointer; }
+
+  /* Custom Scrollbar Styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-neutral-20 rounded-full hover:bg-neutral-30 transition-colors;
+  }
+
+  /* Firefox support */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--neutral-20) transparent;
+  }
 }
 
 @layer utilities {

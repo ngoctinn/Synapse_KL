@@ -195,11 +195,10 @@ export function OperatingHoursForm({
                         <Button
                           type="button"
                           variant="ghost"
-                          size="icon"
+                          size="icon-sm"
                           onClick={() => copyHours(index)}
                           className={cn(
-                            "h-8 w-8",
-                            lastCopiedIndex === index ? "text-success bg-success/10" : "text-muted-foreground"
+                            lastCopiedIndex === index ? "text-emerald-600 bg-emerald-50" : "text-muted-foreground"
                           )}
                         >
                           {lastCopiedIndex === index ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
@@ -207,10 +206,9 @@ export function OperatingHoursForm({
                         {clipboard && (
                           <Button
                             type="button"
-                            variant={pastedIndices.has(index) ? "default" : "outline"}
-                            size="icon"
+                            variant={pastedIndices.has(index) ? "default" : "secondary"}
+                            size="icon-sm"
                             onClick={() => pasteHours(index)}
-                            className="h-8 w-8"
                           >
                             <ClipboardPaste className="h-4 w-4" />
                           </Button>
@@ -279,7 +277,7 @@ export function OperatingHoursForm({
                         <div className="flex items-center gap-2">
                           <Button
                             type="button"
-                            variant={watchedValues[index].open_time === "00:00" && watchedValues[index].close_time === "00:00" ? "default" : "outline"}
+                            variant={watchedValues[index].open_time === "00:00" && watchedValues[index].close_time === "00:00" ? "default" : "secondary"}
                             size="sm"
                             onClick={() => setAllDay(index)}
                             className={cn(
@@ -321,11 +319,11 @@ export function OperatingHoursForm({
                       <Button
                         type="button"
                         variant="ghost"
-                        size="icon"
+                        size="icon-sm"
                         onClick={() => copyHours(index)}
                         className={cn(
-                          "h-8 w-8 transition-colors",
-                          lastCopiedIndex === index ? "text-success bg-success/10" : "text-muted-foreground hover:text-primary"
+                          "transition-colors",
+                          lastCopiedIndex === index ? "text-emerald-600 bg-emerald-50" : "text-muted-foreground"
                         )}
                         title="Sao chép giờ"
                       >
@@ -335,12 +333,12 @@ export function OperatingHoursForm({
                         <>
                           <Button
                             type="button"
-                            variant={pastedIndices.has(index) ? "default" : "outline"}
-                            size="icon"
+                            variant={pastedIndices.has(index) ? "default" : "secondary"}
+                            size="icon-sm"
                             onClick={() => pasteHours(index)}
                             className={cn(
-                              "h-8 w-8 transition-all",
-                              pastedIndices.has(index) ? "bg-primary text-primary-foreground" : "text-primary border-primary/30 shadow-sm"
+                              "transition-all",
+                              pastedIndices.has(index) ? "bg-primary text-primary-foreground" : "bg-secondary text-primary border-primary/20 shadow-sm"
                             )}
                             title="Dán giờ"
                           >
@@ -349,13 +347,13 @@ export function OperatingHoursForm({
                           <Button
                             type="button"
                             variant="ghost"
-                            size="icon"
+                            size="icon-sm"
                             onClick={() => {
                               setClipboard(null);
                               setLastCopiedIndex(null);
                               setPastedIndices(new Set());
                             }}
-                            className="h-8 w-8 text-muted-foreground/30 hover:text-destructive"
+                            className="text-muted-foreground/30"
                             title="Hủy sao chép"
                           >
                             <X className="h-3 w-3" />
@@ -364,10 +362,10 @@ export function OperatingHoursForm({
                       )}
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         onClick={() => copyToAll(index)}
-                        className="text-[10px] text-muted-foreground hover:text-primary h-8 px-2 ml-1 border-dashed"
+                        className="text-[10px] text-muted-foreground h-8 px-2 ml-1 border-dashed"
                       >
                         Tất cả
                       </Button>
@@ -377,7 +375,7 @@ export function OperatingHoursForm({
                     <div className="flex sm:hidden">
                        <Button
                         type="button"
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         onClick={() => copyToAll(index)}
                         className="w-full text-xs text-muted-foreground h-9 border-dashed"

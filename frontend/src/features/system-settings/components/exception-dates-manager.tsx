@@ -147,7 +147,7 @@ export function ExceptionDatesManager({
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" variant="outline">
+            <Button size="sm" variant="secondary">
               <Plus className="mr-2 h-4 w-4" />
               Thêm ngày
             </Button>
@@ -317,8 +317,8 @@ export function ExceptionDatesManager({
                   <AlertDialogTrigger asChild>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive transition-colors"
+                      size="icon-sm"
+                      className="text-muted-foreground transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
