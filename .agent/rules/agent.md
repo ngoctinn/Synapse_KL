@@ -32,3 +32,4 @@ description: Giao thức tương tác AI-Human (Synapse Project - V2025).
 - **Data Privacy**: Tuyệt đối không hardcode bí mật, API keys. Luôn kiểm tra quyền truy cập (Auth) ở tầng Service.
 - **Logic Integrity**: Ưu tiên tính khả thi của lịch trình (Feasibility) trước khi tối ưu hiệu suất giải thuật.
 - **No Placeholder**: Sử dụng dữ liệu mẫu thực tế (tên dịch vụ Spa, tên kỹ thuật viên), không dùng "lorem ipsum".
+- **Research**: Luôn tra cứu CHÍNH THỨC (sqlmodel.tiangolo.com, fastapi.tiangolo.com, docs.pydantic.dev), KHÔNG search năm cụ thể.

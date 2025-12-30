@@ -18,7 +18,16 @@ dotenv_path = os.path.join(os.getcwd(), ".env")
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
 
+# Import tất cả models để Alembic nhận metadata
 from app.modules.settings.models import OperatingHour, ExceptionDate
+from app.modules.skills.models import Skill
+from app.modules.categories.models import ServiceCategory
+from app.modules.resources.models import (
+    ResourceGroup, Resource, ResourceMaintenanceSchedule
+)
+from app.modules.services.models import (
+    Service, ServiceRequiredSkill, ServiceResourceRequirement
+)
 
 from app.core.config import settings
 

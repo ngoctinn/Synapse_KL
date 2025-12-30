@@ -3,26 +3,28 @@
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
 import { Calendar as CalendarIcon } from "lucide-react"
-import * as React from "react"
-import { DateRange } from "react-day-picker"
+import type { DateRange } from "react-day-picker"
 
 import { cn } from "@/shared/lib/utils"
 import { Button } from "@/shared/ui/button"
 import { Calendar } from "@/shared/ui/calendar"
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
 } from "@/shared/ui/popover"
+
+interface DatePickerWithRangeProps {
+  className?: string
+  value?: DateRange
+  onChange?: (date: DateRange | undefined) => void
+}
 
 export function DatePickerWithRange({
   className,
   value,
   onChange,
-}: React.HTMLAttributes<HTMLDivElement> & {
-  value?: DateRange
-  onChange?: (date: DateRange | undefined) => void
-}) {
+}: DatePickerWithRangeProps) {
   return (
     <div className={cn("grid gap-2", className)}>
       <Popover>
@@ -65,3 +67,4 @@ export function DatePickerWithRange({
     </div>
   )
 }
+

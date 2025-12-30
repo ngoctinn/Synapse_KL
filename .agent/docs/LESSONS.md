@@ -38,3 +38,14 @@ description: Các bài học kỹ thuật quan trọng rút ra từ quá trình 
 - **Draft State**: Xóa/Thêm trên client chỉ là nháp. Không cần Alert Dialog cho thao tác nháp.
 - **Batch Save**: Gom nhiều thay đổi -> 1 request PUT. Hiển thị indicator "Chưa lưu" rõ ràng.
 - **Realtime không bắt buộc** cho Settings (ít thay đổi, ít người sửa). Cần cho Booking/Schedule.
+
+## 8. BACKEND DEVELOPMENT
+- **Python venv**: Phải dùng `.venv/Scripts/python`, không dùng global `python`.
+- **uv chưa cài**: Nếu `uv` không có, dùng `ensurepip` rồi `pip install`. Command: `.venv/Scripts/python -m ensurepip --upgrade`.
+- **Git Bash PATH**: Không inherit đầy đủ Windows PATH, dùng `.venv/Scripts/` trực tiếp.
+- **Alembic autogenerate**: Phải import TẤT CẢ models trong `env.py` trước khi chạy `--autogenerate`.
+- **sqlmodel import**: Migration file cần thêm `import sqlmodel` để dùng `AutoString` type.
+- **Models order**: Tạo models theo thứ tự dependency: base tables trước, link tables sau.
+- **Circular import**: Forward reference dùng `"ClassName"` (quotes) cho Relationship type hints.
+- **ruff config**: Thêm `[tool.ruff]` vào `pyproject.toml`, set `line-length = 120`.
+
