@@ -28,6 +28,7 @@ export default function RootLayout({
     <html lang="vi" suppressHydrationWarning>
       <body
         className={`${inter.variable} ${roboto.variable} font-sans antialiased bg-background text-foreground`}
+        suppressHydrationWarning
       >
         {children}
         <Toaster richColors closeButton position="top-right" />

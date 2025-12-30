@@ -20,3 +20,9 @@ dependencies = [
 [tool.uv]
 managed = true
 package = false
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.3.0",
+]

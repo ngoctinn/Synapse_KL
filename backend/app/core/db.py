@@ -2,14 +2,25 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlmodel import SQLModel
 from app.core.config import settings
+import ssl
 
-# Engine cho SQLModel hỗ trợ async
-# echo=True để log SQL (tắt trong production)
+# Create custom SSL context that disables verification
+# This is needed for Supabase Pooler to avoid 'self-signed certificate' errors
+ssl_context = ssl.create_default_context()
+ssl_context.check_hostname = False
+ssl_context.verify_mode = ssl.CERT_NONE
+
+# Query parameters handling:
+# If DATABASE_URL already has sslmode, asyncpg might conflict if we pass connect_args ssl.
+# However, create_async_engine usually handles this.
+# For asyncpg + Supabase, passing the ssl context in connect_args is the most robust way.
+
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=False,
     future=True,
-    pool_pre_ping=True
+    pool_pre_ping=True,
+    connect_args={"ssl": ssl_context}
 )
 
 # SessionLocal factory để tạo session async

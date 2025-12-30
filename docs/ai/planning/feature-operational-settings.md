@@ -1,37 +1,44 @@
 ---
 phase: planning
-title: Project Planning & Task Breakdown - Operational Settings
-description: Lộ trình nghiên cứu, thiết kế và triển khai frontend cho cấu hình vận hành.
+title: Operational Settings Implementation Plan
+description: Task breakdown for implementing Operational Settings
 ---
 
-# Project Planning & Task Breakdown: Operational Settings
+# Operational Settings Implementation Plan
 
 ## Milestones
-- [ ] Milestone 1: Nghiên cứu UI Design & Mockup Giao diện.
-- [ ] Milestone 2: Phát triển UI Components tại `features/system-settings`.
-- [ ] Milestone 3: Tích hợp Mock Data và xác thực luồng hoạt động UX.
+- [ ] Milestone 1: Backend Foundation (Models, Schema, Migration)
+- [ ] Milestone 2: Service & API Implementation
+- [x] Milestone 3: Frontend Integration & Testing
 
 ## Task Breakdown
 
-### Phase 1: Common UI Components
-- [x] **Task 1.1:** Phát triển `TimePickerDropdown` (Fixed optionsHH:mm, step 30m).
-- [x] **Task 1.2:** Đảm bảo target size h-10 và accessibility.
+### Phase 1: Foundation (Backend)
+- [x] Task 1.1: Create basic module structure (`backend/app/modules/settings`)
+- [x] Task 1.2: Define `models.py` (SQLModel for `OperatingHour`, `ExceptionDate`)
+- [x] Task 1.3: Generate Alembic migration and apply to DB
 
-### Phase 2: Functional Features (Mocked)
-- [x] **Task 2.1:** Triển khai `OperatingHoursForm` quản lý `regular_operating_hours`.
-    - *Note:* MVP Scope - Chỉ hỗ trợ 1 khung giờ (period) mỗi ngày. Logic đa khung giờ đã được loại bỏ để đơn giản hóa.
-- [x] **Task 2.2:** Triển khai `ExceptionDatesManager` quản lý `exception_dates`.
-- [x] **Task 2.3:** Tạo Mock Service API để giả lập tương tác dữ liệu.
+### Phase 2: Core Logic (Backend)
+- [x] Task 2.1: Define Pydantic schemas in `schemas.py`
+- [x] Task 2.2: Implement `SettingsService` logic (Get all, Transactional Upsert) in `service.py`
+- [x] Task 2.3: Implement `router.py` with Authentication (`require_manager`)
+- [x] Task 2.4: Register router in `main.py` (via `app/api/router.py`)
+- [x] Task 2.5: Verify API via Swagger UI (Verified via curl)
 
-### Phase 3: Integration & Polish
-- [x] **Task 3.1:** Kết hợp các thành phần vào trang Dashboard Manager.
-- [x] **Task 3.2:** Hoàn thiện logic Manual Save và thông báo Toast.
+### Phase 3: Integration (Frontend)
+- [x] Task 3.1: Update `actions.ts` to call FastAPI endpoints instead of Mock DB
+- [x] Task 3.2: Ensure Type safety matches Backend Schemas
+- [x] Task 3.3: End-to-end testing (Load Page -> Update -> Reload)
+
+## Dependencies
+- Backend Framework (FastAPI, SQLModel) setup - DONE
+- Auth Module (Supabase) - DONE (Role checks available)
 
 ## Timeline & Estimates
-- **Phase 1:** 4 giờ (Nghiên cứu & Thiết kế).
-- **Phase 2:** 8 giờ (Coding Components).
-- **Phase 3:** 4 giờ (Testing & Polish).
+- **Backend**: 2-3 hours
+- **Frontend Integration**: 1-2 hours
+- **Testing**: 0.5 hours
 
 ## Risks & Mitigation
-- **Rủi ro:** Các TimePicker thô có thể gây khó khăn cho người dùng chọn giờ nhanh.
-- **Giải pháp:** Cung cấp các lựa chọn giờ phổ biến (8h, 9h, 20h) dưới dạng gợi ý.
+- **Risk**: Transaction failure leaves partial data.
+- **Mitigation**: Use `async with session.begin()` for atomic commits.

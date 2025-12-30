@@ -73,17 +73,19 @@ export function OperatingHoursForm({
     return () => subscription.unsubscribe();
   }, [form.watch, onChange]);
 
-  // Cập nhật lại form nếu data từ cha thay đổi (ví dụ: Reset hoặc Sau khi lưu)
+  // Cập nhật lại form nếu data từ cha thay đổi (ví dụ: khi nhấn Hủy/Reset)
   React.useEffect(() => {
     if (data) {
       const currentValues = form.getValues("regular_operating_hours");
-      if (JSON.stringify(data) !== JSON.stringify(currentValues)) {
+      // Chỉ reset nếu có sự khác biệt thực sự để tránh vòng lặp render
+      const hasChanged = JSON.stringify(data) !== JSON.stringify(currentValues);
+
+      if (hasChanged) {
         isResetting.current = true;
         form.reset({ regular_operating_hours: data });
-        // Reset các trạng thái UI liên quan đến Copy/Paste
         setLastCopiedIndex(null);
         setPastedIndices(new Set());
-        // Trả lại trạng thái sau khi reset xong
+        // Trả lại trạng thái sau khi reset hoàn tất trong tick tiếp theo
         setTimeout(() => {
           isResetting.current = false;
         }, 0);

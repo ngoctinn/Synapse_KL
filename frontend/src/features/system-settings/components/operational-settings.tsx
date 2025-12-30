@@ -7,6 +7,9 @@ import * as React from "react"
 import { toast } from "sonner"
 import { getOperationalSettingsAction, updateOperationalSettingsAction } from "../actions"
 import { ExceptionDate, OperatingHour, OperationalSettings as OperationalSettingsType } from "../types"
+import { OperationalSettingsSkeleton } from "./operational-settings-skeleton"
+
+// Lazy load Tab contents với loading skeleton riêng
 import { ExceptionDatesManager } from "./exception-dates-manager"
 import { OperatingHoursForm } from "./operating-hours-form"
 
@@ -22,20 +25,26 @@ import {
   AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog"
 
-export function OperationalSettings() {
-  const [settings, setSettings] = React.useState<OperationalSettingsType | null>(null);
-  const [originalSettings, setOriginalSettings] = React.useState<OperationalSettingsType | null>(null);
-  const [isLoading, setIsLoading] = React.useState(true);
+interface OperationalSettingsProps {
+  initialData?: OperationalSettingsType | null
+}
+
+export function OperationalSettings({ initialData }: OperationalSettingsProps) {
+  const [settings, setSettings] = React.useState<OperationalSettingsType | null>(initialData || null);
+  const [originalSettings, setOriginalSettings] = React.useState<OperationalSettingsType | null>(initialData || null);
+  const [isLoading, setIsLoading] = React.useState(!initialData);
   const [isSaving, setIsSaving] = React.useState(false);
 
   React.useEffect(() => {
+    if (initialData) return;
+
     getOperationalSettingsAction()
       .then((data) => {
         setSettings(data);
         setOriginalSettings(data);
       })
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [initialData]);
 
   const isDirty = React.useMemo(() => {
     return JSON.stringify(settings) !== JSON.stringify(originalSettings);
@@ -55,7 +64,16 @@ export function OperationalSettings() {
   const handleOperatingHoursChange = React.useCallback((hours: OperatingHour[]) => {
     setSettings(prev => {
       if (!prev) return null;
-      if (JSON.stringify(prev.regular_operating_hours) === JSON.stringify(hours)) return prev;
+      // Chỉ cập nhật nếu mảng dữ liệu thực sự khác biệt (so sánh nông từng cặp)
+      const isSame = prev.regular_operating_hours.length === hours.length &&
+                   prev.regular_operating_hours.every((h, i) =>
+                     h.day_of_week === hours[i].day_of_week &&
+                     h.open_time === hours[i].open_time &&
+                     h.close_time === hours[i].close_time &&
+                     h.is_closed === hours[i].is_closed
+                   );
+
+      if (isSame) return prev;
       return { ...prev, regular_operating_hours: hours };
     });
   }, []);
@@ -63,7 +81,6 @@ export function OperationalSettings() {
   const handleExceptionDatesChange = React.useCallback((exceptionDates: ExceptionDate[]) => {
     setSettings(prev => {
       if (!prev) return null;
-      if (JSON.stringify(prev.exception_dates) === JSON.stringify(exceptionDates)) return prev;
       return { ...prev, exception_dates: exceptionDates };
     });
   }, []);
@@ -74,7 +91,9 @@ export function OperationalSettings() {
     try {
       const response = await updateOperationalSettingsAction(settings);
       if (response.success) {
+        // Cập nhật cả original và settings hiện tại để đồng bộ hoàn toàn với server
         setOriginalSettings(response.data);
+        setSettings(response.data);
         toast.success("Đã lưu tất cả thay đổi cấu hình");
       }
     } catch {
@@ -91,11 +110,7 @@ export function OperationalSettings() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Đang tải cấu hình...</p>
-      </div>
-    );
+    return <OperationalSettingsSkeleton />;
   }
 
   return (
@@ -155,7 +170,7 @@ export function OperationalSettings() {
             )}
           </div>
 
-          <TabsContent value="regular" className="mt-6 space-y-4">
+          <TabsContent value="regular" forceMount={true} className="mt-6 space-y-4 data-[state=inactive]:hidden">
             <div>
               <h3 className="text-lg font-medium tracking-tight">Giờ làm việc hàng tuần</h3>
               <p className="text-muted-foreground text-sm">
@@ -170,7 +185,7 @@ export function OperationalSettings() {
             </div>
           </TabsContent>
 
-          <TabsContent value="exceptions" className="mt-6 space-y-4">
+          <TabsContent value="exceptions" forceMount={true} className="mt-6 space-y-4 data-[state=inactive]:hidden">
             <div>
                <h3 className="text-lg font-medium tracking-tight">Ngày nghỉ lễ & Ngoại lệ</h3>
                <p className="text-muted-foreground text-sm">

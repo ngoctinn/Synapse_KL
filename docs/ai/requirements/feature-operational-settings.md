@@ -1,64 +1,55 @@
 ---
 phase: requirements
-title: Requirements & Problem Understanding - Operational Settings
-description: Thiết kế và triển khai giao diện quản lý giờ làm việc và ngày nghỉ của Spa.
+title: Operational Settings Requirements
+description: Manage opening hours and exception dates for Synapse Spa
 ---
 
-# Requirements & Problem Understanding: Operational Settings
+# Operational Settings Requirements
 
 ## Problem Statement
-**Vấn đề cần giải quyết:**
-- **Đối tượng bị ảnh hưởng:** Manager (người quản trị), Khách hàng (không biết giờ đặt), Kỹ thuật viên (không biết lịch làm việc).
-- **Hệ quả nếu không giải quyết:** Hệ thống đặt lịch (Booking Engine) sẽ không thể:
-    - Hiển thị các slot thời gian khả dụng cho khách hàng.
-    - Ngăn chặn khách hàng đặt lịch vào các khung giờ Spa không hoạt động hoặc các ngày nghỉ lễ.
-    - Quản lý hiệu quả lịch làm việc của nhân viên dựa trên khung giờ chung của Spa.
+**What problem are we solving?**
+
+- **Use Case**: Spas have specific operating hours (e.g., Mon-Sun, 8 AM - 8 PM) and special days off (holidays, maintenance, team building).
+- **Pain Point**: Without a centralized configuration, the Scheduling Engine (RCPSP) cannot accurately validate bookings. Customers might book slots when the spa is closed.
+- **Current Situation**: Hardcoded hours or ad-hoc manual checks, leading to errors.
 
 ## Goals & Objectives
-**Mục tiêu chính:**
-- Xây dựng giao diện quản lý giờ làm việc định kỳ (`regular_operating_hours`) cho Manager.
-- Xây dựng giao diện quản lý các ngày ngoại lệ (`exception_dates`) - luôn override giờ định kỳ.
-- Đảm bảo cơ chế lưu dữ liệu thủ công (Manual save) để tối ưu hiệu suất API.
+**What do we want to achieve?**
 
-**Mục tiêu phụ:**
-- Hỗ trợ dropdown TimePicker với mốc cố định 30 phút.
-- Đảm bảo tính nhất quán giữa UI (1 ca/ngày) và DB (đa ca).
-
-**Non-goals:**
-- Không hỗ trợ thêm/xóa nhiều ca (period) trên UI v1.
-- Không cho phép nhập tự do thời gian.
+- **Primary**: Centralize the management of operating hours and exception dates in the database.
+- **Secondary**: Provide an intuitive UI for Managers to update these settings easily.
+- **Non-goals**: Managing individual employee shifts (shift roster is a separate feature).
 
 ## User Stories & Use Cases
+**How will users interact with the solution?**
 
-### 1. Quản lý thiết lập giờ làm việc hàng tuần
-- **User Story:** Là quản trị viên, tôi muốn thiết lập giờ mở cửa và đóng cửa cho mỗi ngày trong tuần (Thứ 2 đến Chủ Nhật) để khách hàng biết khi nào có thể đặt lịch.
-- **Workflow:**
-    - Truy cập trang Cài đặt -> Giờ làm việc.
-    - Chỉnh sửa khung giờ cho từng ngày hoặc đánh dấu ngày đó là "Đóng cửa".
-    - Nhấn "Lưu" để cập nhật hệ thống.
-
-### 2. Quản lý ngày nghỉ lễ/đột xuất
-- **User Story:** Là quản trị viên, tôi muốn thêm các ngày nghỉ lễ (như Tết, Quốc khánh) hoặc các ngày đóng cửa đột xuất (để sửa chữa) để hệ thống tự động khóa lịch trong những ngày đó.
-- **Workflow:**
-    - Truy cập trang Cài đặt -> Ngày nghỉ.
-    - Chọn ngày trên lịch và nhập lý do nghỉ.
-    - Xem danh sách các ngày nghỉ sắp tới và có thể xóa nếu cần.
-
-### 3. Các trường hợp biên (Edge Cases)
-- **Thay đổi giờ khi đã có lịch hẹn:** Nếu Manager rút ngắn giờ làm việc khi đã có khách đặt lịch trong khung giờ đó, hệ thống cần cảnh báo (nhưng vẫn cho phép lưu, việc xử lý khách sẽ tính sau).
-- **Ngoại lệ trùng lặp:** Hai cấu hình trong `exception_dates` trùng ngày nhau (Xử lý: Ưu tiên bản ghi được tạo mới nhất).
-- **Giờ đóng cửa qua đêm:** Hiện tại chưa hỗ trợ (open < close).
+1.  **View Operating Hours (Manager)**:
+    - As a Manager, I want to see the current weekly schedule (Mon-Sun) to verify opening/closing times.
+2.  **Update Operating Hours (Manager)**:
+    - As a Manager, I want to edit opening/closing times for specific weekdays or set a day as "Closed" so the booking system reflects changes immediately.
+3.  **Manage Exception Dates (Manager)**:
+    - As a Manager, I want to add specific dates (e.g., Tet Holiday) as closed or with modified hours to prevent bookings on those dates.
+    - As a Manager, I want to remove exception dates if plans change.
+4.  **Validate Booking (System)**:
+    - As the Booking Engine, I need to look up these settings to determine valid time slots for customer bookings.
 
 ## Success Criteria
-- Manager có thể thay đổi giờ làm việc và ngày nghỉ một cách dễ dàng.
-- Giao diện có validation chặt chẽ (ví dụ: giờ mở cửa phải trước giờ đóng cửa).
-- Các thay đổi được lưu trữ thành công vào Database.
-- UI tuân thủ các chuẩn accessibility đã thiết lập (Sizing, Focus).
+**How will we know when we're done?**
+
+- [ ] Manager can view and update regular operating hours (Mon-Sun).
+- [ ] Manager can add/remove exception dates.
+- [ ] Backend API (`GET`, `PUT`) is fully functional.
+- [ ] Database stores configuration correctly.
+- [ ] Frontend reflects the saved state after reload.
 
 ## Constraints & Assumptions
-- Sử dụng `react-hook-form` và `zod` để quản lý form.
-- Sử dụng component `Calendar` và `TimePicker` từ `shared/ui`.
+**What limitations do we need to work within?**
+
+- **Technical**: Must use FastAPI + SQLModel (Backend) and Next.js 16 (Frontend).
+- **Time**: Basic CRUD must be completed in this sprint.
+- **Assumption**: There is only one active branch (Synapse_KL) for the MVP scope (no multi-branch complexity yet).
 
 ## Questions & Open Items
-- Có cần hỗ trợ chia khung giờ theo từng loại dịch vụ không? (Hiện tại giả định áp dụng chung cho toàn Spa).
-- Có cần cơ chế lặp lại cho các ngày nghỉ định kỳ hàng năm không?
+**What do we still need to clarify?**
+
+- None at this stage. Logic is standard for booking systems.

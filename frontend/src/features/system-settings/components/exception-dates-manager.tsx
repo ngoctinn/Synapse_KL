@@ -6,17 +6,6 @@ import { AlertCircle, Plus, Trash2 } from "lucide-react"
 import * as React from "react"
 
 import { cn } from "@/shared/lib/utils"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/shared/ui/alert-dialog"
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import { DatePickerWithRange } from "@/shared/ui/date-range-picker"
@@ -79,11 +68,14 @@ export function ExceptionDatesManager({
   const [isOpen, setIsOpen] = React.useState(false);
   const [exceptions, setExceptions] = React.useState<ExceptionDate[]>(initialData);
 
-  // Đồng bộ lại local state khi dữ liệu từ cha thay đổi (ví dụ: khi nhấn Hủy/Reset)
+  // Đồng bộ lại local state khi dữ liệu từ cha thay đổi
   React.useEffect(() => {
-    if (JSON.stringify(initialData) !== JSON.stringify(exceptions)) {
-      setExceptions(initialData);
-    }
+    // Đảm bảo data luôn có id (fallback sang date hoặc random nếu thiếu)
+    const sanitizedData = initialData.map(item => ({
+      ...item,
+      id: item.id || item.date || crypto.randomUUID()
+    }));
+    setExceptions(sanitizedData);
   }, [initialData]);
 
   const form = useForm<ExceptionDateFormValues>({
@@ -107,11 +99,13 @@ export function ExceptionDatesManager({
 
     const newExceptions: ExceptionDate[] = dates.map(date => ({
       id: crypto.randomUUID(),
-      date: date.toISOString(),
+      // Chỉ lấy phần ngày YYYY-MM-DD để khớp với kiểu date của Python
+      date: format(date, "yyyy-MM-dd"),
       reason: values.reason,
       is_closed: values.is_closed,
-      open_time: values.open_time,
-      close_time: values.close_time,
+      // Đảm bảo gửi null nếu không có giá trị
+      open_time: !values.is_closed && values.open_time ? values.open_time : undefined,
+      close_time: !values.is_closed && values.close_time ? values.close_time : undefined,
     }));
 
     // Tránh trùng lặp ngày nếu người dùng thêm lại ngày đã có
@@ -318,34 +312,14 @@ export function ExceptionDatesManager({
                   <p className="text-xs text-muted-foreground">{item.reason}</p>
                 </div>
 
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      className="text-muted-foreground transition-colors"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="text-destructive">Xác nhận xóa?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Bạn có chắc chắn muốn xóa ngày ngoại lệ này? Hành động này không thể hoàn tác.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Hủy</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => removeException(item.id)}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        Xóa
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                  onClick={() => removeException(item.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
             ))}
           </div>

@@ -1,18 +1,25 @@
 from typing import List, Union
 from pydantic import AnyHttpUrl, field_validator, ConfigDict
 from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
+import os
+
+# Explicitly load .env file
+load_dotenv()
 
 class Settings(BaseSettings):
     """
     Cấu hình hệ thống (Settings) dựa trên Pydantic v2.
-    Sử dụng env variables để ghi đè các giá trị mặc định.
+    Using Supabase Connection Pooler by default.
     """
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "Synapse Spa"
 
-    # CORS: Cho phép các domain nào truy cập API
-    # Ví dụ: ["http://localhost:3000"]
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    # CORS
+    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
+    ]
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
@@ -23,11 +30,19 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
-    # Database: Sử dụng PostgreSQL với asyncpg
-    POSTGRES_SERVER: str = "localhost"
-    POSTGRES_USER: str = "postgres"
-    POSTGRES_PASSWORD: str = "postgres"
-    POSTGRES_DB: str = "synapse_db"
+    # Database Configuration
+    # Note: We rename keys to avoid conflict with '.env' file which contains direct connection details (POSTGRES_SERVER)
+    # that are currently failing due to DNS issues.
+    # We prioritize Pooler configuration.
+
+    DB_HOST: str = "aws-1-ap-south-1.pooler.supabase.com"
+    DB_USER: str = "postgres.dspxxsdvuenhhhrqqfsp"
+    DB_PORT: str = "5432"
+    DB_NAME: str = "postgres"
+
+    # Password IS loaded from .env (POSTGRES_PASSWORD)
+    POSTGRES_PASSWORD: str = ""
+
     DATABASE_URL: str | None = None
 
     @field_validator("DATABASE_URL", mode="before")
@@ -35,13 +50,19 @@ class Settings(BaseSettings):
     def assemble_db_connection(cls, v: str | None, info) -> str:
         if isinstance(v, str):
             return v
-        return f"postgresql+asyncpg://{info.data.get('POSTGRES_USER')}:{info.data.get('POSTGRES_PASSWORD')}@{info.data.get('POSTGRES_SERVER')}/{info.data.get('POSTGRES_DB')}"
+
+        return f"postgresql+asyncpg://{info.data.get('DB_USER')}:{info.data.get('POSTGRES_PASSWORD')}@{info.data.get('DB_HOST')}:{info.data.get('DB_PORT')}/{info.data.get('DB_NAME')}"
 
     # JWT Security
     SECRET_KEY: str = "super-secret-key-change-me-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
 
-    model_config = ConfigDict(case_sensitive=True)
+    model_config = ConfigDict(
+        case_sensitive=True,
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
 
 settings = Settings()
