@@ -18,6 +18,7 @@ import {
 import { Switch } from "@/shared/ui/switch"
 import { TimePickerDropdown } from "@/shared/ui/time-picker-dropdown"
 import { DayOfWeek, DAYS_OF_WEEK, OperatingHour } from "../types"
+import { OvernightIndicator } from "./overnight-indicator"
 
 const operatingHourSchema = z.object({
   day_of_week: z.number(),
@@ -156,7 +157,7 @@ export function OperatingHoursForm({
                         Đóng cửa
                       </span>
                     ) : (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 pb-6">
                         <FormField
                           control={form.control}
                           name={`regular_operating_hours.${index}.open_time`}
@@ -171,27 +172,29 @@ export function OperatingHoursForm({
                             </FormItem>
                           )}
                         />
-                        <span className="text-muted-foreground">đến</span>
-                        <FormField
-                          control={form.control}
-                          name={`regular_operating_hours.${index}.close_time`}
-                          render={({ field }) => (
-                            <FormItem className="mb-0">
+                        <span className="text-muted-foreground self-center">đến</span>
+                        <div className="relative">
+                          <FormField
+                            control={form.control}
+                            name={`regular_operating_hours.${index}.close_time`}
+                            render={({ field }) => (
+                              <FormItem className="mb-0">
                                 <FormControl>
                                   <TimePickerDropdown
                                     value={field.value}
                                     onChange={field.onChange}
                                   />
                                 </FormControl>
-                                {form.watch(`regular_operating_hours.${index}.open_time`) >= field.value && (
-                                  <span className="text-[10px] absolute -bottom-4 right-0 text-amber-600 font-medium whitespace-nowrap">
-                                    Sáng hôm sau
-                                  </span>
-                                )}
-                              <FormMessage />
-                            </FormItem>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          {form.watch(`regular_operating_hours.${index}.open_time`) >= form.watch(`regular_operating_hours.${index}.close_time`) && !isClosed && (
+                            <div className="absolute top-full right-0 mt-1">
+                              <OvernightIndicator />
+                            </div>
                           )}
-                        />
+                        </div>
                       </div>
                     )}
                   </div>

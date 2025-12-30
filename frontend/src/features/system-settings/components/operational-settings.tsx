@@ -10,6 +10,18 @@ import { ExceptionDate, OperatingHour, OperationalSettings as OperationalSetting
 import { ExceptionDatesManager } from "./exception-dates-manager"
 import { OperatingHoursForm } from "./operating-hours-form"
 
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/shared/ui/alert-dialog"
+
 export function OperationalSettings() {
   const [settings, setSettings] = React.useState<OperationalSettingsType | null>(null);
   const [originalSettings, setOriginalSettings] = React.useState<OperationalSettingsType | null>(null);
@@ -98,9 +110,28 @@ export function OperationalSettings() {
             <Button variant="ghost" onClick={handleReset} disabled={isSaving}>
               Hủy
             </Button>
-            <Button onClick={handleSave} disabled={isSaving}>
-              {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
-            </Button>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button disabled={isSaving}>
+                  {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Xác nhận thay đổi?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Việc thay đổi giờ hoạt động có thể ảnh hưởng đến các lịch hẹn đã được đặt trước đó. Hệ thống sẽ áp dụng giờ mới cho tất cả các ngày liên quan.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Kiểm tra lại</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleSave}>
+                    Tiếp tục lưu
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         )}
       </div>

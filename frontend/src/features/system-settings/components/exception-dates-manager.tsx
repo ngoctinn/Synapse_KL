@@ -43,6 +43,7 @@ import { eachDayOfInterval, getDay, isSameDay } from "date-fns"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { ExceptionDate, OperatingHour } from "../types"
+import { OvernightIndicator } from "./overnight-indicator"
 
 const exceptionDateSchema = z.object({
   dateRange: z.object({
@@ -56,10 +57,9 @@ const exceptionDateSchema = z.object({
 })
 .refine((data) => {
   if (data.is_closed) return true;
-  if (!data.open_time || !data.close_time) return false;
-  return data.open_time < data.close_time;
+  return !!(data.open_time && data.close_time);
 }, {
-  message: "Giờ mở cửa phải trước giờ đóng cửa",
+  message: "Vui lòng chọn đầy đủ giờ mở và đóng cửa",
   path: ["close_time"],
 });
 
@@ -138,7 +138,13 @@ export function ExceptionDatesManager({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">Danh sách ngày ngoại lệ</h3>
+        <div className="space-y-1">
+          <h3 className="text-sm font-medium">Danh sách ngày ngoại lệ</h3>
+          <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            Các thiết lập tại đây sẽ ghi đè lên Giờ hoạt động định kỳ.
+          </p>
+        </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
             <Button size="sm" variant="outline">
@@ -226,13 +232,20 @@ export function ExceptionDatesManager({
                       render={({ field }) => (
                         <FormItem className="flex-1">
                           <FormLabel>Đóng cửa</FormLabel>
-                          <FormControl>
-                            <TimePickerDropdown
-                              value={field.value}
-                              onChange={field.onChange}
-                              className="w-full"
-                            />
-                          </FormControl>
+                          <div className="relative">
+                            <FormControl>
+                              <TimePickerDropdown
+                                value={field.value}
+                                onChange={field.onChange}
+                                className="w-full"
+                              />
+                            </FormControl>
+                            {form.watch("open_time") && field.value && form.watch("open_time")! >= field.value && (
+                              <div className="absolute top-full right-0 mt-1">
+                                <OvernightIndicator />
+                              </div>
+                            )}
+                          </div>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -265,12 +278,21 @@ export function ExceptionDatesManager({
                       {format(new Date(item.date), "dd/MM/yyyy")}
                     </span>
                     <span className={cn(
-                      "text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider",
+                      "text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider flex items-center gap-1",
                       item.is_closed
-                        ? "bg-destructive/10 text-destructive"
-                        : "bg-primary/10 text-primary"
+                        ? "bg-destructive/10 text-destructive border border-destructive/20"
+                        : "bg-primary/10 text-primary border border-primary/20"
                     )}>
-                      {item.is_closed ? "Đóng cửa" : `${item.open_time} - ${item.close_time}`}
+                      {item.is_closed ? "Đóng cửa" : (
+                        <>
+                          {item.open_time} - {item.close_time}
+                          {!item.is_closed && item.open_time && item.close_time && item.open_time >= item.close_time && (
+                            <span className="ml-1 text-[9px] font-medium text-amber-600 bg-amber-50/50 px-1 rounded-full border border-amber-200/60 uppercase tracking-tighter">
+                              (+1)
+                            </span>
+                          )}
+                        </>
+                      )}
                     </span>
                     {(() => {
                       const dayOfWeek = getDay(new Date(item.date));
