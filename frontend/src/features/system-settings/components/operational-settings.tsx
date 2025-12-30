@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/shared/ui/button"
+import { SidebarTrigger } from "@/shared/ui/sidebar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
 import * as React from "react"
 import { toast } from "sonner"
@@ -99,87 +100,93 @@ export function OperationalSettings() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start gap-4">
+        <SidebarTrigger className="-ml-2 mt-0.5" />
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Cấu hình vận hành</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-lg font-semibold tracking-tight">Cấu hình vận hành</h2>
+          <p className="text-sm text-muted-foreground">
             Quản lý giờ làm việc và các ngày nghỉ lễ của Spa.
           </p>
         </div>
-        {isDirty && (
-          <div className="flex items-center gap-4 animate-in fade-in slide-in-from-right-4">
-            <div className="hidden items-center gap-2 md:flex">
-              <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
-              <p className="text-sm font-medium text-orange-600">Bạn có thay đổi chưa lưu</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={handleReset} disabled={isSaving}>
-                Hủy
-              </Button>
-
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button disabled={isSaving} className="shadow-md">
-                    {isSaving ? "Đang lưu..." : "Lưu cài đặt"}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Xác nhận thay đổi?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Việc thay đổi giờ hoạt động có thể ảnh hưởng đến các lịch hẹn đã được đặt trước đó. Hệ thống sẽ áp dụng giờ mới cho tất cả các ngày liên quan.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Kiểm tra lại</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleSave}>
-                      Tiếp tục lưu
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
-        )}
       </div>
 
-      <Tabs defaultValue="regular" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="regular">Giờ định kỳ</TabsTrigger>
-          <TabsTrigger value="exceptions">Ngày ngoại lệ</TabsTrigger>
-        </TabsList>
+      <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+        <Tabs defaultValue="regular" className="w-full">
+          <div className="flex items-center justify-between mb-6">
+            <TabsList className="grid w-full max-w-md grid-cols-2">
+              <TabsTrigger value="regular">Giờ định kỳ</TabsTrigger>
+              <TabsTrigger value="exceptions">Ngày ngoại lệ</TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="regular" className="mt-6 space-y-4">
-          <div>
-            <h3 className="text-lg font-medium tracking-tight">Giờ làm việc hàng tuần</h3>
-            <p className="text-muted-foreground text-sm">
-              Thiết lập khung giờ mở cửa và đóng cửa mặc định cho từng ngày trong tuần.
-            </p>
-          </div>
-          <div className="pt-2">
-            <OperatingHoursForm
-              data={settings?.regular_operating_hours}
-              onChange={handleOperatingHoursChange}
-            />
-          </div>
-        </TabsContent>
+            {isDirty && (
+              <div className="flex items-center gap-4 animate-in fade-in slide-in-from-right-4">
+                <div className="hidden items-center gap-2 md:flex">
+                  <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
+                  <p className="text-sm font-medium text-orange-600">Bạn có thay đổi chưa lưu</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" onClick={handleReset} disabled={isSaving}>
+                    Hủy
+                  </Button>
 
-        <TabsContent value="exceptions" className="mt-6 space-y-4">
-          <div>
-             <h3 className="text-lg font-medium tracking-tight">Ngày nghỉ lễ & Ngoại lệ</h3>
-             <p className="text-muted-foreground text-sm">
-               Quản lý các ngày Spa đóng cửa hoặc thay đổi giờ làm việc (Tết, lễ hội, sửa chữa...).
-             </p>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button disabled={isSaving} className="shadow-md">
+                        {isSaving ? "Đang lưu..." : "Lưu cài đặt"}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Xác nhận thay đổi?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Việc thay đổi giờ hoạt động có thể ảnh hưởng đến các lịch hẹn đã được đặt trước đó. Hệ thống sẽ áp dụng giờ mới cho tất cả các ngày liên quan.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Kiểm tra lại</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleSave}>
+                          Tiếp tục lưu
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+            )}
           </div>
-          <div className="pt-2">
-            <ExceptionDatesManager
-              initialData={settings?.exception_dates}
-              regularHours={settings?.regular_operating_hours}
-              onChange={handleExceptionDatesChange}
-            />
-          </div>
-        </TabsContent>
-      </Tabs>
+
+          <TabsContent value="regular" className="mt-6 space-y-4">
+            <div>
+              <h3 className="text-lg font-medium tracking-tight">Giờ làm việc hàng tuần</h3>
+              <p className="text-muted-foreground text-sm">
+                Thiết lập khung giờ mở cửa và đóng cửa mặc định cho từng ngày trong tuần.
+              </p>
+            </div>
+            <div className="pt-2">
+              <OperatingHoursForm
+                data={settings?.regular_operating_hours}
+                onChange={handleOperatingHoursChange}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="exceptions" className="mt-6 space-y-4">
+            <div>
+               <h3 className="text-lg font-medium tracking-tight">Ngày nghỉ lễ & Ngoại lệ</h3>
+               <p className="text-muted-foreground text-sm">
+                 Quản lý các ngày Spa đóng cửa hoặc thay đổi giờ làm việc (Tết, lễ hội, sửa chữa...).
+               </p>
+            </div>
+            <div className="pt-2">
+              <ExceptionDatesManager
+                initialData={settings?.exception_dates}
+                regularHours={settings?.regular_operating_hours}
+                onChange={handleExceptionDatesChange}
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   )
 }

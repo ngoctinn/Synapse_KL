@@ -10,11 +10,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from "@/shared/ui/card"
 import { Checkbox } from "@/shared/ui/checkbox"
 import { Input } from "@/shared/ui/input"
@@ -23,7 +23,7 @@ import { MultiSelect } from "@/shared/ui/multi-select"
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group"
 import { SearchInput } from "@/shared/ui/search-input"
 import {
-  Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue
+    Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue
 } from "@/shared/ui/select"
 import { Separator } from "@/shared/ui/separator"
 import { Skeleton } from "@/shared/ui/skeleton"
@@ -195,9 +195,9 @@ export default function DesignSystemShowcase() {
                   <p className="text-xs text-muted-foreground">#F7FCFC</p>
                 </div>
                 <div className="space-y-1 text-center">
-                  <div className="size-16 rounded border bg-[#E0F2F1]" />
+                  <div className="size-16 rounded border bg-[#F0F9F9]" />
                   <p className="text-xs font-medium">Hover Grey (Accent)</p>
-                  <p className="text-xs text-muted-foreground">#E0F2F1</p>
+                  <p className="text-xs text-muted-foreground">#F0F9F9</p>
                 </div>
               </div>
             </CardContent>

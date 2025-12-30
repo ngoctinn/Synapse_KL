@@ -1,16 +1,15 @@
+import { UserRole } from "@/shared/types"
 import {
   CalendarDays,
+  Clock,
   CreditCard,
   Home,
-  LayoutDashboard,
   Package,
   Settings,
+  UserCircle,
   Users,
-  Wrench,
-  Clock,
-  UserCircle
+  Wrench
 } from "lucide-react"
-import { UserRole } from "@/shared/types"
 
 export interface NavItem {
   title: string
@@ -31,12 +30,13 @@ export const navigationConfig: Record<UserRole, NavConfig> = {
     mainNav: [],
     sidebarNav: [
       {
-        title: "Quản lý",
+        title: "",
         items: [
-          { title: "Tổng quan", href: "/dashboard/manager", icon: LayoutDashboard },
-          { title: "Nhân sự", href: "/dashboard/manager/staff", icon: Users },
-          { title: "Báo cáo doanh thu", href: "/dashboard/manager/reports", icon: CreditCard },
-          { title: "Cấu hình hệ thống", href: "/dashboard/manager/settings", icon: Settings },
+          { title: "Trang chủ", href: "/dashboard/manager", icon: Home },
+          { title: "Lịch hẹn", href: "/dashboard/manager/calendar", icon: CalendarDays },
+          { title: "Khách hàng", href: "/dashboard/manager/patients", icon: Users },
+          { title: "Báo cáo", href: "/dashboard/manager/reports", icon: CreditCard },
+          { title: "Cài đặt", href: "/dashboard/manager/settings", icon: Settings },
         ],
       },
     ],
