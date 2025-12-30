@@ -106,7 +106,7 @@ export function ExceptionDatesManager({
       : [values.dateRange.from];
 
     const newExceptions: ExceptionDate[] = dates.map(date => ({
-      id: Math.random().toString(36).substr(2, 9),
+      id: crypto.randomUUID(),
       date: date.toISOString(),
       reason: values.reason,
       is_closed: values.is_closed,

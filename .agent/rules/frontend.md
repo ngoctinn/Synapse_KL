@@ -1,31 +1,41 @@
 ---
 trigger: always_on
-glob: "frontend/**/*"
 ---
-# Frontend Rules (Agent-Optimized)
 
-## 1. Stack
-- Next.js 16 (App Router), React 19, TS (Strict), Tailwind v4, Tanstack Query.
-- UI: Shadcn/ui + Radix UI. Follow `.agent/rules/ui.md`.
+# FE_RULES_NEXT16_FSD (v2025.12)
+- **Stack**: Next.js 16 (App Router), React 19, TS Strict, Tailwind 4, Shadcn/ui, Tanstack Query.
+- **Workflow**: MUST query `nextjs_docs` for every concept. NO memory-based answers.
 
-## 2. Architecture (FSD)
-- `app/`: Routes, Layouts (Thin).
-- `features/`: Business logic, components, hooks.
-- `shared/`: UI primitives, utils, API client.
-- **FORBIDDEN**: `shared` -> `features`, `features` -> `features` (Cross-import).
+## 1. ARCHITECTURE (FSD)
+- **Structure**: `app/` (routes), `features/` (logic/slices), `shared/` (primitives/utils).
+- **Rules**: App -> Features -> Shared. NO cross-features or reverse imports.
 
-## 3. Next.js 16 Patterns
-- **MANDATORY**: Use Server Components by default.
-- **ASYNC APIs**: MUST `await` `params`, `searchParams`, `cookies()`, `headers()`.
-- **FILES**: Every route MUST have `loading.tsx` and `error.tsx`. Use `Suspense`.
+## 2. NEXT.JS 16 & DATA FETCHING
+- **Async APIs**: MUST `await` (params, searchParams, cookies(), headers()).
+- **Server-First**: RSC by default. Fetch on server. NO "use client" unless hooks/events needed.
+- **Mutations**: Server Actions + `<Form>` or `useActionState`. Mandatory optimistic updates.
+- **File Conv**: `loading.tsx`, `error.tsx`, `Suspense` for streaming on ALL routes.
 
-## 4. Data Fetching & Forms
-- **FETCH**: Prefer Server Components. NO client-side waterfalls.
-- **MUTATION**: Use Server Actions + `useActionState`.
-- **FORMS**: React Hook Form + Zod. Validate both sides.
+## 3. COMPONENT & UI (SHADCN/UI)
+- **Registry**: Use shadcn components. NO custom primitives for existing shadcn types.
+- **Patterns**: Sheet > Dialog for complex forms. Right-align numbers (prices/qty).
+- **Naming**: kebab-case files, PascalCase components, camelCase hooks.
+- **Logic**: Max 3-level prop drilling. Use Zustand/Context. NO logic in JSX.
+- **UX**: Mandatory ActionBar for lists, skeleton states, and empty states.
 
-## 5. Performance & Standards
-- **ASSETS**: Use `next/image` and `next/font`.
-- **TABLES**: Right-align numbers. Sticky headers. Loading skeletons.
-- **SEO**: Use Metadata API. 1x `h1` per page.
-- **STYLE**: NO inline styles. NO hardcoded colors. Use CSS variables.
+## 4. FORM & STYLING
+- **Forms**: RHF + Zod. Client + Server validation. Handle loading/error/reset states.
+- **Styles**: TailwindCSS only (CSS vars for themes). NO inline styles or hardcoded colors.
+- **Performance**: `next/image` (sizes), `next/font`, lazy-load non-criticals.
+
+## 5. QUALITY, SEO & A11Y
+- **Standards**: NO `any`, NO `@ts-ignore`. 100% ESLint pass.
+- **SEO**: Metadata API (title/desc/OG tags) for every page.
+- **A11y**: 1xH1/page, semantic HTML, ARIA labels, keyboard nav.
+- **Testing**: Playwright (E2E), Vitest (Unit). Test via browser, not just curl/HTTP.
+
+## 6. AI AGENT PROTOCOLS (MANDATORY)
+- **Zero Emoji**: No icons/emojis in code, comments, or commits.
+- **Comments**: Comment "Why" (complex logic), NEVER "What".
+- **Simplicity**: Flat code over deep abstractions.
+- **Verif**: Proactively run `npm run build` after major changes.

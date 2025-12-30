@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/sha
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
 import * as React from "react"
 import { toast } from "sonner"
-import { settingsApi } from "../api"
+import { getOperationalSettingsAction, updateOperationalSettingsAction } from "../actions"
 import { ExceptionDate, OperatingHour, OperationalSettings as OperationalSettingsType } from "../types"
 import { ExceptionDatesManager } from "./exception-dates-manager"
 import { OperatingHoursForm } from "./operating-hours-form"
@@ -17,7 +17,7 @@ export function OperationalSettings() {
   const [isSaving, setIsSaving] = React.useState(false);
 
   React.useEffect(() => {
-    settingsApi.getSettings()
+    getOperationalSettingsAction()
       .then((data) => {
         setSettings(data);
         setOriginalSettings(data);
@@ -60,9 +60,11 @@ export function OperationalSettings() {
     if (!settings) return;
     setIsSaving(true);
     try {
-      await settingsApi.saveSettings(settings);
-      setOriginalSettings(settings);
-      toast.success("Đã lưu tất cả thay đổi cấu hình");
+      const response = await updateOperationalSettingsAction(settings);
+      if (response.success) {
+        setOriginalSettings(response.data);
+        toast.success("Đã lưu tất cả thay đổi cấu hình");
+      }
     } catch {
       toast.error("Có lỗi xảy ra khi lưu cài đặt");
     } finally {

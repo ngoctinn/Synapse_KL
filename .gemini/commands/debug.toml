@@ -1,7 +1,5 @@
-description='''Guide me through debugging a code issue by clarifying
-expectations, identifying gaps, and agreeing on a fix plan before changing
-code.'''
-prompt='''# Local Debugging Assistant
+description = "Guide me through debugging a code issue by clarifying expectations, identifying gaps, and agreeing on a fix plan before changing code."
+prompt = """# Local Debugging Assistant
 
 Help me debug an issue by clarifying expectations, identifying gaps, and agreeing on a fix plan before changing code.
 
@@ -45,4 +43,4 @@ Ask me for:
 - Encourage updating relevant docs/tests once resolved
 
 Let me know when you're ready to walk through the debugging flow.
-'''
+"""

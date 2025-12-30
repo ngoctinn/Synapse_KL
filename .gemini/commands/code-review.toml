@@ -1,6 +1,5 @@
-description='''Perform a local code review before pushing changes, ensuring
-alignment with design docs and best practices.'''
-prompt='''# Local Code Review Assistant
+description = "Perform a local code review before pushing changes, ensuring alignment with design docs and best practices."
+prompt = """# Local Code Review Assistant
 
 You are helping me perform a local code review **before** I push changes. Please follow this structured workflow.
 
@@ -80,4 +79,5 @@ Confirm whether each item is complete (yes/no/needs follow-up):
 - Documentation/design notes updated
 
 ---
-Let me know when you're ready to begin the review.'''
+Let me know when you're ready to begin the review.
+"""

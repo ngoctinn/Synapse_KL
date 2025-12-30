@@ -1,5 +1,5 @@
-description='''Add tests for a new feature'''
-prompt='''Review `docs/ai/testing/feature-{name}.md` and ensure it mirrors the base template before writing tests.
+description = "Add tests for a new feature"
+prompt = """Review `docs/ai/testing/feature-{name}.md` and ensure it mirrors the base template before writing tests.
 
 ## Step 1: Gather Context
 Ask me for:
@@ -43,4 +43,4 @@ For each module/function:
 - Flag follow-up tasks for deferred tests (with owners/dates)
 
 Let me know when you have the latest code changes ready; we'll write tests together until we hit 100% coverage.
-'''
+"""

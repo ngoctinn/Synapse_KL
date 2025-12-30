@@ -1,6 +1,5 @@
-description='''Add new feature/requirement documentation and guide me through
-the development workflow from requirements to testing.'''
-prompt='''I want to add a new feature/requirement. Please guide me through the complete development workflow:
+description = "Add new feature/requirement documentation and guide me through the development workflow from requirements to testing."
+prompt = """I want to add a new feature/requirement. Please guide me through the complete development workflow:
 
 ## Step 1: Capture Requirement
 First, ask me:
@@ -126,4 +125,4 @@ Then provide the appropriate command:
 ---
 
 **Let's start! Tell me about the feature you want to build.**
-'''
+"""

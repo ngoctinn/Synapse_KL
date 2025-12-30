@@ -1,4 +1,5 @@
-Compare the current implementation with the design in docs/ai/design/ and requirements in docs/ai/requirements/. Please follow this structured review:
+description = "Compare current implementation with design and requirements docs."
+prompt = """Compare the current implementation with the design in docs/ai/design/ and requirements in docs/ai/requirements/. Please follow this structured review:
 
 1. Ask me for:
    - Feature/branch description
@@ -18,4 +19,4 @@ Compare the current implementation with the design in docs/ai/design/ and requir
    - Identify missing tests or documentation updates
 
 4. Summarize findings with recommended next steps.
-
+"""

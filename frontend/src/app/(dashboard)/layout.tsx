@@ -1,15 +1,15 @@
 import { AppSidebar } from "@/shared/components/app-sidebar"
+import { BottomNav } from "@/shared/components/bottom-nav"
+import { UserRole } from "@/shared/types"
 import { Separator } from "@/shared/ui/separator"
 import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
+    SidebarInset,
+    SidebarProvider,
+    SidebarTrigger,
 } from "@/shared/ui/sidebar"
 import { ChevronRight } from "lucide-react"
-import React from "react"
-import { UserRole } from "@/shared/types"
 import { cookies } from "next/headers"
-import { BottomNav } from "@/shared/components/bottom-nav"
+import React from "react"
 
 export default async function DashboardLayout({
   children,
@@ -43,9 +43,9 @@ export default async function DashboardLayout({
           <SidebarTrigger />
           <Separator orientation="vertical" className="mr-2 h-4" />
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Admin Control Panel</span>
+            <span>Bảng điều khiển Quản trị</span>
             <ChevronRight className="h-4 w-4" />
-            <span className="font-medium text-foreground">Unified Console</span>
+            <span className="font-medium text-foreground">Điều phối Hợp nhất</span>
           </div>
         </header>
 

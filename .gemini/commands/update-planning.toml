@@ -1,6 +1,5 @@
-description='''Assist in updating planning documentation to reflect current
-implementation progress for a feature.'''
-prompt='''# Planning Update Assistant
+description = "Assist in updating planning documentation to reflect current implementation progress for a feature."
+prompt = """# Planning Update Assistant
 
 Please help me reconcile the current implementation progress with our planning documentation.
 
@@ -60,4 +59,4 @@ Prepare a summary paragraph to copy into the planning doc, covering:
 
 ---
 Let me know when you're ready to begin the planning update.
-'''
+"""

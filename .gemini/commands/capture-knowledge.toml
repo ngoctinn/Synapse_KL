@@ -1,6 +1,5 @@
-description='''Capture structured knowledge about a code entry point and save it
-to the knowledge docs.'''
-prompt='''# Knowledge Capture Assistant
+description = "Capture structured knowledge about a code entry point and save it to the knowledge docs."
+prompt = """# Knowledge Capture Assistant
 
 Guide me through creating a structured understanding of a code entry point and saving it to the knowledge docs.
 
@@ -46,4 +45,4 @@ Guide me through creating a structured understanding of a code entry point and s
 - Encourage running `/capture-knowledge` again for related entry points if needed
 
 Let me know the entry point and goals when you’re ready to begin the knowledge capture.
-'''
+"""

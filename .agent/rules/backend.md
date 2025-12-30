@@ -1,31 +1,34 @@
 ---
 trigger: always_on
-glob: "backend/**/*"
 ---
-# Backend Rules (Agent-Optimized)
 
-## 1. Stack
-- Python 3.12+, FastAPI, SQLModel, Pydantic v2, Alembic, PostgreSQL (asyncpg).
+# BE_RULES_FASTAPI_SQLMODEL (v2025.12)
+- **Docs**: MUST check latest FastAPI, SQLModel, Pydantic v2 docs. NO memory-based syntax.
+- **Stack**: Python 3.12+, FastAPI, SQLModel, Pydantic v2, Alembic, PostgreSQL (asyncpg), uv/poetry.
 
-## 2. Architecture (3-Layer)
-- `router.py`: HTTP, validation, status codes.
-- `service.py`: Business logic, orchestration.
-- `models.py`: SQLModel entities, relationships.
-- **IMPORT FLOW**: Router -> Service -> Model (Strictly One-way).
+## 1. ARCHITECTURE (3-LAYER)
+- **Flow**: Router -> Service -> Model. NO circular or reverse imports.
+- **Router** (`router.py`): Endpoints, status codes, request validation.
+- **Service** (`service.py`): Business logic, orchestration.
+- **Model** (`models.py`): SQLModel entities, relationships.
 
-## 3. SQLModel & DB
-- **MANDATORY**: `table=True` for DB models. UUID as Primary Key.
-- **RELATIONS**: Use `Relationship` + `back_populates`.
-- **ASYNC**: Use `expire_on_commit=False` in async sessions.
+## 2. SQLMODEL & DB
+- **Rules**: MUST use `table=True` for DB models. UUID as Primary Key.
+- **Relations**: MUST use `Relationship` with `back_populates` for 2-way relations.
+- **Async**: MUST use `expire_on_commit=False` in async sessions.
+- **Migrations**: Alembic mandatory for schema changes.
 
-## 4. Pydantic v2
-- **CONFIG**: `ConfigDict(from_attributes=True)`.
-- **CONVERSION**: Use `model_dump()` instead of `dict()`.
+## 3. PYDANTIC V2 & SCHEMA
+- **Config**: Use `ConfigDict(from_attributes=True)` (NO `orm_mode`).
+- **Methods**: Use `model_dump()` (NO `dict()`).
+- **Validation**: Strict type hinting and Pydantic field validation.
 
-## 5. Error Handling
-- **PATTERN**: Custom exceptions inheriting `HTTPException`.
-- **RESPONSE**: Structured error: `{"detail": "..."}`.
+## 4. ERROR HANDLING
+- **Exceptions**: Custom exceptions MUST inherit from `HTTPException`.
+- **Response**: Uniform structure: `{"detail": "Error message"}`.
 
-## 6. Development
-- **MIGRATIONS**: MUST use Alembic for schema changes.
-- **VALIDATION**: Enforce strict type hints everywhere.
+## 5. AI AGENT PROTOCOLS (MANDATORY)
+- **Zero Emoji**: No icons/emojis in code, comments, or commits.
+- **Comments**: Only "Why" (business logic logic), NEVER "What" (self-explanatory code).
+- **Incremental**: Small, testable chunks. Build modularly.
+- **Verif**: Check SQLModel relationship syntax & Pydantic V2 patterns before output.
