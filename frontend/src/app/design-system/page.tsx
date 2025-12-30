@@ -1,14 +1,28 @@
 "use client"
 
-import { AlertCircle, Check, X } from "lucide-react"
+import { AlertCircle, Calendar as CalendarIcon, Check, ChevronsUpDown, CreditCard, Settings, User as UserIcon, X } from "lucide-react"
 import * as React from "react"
 import { toast } from "sonner"
+import { DateRange } from "react-day-picker"
 
 import { PageHeader } from "@/shared/components/page-header"
 import { DataTable } from "@/shared/components/smart-data-table"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/shared/ui/alert-dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
 import { Badge } from "@/shared/ui/badge"
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/shared/ui/breadcrumb"
 import { Button } from "@/shared/ui/button"
+import { Calendar } from "@/shared/ui/calendar"
 import {
     Card,
     CardContent,
@@ -17,16 +31,40 @@ import {
     CardTitle,
 } from "@/shared/ui/card"
 import { Checkbox } from "@/shared/ui/checkbox"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/shared/ui/collapsible"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/shared/ui/command"
+import { DatePickerWithRange } from "@/shared/ui/date-range-picker"
+import { DateTimePicker } from "@/shared/ui/date-time-picker"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/shared/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu"
 import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
 import { MultiSelect } from "@/shared/ui/multi-select"
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover"
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group"
 import { SearchInput } from "@/shared/ui/search-input"
 import {
     Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue
 } from "@/shared/ui/select"
 import { Separator } from "@/shared/ui/separator"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/shared/ui/sheet"
 import { Skeleton } from "@/shared/ui/skeleton"
+import { Switch } from "@/shared/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip"
 
@@ -69,6 +107,13 @@ export default function DesignSystemShowcase() {
   const [currentPage, setCurrentPage] = React.useState(1)
   const [pageSize, setPageSize] = React.useState(5)
   const [selectedServices, setSelectedServices] = React.useState<string[]>(["massage", "facial"])
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>({
+    from: new Date(),
+    to: new Date(new Date().setDate(new Date().getDate() + 5)),
+  })
+  const [dateTime, setDateTime] = React.useState<Date | undefined>(new Date())
+  const [isSwitchOn, setIsSwitchOn] = React.useState(false)
+  const [isCollapsibleOpen, setIsCollapsibleOpen] = React.useState(false)
 
   // Options cho MultiSelect demo
   const serviceOptions = [
@@ -247,6 +292,7 @@ export default function DesignSystemShowcase() {
             <CardContent className="flex flex-wrap gap-4">
               <Button>Contained</Button>
               <Button variant="outline">Outlined</Button>
+              <Button variant="outline-neutral">Neutral Outline</Button>
               <Button variant="ghost">Texted</Button>
               <Button variant="secondary">Secondary</Button>
               <Button variant="destructive">Destructive</Button>
@@ -733,9 +779,267 @@ export default function DesignSystemShowcase() {
         </Card>
       </section>
 
-      {/* 9. TOASTS */}
+      {/* 7. OVERLAYS & DIALOGS */}
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold">9. Toasts (Sonner)</h2>
+        <h2 className="text-2xl font-semibold">7. Overlays & Dialogs</h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Dialog & Sheet</CardTitle>
+                    <CardDescription>Modal dialogs and side sheets for content</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-wrap gap-4">
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="outline">Open Dialog</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Edit Profile</DialogTitle>
+                                <DialogDescription>Make changes to your profile here. Click save when you&apos;re done.</DialogDescription>
+                            </DialogHeader>
+                            <div className="grid gap-4 py-4">
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="name" className="text-right">Name</Label>
+                                    <Input id="name" defaultValue="Pedro Duarte" className="col-span-3" />
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="username" className="text-right">Username</Label>
+                                    <Input id="username" defaultValue="@peduarte" className="col-span-3" />
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button type="submit">Save changes</Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant="outline">Open Sheet</Button>
+                        </SheetTrigger>
+                        <SheetContent>
+                            <SheetHeader>
+                                <SheetTitle>Edit Profile</SheetTitle>
+                                <SheetDescription>Make changes to your profile here.</SheetDescription>
+                            </SheetHeader>
+                            <div className="grid gap-4 py-4">
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="name-sheet" className="text-right">Name</Label>
+                                    <Input id="name-sheet" defaultValue="Pedro Duarte" className="col-span-3" />
+                                </div>
+                            </div>
+                            <div className="flex justify-end pt-4">
+                                <Button type="submit">Save changes</Button>
+                            </div>
+                        </SheetContent>
+                    </Sheet>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Alerts & Popovers</CardTitle>
+                    <CardDescription>Confirmation dialogs and contextual popups</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-wrap gap-4">
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive">Delete Account</Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete your account and remove your data from our servers.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction>Continue</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="secondary">Open Popover</Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80">
+                            <div className="grid gap-4">
+                                <div className="space-y-2">
+                                    <h4 className="font-medium leading-none">Dimensions</h4>
+                                    <p className="text-sm text-muted-foreground">Set the dimensions for the layer.</p>
+                                </div>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">Open Menu</Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-56">
+                            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem>
+                                <UserIcon className="mr-2 h-4 w-4" />
+                                <span>Profile</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                                <CreditCard className="mr-2 h-4 w-4" />
+                                <span>Billing</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                                <Settings className="mr-2 h-4 w-4" />
+                                <span>Settings</span>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </CardContent>
+            </Card>
+        </div>
+      </section>
+
+      {/* 8. DATE & TIME */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold">8. Date & Time Selection</h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Calendar</CardTitle>
+                    <CardDescription>Interactive calendar component</CardDescription>
+                </CardHeader>
+                <CardContent className="flex justify-center">
+                    <Calendar
+                        mode="single"
+                        selected={new Date()}
+                        className="rounded-md border shadow"
+                    />
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Pickers</CardTitle>
+                    <CardDescription>Date Range and Date Time pickers</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label>Date Range Picker</Label>
+                        <DatePickerWithRange value={dateRange} onChange={setDateRange} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Date Time Picker</Label>
+                        <DateTimePicker date={dateTime} onChange={setDateTime} />
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+      </section>
+
+      {/* 9. NAVIGATION & LAYOUT */}
+       <section className="space-y-4">
+        <h2 className="text-2xl font-semibold">9. Navigation & Layout</h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Breadcrumbs</CardTitle>
+                    <CardDescription>Navigation trail</CardDescription>
+                </CardHeader>
+                <CardContent>
+                     <Breadcrumb>
+                        <BreadcrumbList>
+                            <BreadcrumbItem>
+                                <BreadcrumbLink href="/">Home</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbLink href="/components">Components</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+                            </BreadcrumbItem>
+                        </BreadcrumbList>
+                    </Breadcrumb>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle>Collapsible & Switch</CardTitle>
+                    <CardDescription>Interactive toggles</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="flex items-center space-x-2">
+                        <Switch id="airplane-mode" checked={isSwitchOn} onCheckedChange={setIsSwitchOn} />
+                        <Label htmlFor="airplane-mode">Airplane Mode</Label>
+                    </div>
+
+                    <Collapsible
+                        open={isCollapsibleOpen}
+                        onOpenChange={setIsCollapsibleOpen}
+                        className="w-[350px] space-y-2"
+                    >
+                        <div className="flex items-center justify-between space-x-4 px-4">
+                            <h4 className="text-sm font-semibold">
+                                @peduarte starred 3 repositories
+                            </h4>
+                            <CollapsibleTrigger asChild>
+                                <Button variant="ghost" size="sm" className="w-9 p-0">
+                                    <ChevronsUpDown className="h-4 w-4" />
+                                    <span className="sr-only">Toggle</span>
+                                </Button>
+                            </CollapsibleTrigger>
+                        </div>
+                        <div className="rounded-md border px-4 py-3 font-mono text-sm">
+                            @radix-ui/primitives
+                        </div>
+                        <CollapsibleContent className="space-y-2">
+                            <div className="rounded-md border px-4 py-3 font-mono text-sm">
+                                @radix-ui/colors
+                            </div>
+                            <div className="rounded-md border px-4 py-3 font-mono text-sm">
+                                @stitches/react
+                            </div>
+                        </CollapsibleContent>
+                    </Collapsible>
+                </CardContent>
+            </Card>
+
+            <Card className="md:col-span-2">
+                <CardHeader>
+                    <CardTitle>Command</CardTitle>
+                    <CardDescription>Fast, composable, unstyled command menu</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Command className="rounded-lg border shadow-md">
+                        <CommandInput placeholder="Type a command or search..." />
+                        <CommandList>
+                            <CommandEmpty>No results found.</CommandEmpty>
+                            <CommandGroup heading="Suggestions">
+                                <CommandItem>
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    <span>Calendar</span>
+                                </CommandItem>
+                                <CommandItem>
+                                    <UserIcon className="mr-2 h-4 w-4" />
+                                    <span>Search Emoji</span>
+                                </CommandItem>
+                                <CommandItem>
+                                    <CreditCard className="mr-2 h-4 w-4" />
+                                    <span>Calculator</span>
+                                </CommandItem>
+                            </CommandGroup>
+                        </CommandList>
+                    </Command>
+                </CardContent>
+            </Card>
+        </div>
+      </section>
+
+      {/* 10. TOASTS */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold">10. Toasts (Sonner)</h2>
         <Card>
           <CardHeader>
             <CardTitle>Toast Notifications</CardTitle>
