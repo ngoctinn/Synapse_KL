@@ -2,7 +2,7 @@
 
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
-import { Plus, Trash2 } from "lucide-react"
+import { AlertCircle, Plus, Trash2 } from "lucide-react"
 import * as React from "react"
 
 import { cn } from "@/shared/lib/utils"
@@ -17,6 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog"
+import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import { DatePickerWithRange } from "@/shared/ui/date-range-picker"
 import {
@@ -43,7 +44,6 @@ import { eachDayOfInterval, getDay, isSameDay } from "date-fns"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { ExceptionDate, OperatingHour } from "../types"
-import { OvernightIndicator } from "./overnight-indicator"
 
 const exceptionDateSchema = z.object({
   dateRange: z.object({
@@ -240,9 +240,12 @@ export function ExceptionDatesManager({
                                 className="w-full"
                               />
                             </FormControl>
-                            {form.watch("open_time") && field.value && form.watch("open_time")! >= field.value && (
+                            {form.watch("open_time") && field.value && form.watch("open_time")! > field.value && (
                               <div className="absolute top-full right-0 mt-1">
-                                <OvernightIndicator />
+                                <Badge variant="warning" className="h-6 px-2 text-[9px] gap-1 whitespace-nowrap">
+                                  <AlertCircle className="size-3" />
+                                  <span>Sáng hôm sau (+1)</span>
+                                </Badge>
                               </div>
                             )}
                           </div>
@@ -286,10 +289,10 @@ export function ExceptionDatesManager({
                       {item.is_closed ? "Đóng cửa" : (
                         <>
                           {item.open_time} - {item.close_time}
-                          {!item.is_closed && item.open_time && item.close_time && item.open_time >= item.close_time && (
-                            <span className="ml-1 text-[9px] font-medium text-amber-600 bg-amber-50/50 px-1 rounded-full border border-amber-200/60 uppercase tracking-tighter">
+                          {!item.is_closed && item.open_time && item.close_time && item.open_time > item.close_time && (
+                            <Badge variant="warning" className="ml-1 h-5 px-1.5 text-[9px] uppercase tracking-tighter">
                               (+1)
-                            </span>
+                            </Badge>
                           )}
                         </>
                       )}

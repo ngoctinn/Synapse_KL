@@ -51,21 +51,21 @@ export function OperationalSettings() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [isDirty]);
 
-  const handleOperatingHoursChange = (hours: OperatingHour[]) => {
-    if (!settings) return;
-    setSettings({
-      ...settings,
-      regular_operating_hours: hours
+  const handleOperatingHoursChange = React.useCallback((hours: OperatingHour[]) => {
+    setSettings(prev => {
+      if (!prev) return null;
+      if (JSON.stringify(prev.regular_operating_hours) === JSON.stringify(hours)) return prev;
+      return { ...prev, regular_operating_hours: hours };
     });
-  };
+  }, []);
 
-  const handleExceptionDatesChange = (exceptionDates: ExceptionDate[]) => {
-    if (!settings) return;
-    setSettings({
-      ...settings,
-      exception_dates: exceptionDates
+  const handleExceptionDatesChange = React.useCallback((exceptionDates: ExceptionDate[]) => {
+    setSettings(prev => {
+      if (!prev) return null;
+      if (JSON.stringify(prev.exception_dates) === JSON.stringify(exceptionDates)) return prev;
+      return { ...prev, exception_dates: exceptionDates };
     });
-  };
+  }, []);
 
   const handleSave = async () => {
     if (!settings) return;
@@ -84,7 +84,9 @@ export function OperationalSettings() {
   };
 
   const handleReset = () => {
-    setSettings(originalSettings);
+    if (originalSettings) {
+      setSettings(originalSettings);
+    }
   };
 
   if (isLoading) {
@@ -105,32 +107,38 @@ export function OperationalSettings() {
           </p>
         </div>
         {isDirty && (
-          <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
-            <Button variant="ghost" onClick={handleReset} disabled={isSaving}>
-              Hủy
-            </Button>
+          <div className="flex items-center gap-4 animate-in fade-in slide-in-from-right-4">
+            <div className="hidden items-center gap-2 md:flex">
+              <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
+              <p className="text-sm font-medium text-orange-600">Bạn có thay đổi chưa lưu</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" onClick={handleReset} disabled={isSaving}>
+                Hủy
+              </Button>
 
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button disabled={isSaving}>
-                  {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Xác nhận thay đổi?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Việc thay đổi giờ hoạt động có thể ảnh hưởng đến các lịch hẹn đã được đặt trước đó. Hệ thống sẽ áp dụng giờ mới cho tất cả các ngày liên quan.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Kiểm tra lại</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleSave}>
-                    Tiếp tục lưu
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button disabled={isSaving} className="shadow-md">
+                    {isSaving ? "Đang lưu..." : "Lưu cài đặt"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Xác nhận thay đổi?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Việc thay đổi giờ hoạt động có thể ảnh hưởng đến các lịch hẹn đã được đặt trước đó. Hệ thống sẽ áp dụng giờ mới cho tất cả các ngày liên quan.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Kiểm tra lại</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleSave}>
+                      Tiếp tục lưu
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
         )}
       </div>

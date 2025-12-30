@@ -21,53 +21,52 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.25 0.04 260);
 
-  /* Primary: Professional Teal (KEPT AS REQUESTED) */
-  --primary: oklch(0.48 0.14 200);
-  --primary-foreground: oklch(1 0 0);
+  /* Professional Teal - Slightly more muted and sophisticated */
+  --primary: oklch(0.52 0.11 195);
+  --primary-foreground: oklch(0.98 0.01 260);
 
   /* Secondary: Soft Cool Gray */
-  --secondary: oklch(0.96 0.01 260);
-  --secondary-foreground: oklch(0.25 0.04 260);
+  --secondary: oklch(0.97 0.01 260);
+  --secondary-foreground: oklch(0.30 0.04 260);
 
-  /* Muted & Accent */
-  --muted: oklch(0.96 0.01 260);
-  --muted-foreground: oklch(0.55 0.04 260);
+  /* Muted & Accent - Creating "Visual Silence" */
+  --muted: oklch(0.97 0.01 260);
+  --muted-foreground: oklch(0.50 0.03 260);
 
-  --accent: oklch(0.94 0.04 200);            /* Light Teal Tint for Hovers */
-  --accent-foreground: oklch(0.25 0.12 200);
+  --accent: oklch(0.96 0.02 195);            /* Subtle, high-end tint */
+  --accent-foreground: oklch(0.35 0.08 195);
 
   /* Utilities - Borders are cooler and softer */
-  --border: oklch(0.90 0.02 260);
-  --input: oklch(0.90 0.02 260);
-  --ring: oklch(0.48 0.14 200);
+  --border: oklch(0.92 0.01 260);
+  --input: oklch(0.92 0.01 260);
+  --ring: oklch(0.52 0.11 195);
 
-  /* Destructive - Soft Red */
-  --destructive: oklch(0.65 0.20 25);
-  --destructive-foreground: oklch(1 0 0);
+  /* Destructive - Softened Red */
+  --destructive: oklch(0.60 0.15 25);
+  --destructive-foreground: oklch(0.98 0.01 260);
 
-  /* Sidebar - Clean White with Light Teal Accents */
+  /* Sidebar - High-end white with smoky teal accents */
   --sidebar-background: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.35 0.04 260);
-  --sidebar-primary: oklch(0.48 0.14 200);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.96 0.03 200);       /* Light Teal for Active/Hover */
-  --sidebar-accent-foreground: oklch(0.48 0.14 200); /* Dark Teal Text */
-  --sidebar-border: oklch(0.92 0.01 260);
-  --sidebar-ring: oklch(0.48 0.14 200);
+  --sidebar-foreground: oklch(0.40 0.04 260);
+  --sidebar-primary: oklch(0.52 0.11 195);
+  --sidebar-primary-foreground: oklch(0.98 0.01 260);
+  --sidebar-accent: oklch(0.94 0.025 195);       /* Slightly more "depth" than pure white */
+  --sidebar-accent-foreground: oklch(0.45 0.10 195);
+  --sidebar-border: oklch(0.94 0.01 260);
+  --sidebar-ring: oklch(0.52 0.11 195);
 
-  /* Alerts */
-  /* Alerts - Vibrant Colors for Icons */
-  --alert-warning: oklch(0.98 0.02 85);
-  --alert-warning-foreground: oklch(0.65 0.20 80);  /* Vibrant Orange-Gold */
-  --alert-success: oklch(0.98 0.02 160);
-  --alert-success-foreground: oklch(0.60 0.18 150); /* Vibrant Green */
-  --alert-info: oklch(0.98 0.02 250);
-  --alert-info-foreground: oklch(0.60 0.18 250);    /* Vibrant Blue */
+  /* Alerts - Refined status colors */
+  --alert-warning: oklch(0.97 0.03 85);
+  --alert-warning-foreground: oklch(0.55 0.15 75);
+  --alert-success: oklch(0.97 0.03 160);
+  --alert-success-foreground: oklch(0.50 0.12 165);
+  --alert-info: oklch(0.97 0.03 240);
+  --alert-info-foreground: oklch(0.50 0.12 245);
 
   /* Alert Borders */
-  --alert-warning-border: oklch(0.90 0.05 85);
-  --alert-success-border: oklch(0.90 0.05 160);
-  --alert-info-border: oklch(0.90 0.05 250);
+  --alert-warning-border: oklch(0.92 0.04 85);
+  --alert-success-border: oklch(0.92 0.04 160);
+  --alert-info-border: oklch(0.92 0.04 240);
 }
 
 

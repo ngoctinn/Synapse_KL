@@ -1,12 +1,13 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Copy } from "lucide-react"
+import { AlertCircle, Check, ClipboardPaste, Clock, Copy, X } from "lucide-react"
 import * as React from "react"
 import { useFieldArray, useForm } from "react-hook-form"
 import * as z from "zod"
 
 import { cn } from "@/shared/lib/utils"
+import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import {
   Form,
@@ -18,7 +19,6 @@ import {
 import { Switch } from "@/shared/ui/switch"
 import { TimePickerDropdown } from "@/shared/ui/time-picker-dropdown"
 import { DayOfWeek, DAYS_OF_WEEK, OperatingHour } from "../types"
-import { OvernightIndicator } from "./overnight-indicator"
 
 const operatingHourSchema = z.object({
   day_of_week: z.number(),
@@ -59,9 +59,13 @@ export function OperatingHoursForm({
   // Theo dõi thay đổi và báo cáo lên cha
   const watchedValues = form.watch("regular_operating_hours");
 
+  const isResetting = React.useRef(false);
+
   React.useEffect(() => {
     const subscription = form.watch((value) => {
-      // Chỉ gọi onChange nếu validation thành công để tránh data rác lên cha
+      // Nếu đang trong quá trình reset, không đẩy ngược lên cha để tránh vòng lặp re-render
+      if (isResetting.current) return;
+
       if (value.regular_operating_hours) {
         onChange(value.regular_operating_hours as OperatingHour[]);
       }
@@ -69,11 +73,21 @@ export function OperatingHoursForm({
     return () => subscription.unsubscribe();
   }, [form.watch, onChange]);
 
-  // Cập nhật lại form nếu data từ cha thay đổi (ví dụ: Reset)
-  // Chỉ reset khi data khác biệt thực sự để tránh vòng lặp vô hạn
+  // Cập nhật lại form nếu data từ cha thay đổi (ví dụ: Reset hoặc Sau khi lưu)
   React.useEffect(() => {
-    if (data && JSON.stringify(data) !== JSON.stringify(form.getValues("regular_operating_hours"))) {
-      form.reset({ regular_operating_hours: data });
+    if (data) {
+      const currentValues = form.getValues("regular_operating_hours");
+      if (JSON.stringify(data) !== JSON.stringify(currentValues)) {
+        isResetting.current = true;
+        form.reset({ regular_operating_hours: data });
+        // Reset các trạng thái UI liên quan đến Copy/Paste
+        setLastCopiedIndex(null);
+        setPastedIndices(new Set());
+        // Trả lại trạng thái sau khi reset xong
+        setTimeout(() => {
+          isResetting.current = false;
+        }, 0);
+      }
     }
   }, [data, form]);
 
@@ -86,7 +100,11 @@ export function OperatingHoursForm({
     open_time: string;
     close_time: string;
     is_closed: boolean;
+    index: number | null;
   } | null>(null);
+
+  const [lastCopiedIndex, setLastCopiedIndex] = React.useState<number | null>(null);
+  const [pastedIndices, setPastedIndices] = React.useState<Set<number>>(new Set());
 
   const copyHours = (index: number) => {
     const values = form.getValues(`regular_operating_hours.${index}`);
@@ -94,7 +112,16 @@ export function OperatingHoursForm({
       open_time: values.open_time,
       close_time: values.close_time,
       is_closed: values.is_closed,
+      index,
     });
+    setLastCopiedIndex(index);
+    setTimeout(() => setLastCopiedIndex(null), 2000);
+  };
+
+  const setAllDay = (index: number) => {
+    form.setValue(`regular_operating_hours.${index}.open_time`, "00:00");
+    form.setValue(`regular_operating_hours.${index}.close_time`, "00:00");
+    form.setValue(`regular_operating_hours.${index}.is_closed`, false);
   };
 
   const pasteHours = (index: number) => {
@@ -102,6 +129,8 @@ export function OperatingHoursForm({
     form.setValue(`regular_operating_hours.${index}.open_time`, clipboard.open_time);
     form.setValue(`regular_operating_hours.${index}.close_time`, clipboard.close_time);
     form.setValue(`regular_operating_hours.${index}.is_closed`, clipboard.is_closed);
+
+    setPastedIndices((prev) => new Set(prev).add(index));
 
     // Notify parent
     onChange(form.getValues("regular_operating_hours") as OperatingHour[]);
@@ -114,6 +143,7 @@ export function OperatingHoursForm({
       day_of_week: form.getValues(`regular_operating_hours.${i}.day_of_week`) as DayOfWeek,
     }));
     form.setValue("regular_operating_hours", updatedHours);
+    setPastedIndices(new Set(fields.map((_, i) => i)));
     onChange(updatedHours);
   };
 
@@ -127,127 +157,235 @@ export function OperatingHoursForm({
               const dayInfo = DAYS_OF_WEEK.find(d => d.value === field.day_of_week);
 
               return (
-                <div
-                  key={field.id}
-                  className="flex flex-col gap-4 py-3 sm:flex-row sm:items-center sm:justify-between border-b last:border-0"
-                >
-                  <div className="flex items-center gap-4 min-w-[120px]">
-                    <FormField
-                      control={form.control}
-                      name={`regular_operating_hours.${index}.is_closed`}
-                      render={({ field }) => (
-                        <FormItem className="mb-0">
-                          <FormControl>
-                            <Switch
-                              checked={!field.value}
-                              onCheckedChange={(checked) => field.onChange(!checked)}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <span className={cn("font-medium", isClosed && "text-muted-foreground")}>
-                      {dayInfo?.label}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {isClosed ? (
-                      <span className="text-muted-foreground italic text-sm py-2 px-3">
-                        Đóng cửa
-                      </span>
-                    ) : (
-                      <div className="flex items-center gap-2 pb-6">
+                  <div
+                    key={field.id}
+                    className="flex flex-col gap-4 py-5 sm:grid sm:grid-cols-[160px_1fr_auto] sm:items-center sm:gap-4 border-b last:border-0"
+                  >
+                    {/* Cột 1: Trạng thái & Ngày */}
+                    <div className="flex items-center justify-between sm:justify-start gap-3">
+                      <div className="flex items-center gap-3">
                         <FormField
                           control={form.control}
-                          name={`regular_operating_hours.${index}.open_time`}
+                          name={`regular_operating_hours.${index}.is_closed`}
                           render={({ field }) => (
                             <FormItem className="mb-0">
                               <FormControl>
-                                <TimePickerDropdown
-                                  value={field.value}
-                                  onChange={field.onChange}
+                                <Switch
+                                  id={`switch-${index}`}
+                                  checked={!field.value}
+                                  onCheckedChange={(checked) => field.onChange(!checked)}
                                 />
                               </FormControl>
                             </FormItem>
                           )}
                         />
-                        <span className="text-muted-foreground self-center">đến</span>
-                        <div className="relative">
+                        <label
+                          htmlFor={`switch-${index}`}
+                          className={cn(
+                            "text-sm font-semibold select-none cursor-pointer w-24 shrink-0",
+                            isClosed ? "text-muted-foreground/60" : "text-foreground"
+                          )}
+                        >
+                          {dayInfo?.label}
+                        </label>
+                      </div>
+
+                      {/* Nút Action hiện ở mobile trên cùng hàng với tên ngày */}
+                      <div className="flex sm:hidden items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => copyHours(index)}
+                          className={cn(
+                            "h-8 w-8",
+                            lastCopiedIndex === index ? "text-success bg-success/10" : "text-muted-foreground"
+                          )}
+                        >
+                          {lastCopiedIndex === index ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                        </Button>
+                        {clipboard && (
+                          <Button
+                            type="button"
+                            variant={pastedIndices.has(index) ? "default" : "outline"}
+                            size="icon"
+                            onClick={() => pasteHours(index)}
+                            className="h-8 w-8"
+                          >
+                            <ClipboardPaste className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Cột 2: Khung giờ */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    {isClosed ? (
+                      <div className="flex h-10 items-center">
+                        <Badge variant="outline" className="text-muted-foreground font-normal border-dashed uppercase text-[9px] tracking-wider px-3 py-1">
+                          Đóng cửa
+                        </Badge>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full">
+                        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                           <FormField
                             control={form.control}
-                            name={`regular_operating_hours.${index}.close_time`}
+                            name={`regular_operating_hours.${index}.open_time`}
                             render={({ field }) => (
-                              <FormItem className="mb-0">
+                              <FormItem className="mb-0 flex-1 sm:flex-none">
                                 <FormControl>
                                   <TimePickerDropdown
                                     value={field.value}
                                     onChange={field.onChange}
+                                    className="w-full sm:w-[100px]"
                                   />
                                 </FormControl>
-                                <FormMessage />
                               </FormItem>
                             )}
                           />
-                          {form.watch(`regular_operating_hours.${index}.open_time`) >= form.watch(`regular_operating_hours.${index}.close_time`) && !isClosed && (
-                            <div className="absolute top-full right-0 mt-1">
-                              <OvernightIndicator />
-                            </div>
-                          )}
+                          <span className="text-muted-foreground text-xs shrink-0">đến</span>
+                          <div className="relative flex-1 sm:flex-none">
+                            <FormField
+                              control={form.control}
+                              name={`regular_operating_hours.${index}.close_time`}
+                              render={({ field }) => (
+                                <FormItem className="mb-0">
+                                  <FormControl>
+                                    <TimePickerDropdown
+                                      value={field.value}
+                                      onChange={field.onChange}
+                                      className="w-full sm:w-[100px]"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            {watchedValues[index].open_time > watchedValues[index].close_time && (
+                              <div className="absolute top-full right-0 mt-1 z-10">
+                                <Badge
+                                  variant="warning"
+                                  className="gap-1 px-1.5 py-0 font-medium text-[9px] whitespace-nowrap"
+                                >
+                                  <AlertCircle className="size-3" />
+                                  <span>Sáng hôm sau (+1)</span>
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant={watchedValues[index].open_time === "00:00" && watchedValues[index].close_time === "00:00" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setAllDay(index)}
+                            className={cn(
+                              "h-8 px-3 text-[10px] font-medium transition-all flex-1 sm:flex-none",
+                              watchedValues[index].open_time === "00:00" && watchedValues[index].close_time === "00:00"
+                                ? "bg-primary text-primary-foreground"
+                                : "text-muted-foreground"
+                            )}
+                          >
+                            <Clock className="mr-1.5 size-3" />
+                            Cả ngày
+                          </Button>
+
+                          {/* Overlap warning - visible on mobile too */}
+                          {(() => {
+                               const prevIndex = (index === 0 ? fields.length - 1 : index - 1);
+                               const prevDay = watchedValues[prevIndex];
+                               const currentDay = watchedValues[index];
+                               const isPrevOvernight = !prevDay.is_closed && prevDay.close_time < prevDay.open_time;
+                               const isCurrentOpen = !currentDay.is_closed;
+
+                               if (isPrevOvernight && isCurrentOpen && prevDay.close_time > currentDay.open_time) {
+                                 return (
+                                   <Badge variant="error" className="h-8 px-2 text-[9px] gap-1 shrink-0">
+                                     <AlertCircle className="size-3" />
+                                     Xung đột
+                                   </Badge>
+                                 );
+                               }
+                               return null;
+                          })()}
                         </div>
                       </div>
                     )}
-                  </div>
+                    </div>
 
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => copyHours(index)}
-                      className="h-8 w-8 text-muted-foreground hover:text-primary"
-                      title="Sao chép giờ"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    {clipboard && (
+                    {/* Cột 3: Actions row-level (Chỉ hiện ở Desktop) */}
+                    <div className="hidden sm:flex items-center justify-end gap-1 min-w-[150px]">
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon"
-                        onClick={() => pasteHours(index)}
-                        className="h-8 w-8 text-primary animate-pulse"
-                        title="Dán giờ"
+                        onClick={() => copyHours(index)}
+                        className={cn(
+                          "h-8 w-8 transition-colors",
+                          lastCopiedIndex === index ? "text-success bg-success/10" : "text-muted-foreground hover:text-primary"
+                        )}
+                        title="Sao chép giờ"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="h-4 w-4"
-                        >
-                          <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
-                          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                        </svg>
+                        {lastCopiedIndex === index ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                       </Button>
-                    )}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => copyToAll(index)}
-                      className="text-[10px] text-muted-foreground hover:text-primary h-8 px-2"
-                      title="Áp dụng cho tất cả các ngày"
-                    >
-                      Tất cả
-                    </Button>
+                      {clipboard && (
+                        <>
+                          <Button
+                            type="button"
+                            variant={pastedIndices.has(index) ? "default" : "outline"}
+                            size="icon"
+                            onClick={() => pasteHours(index)}
+                            className={cn(
+                              "h-8 w-8 transition-all",
+                              pastedIndices.has(index) ? "bg-primary text-primary-foreground" : "text-primary border-primary/30 shadow-sm"
+                            )}
+                            title="Dán giờ"
+                          >
+                            <ClipboardPaste className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setClipboard(null);
+                              setLastCopiedIndex(null);
+                              setPastedIndices(new Set());
+                            }}
+                            className="h-8 w-8 text-muted-foreground/30 hover:text-destructive"
+                            title="Hủy sao chép"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </>
+                      )}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToAll(index)}
+                        className="text-[10px] text-muted-foreground hover:text-primary h-8 px-2 ml-1 border-dashed"
+                      >
+                        Tất cả
+                      </Button>
+                    </div>
+
+                    {/* Nút "Áp dụng tất cả" Mobile */}
+                    <div className="flex sm:hidden">
+                       <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToAll(index)}
+                        className="w-full text-xs text-muted-foreground h-9 border-dashed"
+                      >
+                        Sao chép cho tất cả các ngày
+                      </Button>
+                    </div>
                   </div>
-                </div>
               );
             })}
           </div>
