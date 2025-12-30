@@ -4,6 +4,9 @@ import {
   LayoutDashboard,
 } from "lucide-react"
 
+import { navigationConfig } from "@/shared/config/navigation"
+import { cn } from "@/shared/lib/utils"
+import { UserRole } from "@/shared/types"
 import {
   Sidebar,
   SidebarContent,
@@ -15,11 +18,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/shared/ui/sidebar"
-import { navigationConfig } from "@/shared/config/navigation"
-import { UserRole } from "@/shared/types"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { cn } from "@/shared/lib/utils"
 
 interface AppSidebarProps {
   role?: UserRole
@@ -38,13 +38,13 @@ export function AppSidebar({ role = "manager" }: AppSidebarProps) {
   }
 
   return (
-    <Sidebar className="border-r">
-      <SidebarHeader className="border-b px-6 py-4">
-        <Link href="/" className="flex items-center gap-2 font-bold text-primary text-xl">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+    <Sidebar collapsible="icon" className="border-r">
+      <SidebarHeader className="border-b px-6 py-4 group-data-[collapsible=icon]:p-2">
+        <Link href="/" className="flex items-center gap-2 font-bold text-primary text-xl group-data-[collapsible=icon]:justify-center">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shrink-0">
             <LayoutDashboard className="size-5" />
           </div>
-          Synapse
+          <span className="group-data-[collapsible=icon]:hidden">Synapse</span>
         </Link>
       </SidebarHeader>
       <SidebarContent>

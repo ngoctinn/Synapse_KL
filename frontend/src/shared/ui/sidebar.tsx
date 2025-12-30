@@ -11,18 +11,18 @@ import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Separator } from "@/shared/ui/separator"
 import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
 } from "@/shared/ui/sheet"
 import { Skeleton } from "@/shared/ui/skeleton"
 import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@/shared/ui/tooltip"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
@@ -483,8 +483,8 @@ const sidebarMenuButtonVariants = cva(
           "bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
       },
       size: {
-        default: "h-8 text-sm",
-        sm: "h-7 text-xs",
+        default: "h-11 text-sm",
+        sm: "h-9 text-xs",
         lg: "h-12 text-sm group-data-[collapsible=icon]:p-0!",
       },
     },
@@ -699,29 +699,29 @@ function SidebarMenuSubButton({
 }
 
 export {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarGroup,
-    SidebarGroupAction,
-    SidebarGroupContent,
-    SidebarGroupLabel,
-    SidebarHeader,
-    SidebarInput,
-    SidebarInset,
-    SidebarMenu,
-    SidebarMenuAction,
-    SidebarMenuBadge,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    SidebarMenuSkeleton,
-    SidebarMenuSub,
-    SidebarMenuSubButton,
-    SidebarMenuSubItem,
-    SidebarProvider,
-    SidebarRail,
-    SidebarSeparator,
-    SidebarTrigger,
-    useSidebar
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupAction,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInput,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuAction,
+  SidebarMenuBadge,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSkeleton,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  SidebarProvider,
+  SidebarRail,
+  SidebarSeparator,
+  SidebarTrigger,
+  useSidebar
 }
 

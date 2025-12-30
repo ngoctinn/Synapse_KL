@@ -39,3 +39,5 @@ trigger: always_on
 - **Comments**: Comment "Why" (complex logic), NEVER "What".
 - **Simplicity**: Flat code over deep abstractions.
 - **Verif**: Proactively run `npm run build` after major changes.
+
+- **No Nested Cards**: Avoid placing Cards inside other Cards/Tabs. Use flat divisions (div + header) for cleaner UI.
