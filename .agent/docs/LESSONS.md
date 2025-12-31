@@ -58,3 +58,12 @@ description: Các bài học kỹ thuật quan trọng rút ra từ quá trình 
   ```
 - **Application**: TUYỆT ĐỐI KHÔNG dùng `datetime.now()` (trả về local/naive). LUÔN dùng `datetime.now(timezone.utc)`.
 - **Legacy/Migrate**: Nếu DB lỡ tạo naive, phải migrate ép về `TIMESTAMPTZ` ngay.
+
+## 10. ADVANCED UX/UI PATTERNS (2025)
+- **DND Hydration Mismatch**: Luôn dùng `useId()` từ React để cung cấp `id` tĩnh cho `DndContext`. Tránh dùng ID tự sinh của thư viện vì gây lệch `aria-describedby` giữa SSR và Client.
+- **Smart Dirty Guard**: Đối với `Sheet` (Slide-over), dùng `onPointerDownOutside` và `onEscapeKeyDown` kết hợp chặn `event.preventDefault()` nếu form `isDirty`. Sử dụng `AlertDialog` để xác nhận thoát thay vì `window.confirm` lạc hậu.
+- **Form Navigation**: Sử dụng callback `onInvalid` trong `form.handleSubmit` để tự động chuyển tab về vị trí có lỗi validation đầu tiên, giảm ma sát cho người dùng.
+- **Micro-Visualization**: Trực quan hóa các thông số trừu tượng (như thời gian bắt đầu/sử dụng tài nguyên) bằng các biểu đồ timeline nhỏ (Micro-Gantt) ngay trong form bằng cách sử dụng `form.watch` để cập nhật real-time.
+- **Currency Masking**: Thực hiện định dạng tiền tệ (VND) ngay khi nhập liệu bằng `Intl.NumberFormat` kết hợp với `onChange` transform để tăng tính chuyên nghiệp và giảm sai sót nhập số 0.
+- **Action Hierarchy**: Nút "Hủy" nên dùng `variant="ghost"` để giảm độ ưu tiên thị giác, tập trung sự chú ý của người dùng vào hành động chính (Lưu/Tạo).
+

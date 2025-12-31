@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/shared/ui/button";
 import {
   Form,
@@ -16,15 +18,18 @@ import {
   SheetTitle,
 } from "@/shared/ui/sheet";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/shared/ui/alert-dialog";
 import { Textarea } from "@/shared/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { createResourceAction } from "../actions";
@@ -35,6 +40,7 @@ interface ResourceFormSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   groupId: string;
+  groupName?: string;
   resource?: Resource | null;
 }
 
@@ -42,12 +48,14 @@ export function ResourceFormSheet({
   open,
   onOpenChange,
   groupId,
+  groupName,
   resource,
 }: ResourceFormSheetProps) {
   const isEdit = !!resource;
   const [isPending, startTransition] = useTransition();
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
 
-  const form = useForm({
+  const form = useForm<ResourceCreateForm>({
     resolver: zodResolver(resourceCreateSchema),
     defaultValues: {
       group_id: groupId,
@@ -90,113 +98,145 @@ export function ResourceFormSheet({
     });
   }
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open && form.formState.isDirty) {
+      setShowExitConfirm(true);
+      return;
+    }
+    onOpenChange(open);
+  };
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle>{isEdit ? "Chỉnh sửa tài nguyên" : "Thêm tài nguyên"}</SheetTitle>
-          <SheetDescription>
-            Nhập thông tin chi tiết cho tài nguyên mới trong nhóm này.
-          </SheetDescription>
-        </SheetHeader>
+    <>
+      <Sheet open={open} onOpenChange={handleOpenChange}>
+        <SheetContent 
+          className="sm:max-w-md flex flex-col"
+          onPointerDownOutside={(e) => {
+            if (form.formState.isDirty) e.preventDefault();
+          }}
+          onEscapeKeyDown={(e) => {
+            if (form.formState.isDirty) e.preventDefault();
+          }}
+        >
+          <SheetHeader>
+            <SheetTitle>{isEdit ? "Chỉnh sửa tài nguyên" : "Thêm tài nguyên"}</SheetTitle>
+            <SheetDescription>
+              Nhập thông tin chi tiết cho tài nguyên mới trong nhóm <strong>{groupName || groupId}</strong>.
+            </SheetDescription>
+          </SheetHeader>
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 py-4"
-          >
-            <FormField
-              control={form.control}
-              name="group_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel required>Nhóm tài nguyên</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isEdit}>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4 py-4 flex-1"
+            >
+              <FormField
+                control={form.control}
+                name="group_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>Nhóm tài nguyên</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn nhóm tài nguyên" />
-                      </SelectTrigger>
+                      <Input value={groupName || field.value} disabled className="bg-muted/50" />
                     </FormControl>
-                    <SelectContent>
-                      {/* This should be dynamically populated with actual group options */}
-                      <SelectItem value={groupId}>{groupId}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel required>Tên tài nguyên</FormLabel>
-                  <FormControl>
-                    <Input placeholder="VD: Giường 01" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>Tên tài nguyên</FormLabel>
+                    <FormControl>
+                      <Input placeholder="VD: Giường 01" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="code"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Mã định danh</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="VD: BED-01"
-                      {...field}
-                      disabled={isEdit}
-                      onChange={(e) =>
-                        field.onChange(e.target.value.toUpperCase())
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mã định danh</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="VD: BED-01"
+                        {...field}
+                        disabled={isEdit}
+                        onChange={(e) =>
+                          field.onChange(e.target.value.toUpperCase())
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mô tả</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Mô tả về tài nguyên này..."
+                        className="resize-none min-h-[100px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
+              <div className="flex justify-end gap-3 pt-6 border-t mt-auto">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => handleOpenChange(false)}
+                >
+                  Hủy
+                </Button>
+                <Button type="submit" disabled={isPending} className="min-w-[100px]">
+                  {isEdit ? "Cập nhật" : "Tạo mới"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </SheetContent>
+      </Sheet>
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Mô tả</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Mô tả về tài nguyên này..."
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex justify-end gap-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
-                Hủy
-              </Button>
-              <Button type="submit" disabled={isPending}>
-                {isEdit ? "Cập nhật" : "Tạo mới"}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </SheetContent>
-    </Sheet>
+      <AlertDialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Thay đổi chưa được lưu</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn đang nhập dở thông tin tài nguyên. Thoát bây giờ sẽ làm mất các dữ liệu này.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Tiếp tục</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                setShowExitConfirm(false);
+                onOpenChange(false);
+                form.reset();
+              }}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Thoát
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

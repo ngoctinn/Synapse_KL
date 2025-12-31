@@ -43,6 +43,7 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
   const [selectedGroup, setSelectedGroup] = useState<ResourceGroup | null>(null);
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
   const [activeGroupId, setActiveGroupId] = useState<string>("");
+  const [activeGroupName, setActiveGroupName] = useState<string>("");
 
   const [resourcesByGroup, setResourcesByGroup] = useState<Record<string, Resource[]>>({});
   const [search, setSearch] = useState("");
@@ -53,8 +54,9 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
     setIsGroupSheetOpen(true);
   };
 
-  const handleAddResource = (groupId: string) => {
-    setActiveGroupId(groupId);
+  const handleAddResource = (group: ResourceGroup) => {
+    setActiveGroupId(group.id);
+    setActiveGroupName(group.name);
     setSelectedResource(null);
     setIsResourceSheetOpen(true);
   };
@@ -119,9 +121,26 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
       />
 
       {filteredGroups.length === 0 ? (
-        <div className="text-center py-12 border rounded-lg border-dashed">
-          <p className="text-muted-foreground">Không tìm thấy nhóm tài nguyên nào.</p>
-          <Button variant="link" onClick={handleAddGroup}>Tạo nhóm mới</Button>
+        <div className="text-center py-16 border rounded-lg border-dashed bg-muted/5">
+          <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
+            <Bed className="w-6 h-6 text-muted-foreground" />
+          </div>
+          <h4 className="text-sm font-medium mb-1">Chưa có nhóm tài nguyên</h4>
+          <p className="text-xs text-muted-foreground mb-6 max-w-[250px] mx-auto">
+            Bắt đầu bằng cách tạo nhóm để quản lý giường, phòng hoặc thiết bị máy móc của bạn.
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Button size="sm" onClick={handleAddGroup}>
+              <Plus className="w-3.5 h-3.5 mr-1" /> Tạo nhóm mới
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => {
+              setSelectedGroup(null);
+              setIsGroupSheetOpen(true);
+              // Giả lập điền sẵn tên cho template (logic này có thể mở rộng thêm)
+            }}>
+              Dùng mẫu: Phòng Massage
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="grid gap-4">
@@ -151,7 +170,7 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
                     variant="ghost"
                     size="icon"
                     className="text-muted-foreground"
-                    onClick={() => handleAddResource(group.id)}
+                    onClick={() => handleAddResource(group)}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -165,7 +184,7 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Xóa nhóm tài nguyên?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Hành động này sẽ xóa nhóm "{group.name}". Bạn không thể xóa nếu nhóm còn tài nguyên.
+                          Hành động này sẽ xóa nhóm &quot;{group.name}&quot;. Bạn không thể xóa nếu nhóm còn tài nguyên.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -202,6 +221,7 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
         open={isResourceSheetOpen}
         onOpenChange={setIsResourceSheetOpen}
         groupId={activeGroupId}
+        groupName={activeGroupName}
         resource={selectedResource}
       />
 
@@ -254,7 +274,7 @@ function ResourcesDataTable({
       });
     }
     return result;
-  }, [data, sortConfig]);
+  }, [data, sortConfig, search]);
 
   const paginatedData = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
@@ -309,7 +329,7 @@ function ResourcesDataTable({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Xóa tài nguyên "{res.name}"? Hành động này không thể hoàn tác.
+                    Xóa tài nguyên &quot;{res.name}&quot;? Hành động này không thể hoàn tác.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

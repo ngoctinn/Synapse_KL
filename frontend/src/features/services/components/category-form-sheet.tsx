@@ -60,25 +60,40 @@ export function CategoryFormSheet({
 
   async function onSubmit(data: CategoryCreateForm) {
     startTransition(async () => {
-      try {
-        if (isEdit && category) {
-          await updateCategoryAction(category.id, data);
-          toast.success("Cập nhật danh mục thành công");
-        } else {
-          await createCategoryAction(data);
-          toast.success("Tạo danh mục mới thành công");
-        }
+      const result = isEdit && category
+        ? await updateCategoryAction(category.id, data)
+        : await createCategoryAction(data);
+
+      if (result.success) {
+        toast.success(result.message);
         onOpenChange(false);
-        form.reset();
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Đã có lỗi xảy ra");
+      } else {
+        toast.error(result.message);
       }
     });
   }
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open && form.formState.isDirty) {
+      if (confirm("Bạn có thay đổi chưa lưu. Bạn có chắc muốn thoát không?")) {
+        onOpenChange(false);
+      }
+      return;
+    }
+    onOpenChange(open);
+  };
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md">
+    <Sheet open={open} onOpenChange={handleOpenChange}>
+      <SheetContent 
+        className="sm:max-w-md"
+        onPointerDownOutside={(e) => {
+          if (form.formState.isDirty) e.preventDefault();
+        }}
+        onEscapeKeyDown={(e) => {
+          if (form.formState.isDirty) e.preventDefault();
+        }}
+      >
         <SheetHeader>
           <SheetTitle>{isEdit ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}</SheetTitle>
           <SheetDescription>

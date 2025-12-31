@@ -24,6 +24,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/ui/tooltip";
 import { Edit2, Plus, Power, PowerOff, Trash2 } from "lucide-react";
 import { useMemo, useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -223,7 +229,7 @@ export function ServicesTab({
     }
 
     return result;
-  }, [optimisticServices, filters, sortConfig]);
+  }, [optimisticServices, filters, sortConfig, search]);
 
   // 3. Pagination Slice
   const paginatedData = useMemo(() => {
@@ -249,12 +255,21 @@ export function ServicesTab({
       label: "Dịch vụ",
       sortable: true,
       render: (value, row) => (
-        <div>
-          <div className="font-medium">{row.name}</div>
+        <div className="max-w-xs">
+          <div className="font-medium truncate">{row.name}</div>
           {row.description && (
-            <div className="text-xs text-muted-foreground line-clamp-1 max-w-xs" title={row.description}>
-              {row.description}
-            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="text-xs text-muted-foreground line-clamp-1 cursor-help">
+                    {row.description}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[300px] break-words">
+                  <p>{row.description}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </div>
       ),
@@ -369,17 +384,17 @@ export function ServicesTab({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Xóa dịch vụ "{row.name}"? Hành động này không thể hoàn tác.
+                    Xóa dịch vụ &quot;{row.name}&quot;? Hành động này không thể hoàn tác.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Hủy</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => handleDelete(row.id)}
-                    className="bg-destructive"
-                  >
-                    Xóa
-                  </AlertDialogAction>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(row.id)}
+                              className="bg-destructive hover:bg-destructive/90"
+                            >
+                              Xóa vĩnh viễn
+                            </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

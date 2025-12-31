@@ -76,9 +76,27 @@ export function SkillFormSheet({
     });
   }
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open && form.formState.isDirty) {
+      if (confirm("Bạn có thay đổi chưa lưu. Bạn có chắc muốn thoát không?")) {
+        onOpenChange(false);
+      }
+      return;
+    }
+    onOpenChange(open);
+  };
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md">
+    <Sheet open={open} onOpenChange={handleOpenChange}>
+      <SheetContent 
+        className="sm:max-w-md"
+        onPointerDownOutside={(e) => {
+          if (form.formState.isDirty) e.preventDefault();
+        }}
+        onEscapeKeyDown={(e) => {
+          if (form.formState.isDirty) e.preventDefault();
+        }}
+      >
         <SheetHeader>
           <SheetTitle>{isEdit ? "Chỉnh sửa kỹ năng" : "Thêm kỹ năng mới"}</SheetTitle>
           <SheetDescription>

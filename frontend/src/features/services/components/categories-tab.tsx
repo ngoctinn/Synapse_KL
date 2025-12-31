@@ -49,7 +49,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Edit2, GripVertical, MoreHorizontal, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition, useId } from "react";
 import { toast } from "sonner";
 import { deleteCategoryAction, reorderCategoriesAction } from "../actions";
 import type { ServiceCategory } from "../types";
@@ -65,6 +65,7 @@ export function CategoriesTab({ categories }: CategoriesTabProps) {
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
   const [search, setSearch] = useState("");
   const [isDeleting, startDeleteTransition] = useTransition();
+  const dndId = useId();
 
   // Update items if prop changes (e.g. initial load or external update)
   useEffect(() => {
@@ -148,6 +149,7 @@ export function CategoriesTab({ categories }: CategoriesTabProps) {
 
       <div className="overflow-x-auto rounded-lg border border-border">
         <DndContext
+          id={dndId}
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
@@ -286,7 +288,7 @@ function SortableCategoryRow({ category, index, isDeleting, onEdit, onDelete }: 
                 <AlertDialogHeader>
                   <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Danh mục "{category.name}" sẽ bị xóa. Bạn không thể xóa nếu danh mục này đang chứa dịch vụ.
+                    Danh mục &quot;{category.name}&quot; sẽ bị xóa. Bạn không thể xóa nếu danh mục này đang chứa dịch vụ.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
