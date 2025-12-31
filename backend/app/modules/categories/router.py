@@ -38,18 +38,19 @@ async def create_category(
     return await service.create_category(session, data)
 
 
-@router.put("/{category_id}", response_model=CategoryRead)
-async def update_category(
-    category_id: UUID, data: CategoryUpdate, session: AsyncSession = Depends(get_db)
-):
-    return await service.update_category(session, category_id, data)
-
 
 @router.put("/reorder", response_model=list[CategoryRead])
 async def reorder_categories(
     data: CategoryReorderRequest, session: AsyncSession = Depends(get_db)
 ):
     return await service.reorder_categories(session, data.ids)
+
+
+@router.put("/{category_id}", response_model=CategoryRead)
+async def update_category(
+    category_id: UUID, data: CategoryUpdate, session: AsyncSession = Depends(get_db)
+):
+    return await service.update_category(session, category_id, data)
 
 
 @router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)

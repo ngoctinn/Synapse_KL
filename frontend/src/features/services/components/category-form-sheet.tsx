@@ -1,16 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/shared/ui/sheet";
+import { Button } from "@/shared/ui/button";
 import {
   Form,
   FormControl,
@@ -20,10 +10,20 @@ import {
   FormMessage,
 } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
-import { Button } from "@/shared/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/shared/ui/sheet";
 import { Textarea } from "@/shared/ui/textarea";
-import { categoryCreateSchema, type CategoryCreateForm } from "../schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { createCategoryAction, updateCategoryAction } from "../actions";
+import { categoryCreateSchema, type CategoryCreateForm } from "../schemas";
 import type { ServiceCategory } from "../types";
 
 interface CategoryFormSheetProps {
@@ -49,12 +49,14 @@ export function CategoryFormSheet({
   });
 
   // Reset form khi mở/đóng hoặc đổi category
-  if (open && form.getValues("name") !== (category?.name || "")) {
-    form.reset({
-      name: category?.name || "",
-      description: category?.description || "",
-    });
-  }
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        name: category?.name || "",
+        description: category?.description || "",
+      });
+    }
+  }, [open, category, form]);
 
   async function onSubmit(data: CategoryCreateForm) {
     startTransition(async () => {

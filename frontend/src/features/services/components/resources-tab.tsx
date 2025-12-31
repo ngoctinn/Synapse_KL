@@ -1,5 +1,6 @@
 "use client";
 
+import { DataTable, type Column } from "@/shared/components/smart-data-table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,7 +15,7 @@ import {
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Bed, CalendarClock, Plus, Trash2, Wrench } from "lucide-react";
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { deleteResourceAction, deleteResourceGroupAction, getResourcesAction } from "../actions";
 import type { Resource, ResourceGroup, ResourceGroupWithCount } from "../types";
@@ -114,10 +115,10 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
       ) : (
         <div className="grid gap-4">
           {groups.map((group) => (
-            <div key={group.id} className="border rounded-lg bg-card overflow-hidden">
+            <div key={group.id} className="border rounded-lg overflow-hidden">
               <div className="p-4 flex items-center justify-between bg-muted/30">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-background rounded-md border">
+                  <div className="p-2 bg-background rounded-md border text-muted-foreground">
                     {group.type === "BED" ? <Bed className="h-5 w-5" /> : <Wrench className="h-5 w-5" />}
                   </div>
                   <div>
@@ -133,19 +134,19 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
                     size="sm"
                     onClick={() => toggleGroup(group.id)}
                   >
-                    {resourcesByGroup[group.id] ? "Ẩn" : "Hiện chi tiết"}
+                    {resourcesByGroup[group.id] ? "Thu gọn" : "Chi tiết"}
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8"
+                    className="h-8 w-8 text-muted-foreground"
                     onClick={() => handleAddResource(group.id)}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </AlertDialogTrigger>
@@ -153,7 +154,7 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Xóa nhóm tài nguyên?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Hành động này sẽ xóa nhóm &quot;{group.name}&quot;. Bạn không thể xóa nếu nhóm còn tài nguyên.
+                          Hành động này sẽ xóa nhóm "{group.name}". Bạn không thể xóa nếu nhóm còn tài nguyên.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -166,68 +167,12 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
               </div>
 
               {resourcesByGroup[group.id] && (
-                <div className="p-0 border-t">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-muted/10 text-muted-foreground text-left">
-                        <th className="p-3 font-medium">Tài nguyên</th>
-                        <th className="p-3 font-medium">Mã</th>
-                        <th className="p-3 font-medium">Trạng thái</th>
-                        <th className="p-3 font-medium text-right">Thao tác</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {resourcesByGroup[group.id].length === 0 ? (
-                        <tr>
-                          <td colSpan={4} className="p-8 text-center text-muted-foreground">
-                            Chưa có tài nguyên nào trong nhóm này.
-                          </td>
-                        </tr>
-                      ) : (
-                        resourcesByGroup[group.id].map((res) => (
-                          <tr key={res.id} className="border-b last:border-0 hover:bg-muted/20">
-                            <td className="p-3 font-medium">{res.name}</td>
-                            <td className="p-3 text-xs font-mono">{res.code || "-"}</td>
-                            <td className="p-3">
-                              <Badge variant={res.status === "ACTIVE" ? "default" : "secondary"}>
-                                {res.status}
-                              </Badge>
-                            </td>
-                            <td className="p-3 text-right">
-                              <div className="flex justify-end gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
-                                  title="Lên lịch bảo trì"
-                                  onClick={() => handleMaintenance(res)}
-                                >
-                                  <CalendarClock className="h-3.5 w-3.5" />
-                                </Button>
-                                <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive">
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
-                                    <AlertDialogDescription>Xóa tài nguyên &quot;{res.name}&quot;?</AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Hủy</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDeleteResource(res.id)} className="bg-destructive">Xóa</AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                <div className="p-2 border-t bg-background animation-in slide-in-from-top-2 duration-200">
+                  <ResourcesDataTable
+                    data={resourcesByGroup[group.id]}
+                    onMaintenance={handleMaintenance}
+                    onDelete={handleDeleteResource}
+                  />
                 </div>
               )}
             </div>
@@ -254,5 +199,113 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
         resource={selectedResource}
       />
     </div>
+  );
+}
+
+// Inner Component for isolated state per table
+function ResourcesDataTable({
+  data,
+  onMaintenance,
+  onDelete
+}: {
+  data: Resource[];
+  onMaintenance: (r: Resource) => void;
+  onDelete: (id: string) => void;
+}) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Resource; dir: "asc" | "desc" } | null>(null);
+
+  const processedData = useMemo(() => {
+    let result = [...data];
+    if (sortConfig) {
+      result.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+        if (aValue === bValue) return 0;
+        if (aValue === null || aValue === undefined) return 1;
+        if (typeof aValue === "string" && typeof bValue === "string") {
+          return sortConfig.dir === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+        }
+        return 0; // fallback
+      });
+    }
+    return result;
+  }, [data, sortConfig]);
+
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return processedData.slice(start, start + pageSize);
+  }, [processedData, currentPage, pageSize]);
+
+  const columns: Column<Resource>[] = [
+    { key: "name", label: "Tên tài nguyên", sortable: true, render: (v) => <span className="font-medium">{v as string}</span> },
+    { key: "code", label: "Mã", sortable: true, render: (v) => <code className="text-xs bg-muted px-1 rounded">{v ? v as string : "-"}</code> },
+    {
+      key: "status",
+      label: "Trạng thái",
+      sortable: true,
+      render: (v) => (
+        <Badge variant={v === "ACTIVE" ? "default" : "secondary"}>
+          {v as string}
+        </Badge>
+      )
+    },
+    {
+      key: "actions",
+      label: "Thao tác",
+      width: "100px",
+      render: (_, res) => (
+        <div className="flex justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+            title="Lên lịch bảo trì"
+            onClick={(e) => { e.stopPropagation(); onMaintenance(res); }}
+          >
+            <CalendarClock className="h-3.5 w-3.5" />
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
+                <AlertDialogDescription>Xóa tài nguyên "{res.name}"? Hành động này không thể hoàn tác.</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Hủy</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onDelete(res.id)} className="bg-destructive">Xóa</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      )
+    }
+  ];
+
+  return (
+    <DataTable
+      columns={columns}
+      data={paginatedData}
+      onSort={(key, dir) => setSortConfig({ key, dir })}
+      pagination={{
+        currentPage,
+        pageSize,
+        totalItems: processedData.length,
+        onPageChange: setCurrentPage,
+        pageSizeOptions: [5, 10, 20],
+        onPageSizeChange: (size) => { setPageSize(size); setCurrentPage(1); }
+      }}
+    />
   );
 }

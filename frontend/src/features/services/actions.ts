@@ -3,22 +3,22 @@
 import { API_BASE_URL } from "@/shared/api";
 import { revalidatePath } from "next/cache";
 import type {
-    CategoryCreateInput,
-    CategoryUpdateInput,
-    MaintenanceCreateInput,
-    Resource,
-    ResourceCreateInput,
-    ResourceGroup,
-    ResourceGroupCreateInput,
-    ResourceMaintenance,
-    Service,
-    ServiceCategory,
-    ServiceCreateInput,
-    ServiceUpdateInput,
-    ServiceWithDetails,
-    Skill,
-    SkillCreateInput,
-    SkillUpdateInput,
+  CategoryCreateInput,
+  CategoryUpdateInput,
+  MaintenanceCreateInput,
+  Resource,
+  ResourceCreateInput,
+  ResourceGroup,
+  ResourceGroupCreateInput,
+  ResourceMaintenance,
+  Service,
+  ServiceCategory,
+  ServiceCreateInput,
+  ServiceUpdateInput,
+  ServiceWithDetails,
+  Skill,
+  SkillCreateInput,
+  SkillUpdateInput,
 } from "./types";
 
 const SERVICES_PATH = "/api/v1/services";
@@ -250,10 +250,14 @@ export async function getServiceByIdAction(id: string): Promise<ServiceWithDetai
 }
 
 export async function createServiceAction(data: ServiceCreateInput): Promise<ServiceWithDetails> {
+  const payload = {
+    ...data,
+    category_id: data.category_id === "" ? null : data.category_id,
+  };
   const res = await fetch(`${API_BASE_URL}${SERVICES_PATH}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) {
     const err = await res.json();
@@ -267,10 +271,14 @@ export async function updateServiceAction(
   id: string,
   data: ServiceUpdateInput
 ): Promise<ServiceWithDetails> {
+  const payload = {
+    ...data,
+    category_id: data.category_id === "" ? null : data.category_id,
+  };
   const res = await fetch(`${API_BASE_URL}${SERVICES_PATH}/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) {
     const err = await res.json();

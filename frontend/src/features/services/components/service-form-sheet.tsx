@@ -1,17 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import { Trash2, Plus } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/shared/ui/sheet";
+import { Button } from "@/shared/ui/button";
 import {
   Form,
   FormControl,
@@ -20,6 +9,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/shared/ui/form";
+import { Input } from "@/shared/ui/input";
+import { MultiSelect } from "@/shared/ui/multi-select";
 import {
   Select,
   SelectContent,
@@ -27,13 +18,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
-import { Input } from "@/shared/ui/input";
-import { Button } from "@/shared/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/shared/ui/sheet";
 import { Textarea } from "@/shared/ui/textarea";
-import { MultiSelect } from "@/shared/ui/multi-select";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus, Trash2 } from "lucide-react";
+import { useTransition } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
+import { toast } from "sonner";
+// ... imports
 import { serviceCreateSchema, type ServiceCreateForm } from "../schemas";
-import { createServiceAction, updateServiceAction } from "../actions";
-import type { ResourceGroup, ServiceCategory, Skill, ServiceWithDetails } from "../types";
+import type { ResourceGroup, ServiceCategory, ServiceWithDetails, Skill } from "../types";
 
 interface ServiceFormSheetProps {
   open: boolean;
@@ -42,6 +42,7 @@ interface ServiceFormSheetProps {
   skills: Skill[];
   resourceGroups: ResourceGroup[];
   service?: ServiceWithDetails | null;
+  onSubmit: (data: ServiceCreateForm) => Promise<void>;
 }
 
 export function ServiceFormSheet({
@@ -51,6 +52,7 @@ export function ServiceFormSheet({
   skills,
   resourceGroups,
   service,
+  onSubmit,
 }: ServiceFormSheetProps) {
   const isEdit = !!service;
   const [isPending, startTransition] = useTransition();
@@ -79,33 +81,11 @@ export function ServiceFormSheet({
     name: "resource_requirements",
   });
 
-  // Reset form
-  if (open && (form.getValues("name") !== (service?.name || "") || (service && form.getValues("skill_ids")?.length === 0 && service.skills.length > 0))) {
-      form.reset({
-        category_id: service?.category_id || "",
-        name: service?.name || "",
-        duration: service?.duration || 60,
-        buffer_time: service?.buffer_time || 10,
-        price: Number(service?.price) || 0,
-        description: service?.description || "",
-        skill_ids: (service?.skills.map((s) => s.id) || []) as string[],
-        resource_requirements: (service?.resource_requirements.map(r => ({
-          ...r,
-          usage_duration: r.usage_duration === null ? undefined : r.usage_duration
-        })) || []) as any[],
-      });
-  }
 
-  async function onSubmit(data: ServiceCreateForm) {
+  async function handleFormSubmit(data: ServiceCreateForm) {
     startTransition(async () => {
       try {
-        if (isEdit && service) {
-          await updateServiceAction(service.id, data);
-          toast.success("Cập nhật dịch vụ thành công");
-        } else {
-          await createServiceAction(data);
-          toast.success("Tạo dịch vụ mới thành công");
-        }
+        await onSubmit(data);
         onOpenChange(false);
         form.reset();
       } catch (error) {
@@ -113,6 +93,7 @@ export function ServiceFormSheet({
       }
     });
   }
+
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -126,7 +107,7 @@ export function ServiceFormSheet({
 
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={form.handleSubmit(handleFormSubmit)}
             className="space-y-6 py-4"
           >
             <div className="grid grid-cols-2 gap-4">

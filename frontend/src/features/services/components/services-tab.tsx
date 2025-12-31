@@ -1,24 +1,37 @@
 "use client";
 
+import { DataTable, type Column } from "@/shared/components/smart-data-table";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Edit2, Plus, Power, PowerOff, Trash2 } from "lucide-react";
-import { useState, useTransition } from "react";
+import { useMemo, useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { deleteServiceAction, getServiceByIdAction, toggleServiceStatusAction } from "../actions";
+import {
+  createServiceAction,
+  deleteServiceAction,
+  getServiceByIdAction,
+  toggleServiceStatusAction,
+  updateServiceAction
+} from "../actions";
+import type { ServiceCreateForm } from "../schemas";
 import type { ResourceGroup, Service, ServiceCategory, ServiceWithDetails, Skill } from "../types";
 import { ServiceFormSheet } from "./service-form-sheet";
+
+// ... (rest of imports)
+
+// ... (component function start)
+
 
 interface ServicesTabProps {
   services: Service[];
@@ -37,6 +50,33 @@ export function ServicesTab({
   const [selectedService, setSelectedService] = useState<ServiceWithDetails | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  // Optimistic UI State
+  const [optimisticServices, addOptimisticService] = useOptimistic(
+    services,
+    (state, action: { type: "ADD" | "UPDATE" | "DELETE" | "TOGGLE"; payload: any }) => {
+      switch (action.type) {
+        case "ADD":
+          return [action.payload, ...state];
+        case "UPDATE":
+          return state.map((s) => (s.id === action.payload.id ? { ...s, ...action.payload } : s));
+        case "DELETE":
+          return state.filter((s) => s.id !== action.payload);
+        case "TOGGLE":
+          return state.map((s) =>
+            s.id === action.payload ? { ...s, is_active: !s.is_active } : s
+          );
+        default:
+          return state;
+      }
+    }
+  );
+
+  // SmartDataTable State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Service; dir: "asc" | "desc" } | null>(null);
+  const [filters, setFilters] = useState<Record<string, string>>({});
+
   const getCategoryName = (id: string | null) =>
     categories.find((c) => c.id === id)?.name || "Chưa phân loại";
 
@@ -50,22 +90,59 @@ export function ServicesTab({
     setIsSheetOpen(true);
   };
 
-  const handleEdit = async (id: string) => {
+  const handleEdit = async (service: Service) => {
     try {
-      const data = await getServiceByIdAction(id);
-      setSelectedService(data);
+      setSelectedService(service as any);
       setIsSheetOpen(true);
+      const data = await getServiceByIdAction(service.id);
+      setSelectedService(data);
     } catch (error) {
       toast.error("Không thể tải chi tiết dịch vụ");
     }
   };
 
+  const handleServiceSubmit = async (data: ServiceCreateForm) => {
+    if (selectedService) {
+      // UPDATE
+      const updatedService = {
+        ...selectedService,
+        ...data,
+        price: String(data.price),
+      };
+
+      startTransition(async () => {
+        addOptimisticService({ type: "UPDATE", payload: updatedService });
+        await updateServiceAction(selectedService.id, data);
+      });
+    } else {
+      // CREATE
+      const tempId = crypto.randomUUID();
+      const tempService = {
+        ...data,
+        id: tempId,
+        price: String(data.price),
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        category_id: data.category_id || null, // Ensure null if empty string
+      };
+
+      startTransition(async () => {
+        addOptimisticService({ type: "ADD", payload: tempService });
+        await createServiceAction(data);
+      });
+    }
+  };
+
   const handleToggleStatus = (id: string) => {
     startTransition(async () => {
+      addOptimisticService({ type: "TOGGLE", payload: id });
       try {
         await toggleServiceStatusAction(id);
         toast.success("Đã thay đổi trạng thái dịch vụ");
       } catch (error) {
+        // Revert is complex with useOptimistic unless we have a specific revert action,
+        // usually strict optimistic assumes success. Server will revalidatePath on success.
         toast.error("Không thể thay đổi trạng thái");
       }
     });
@@ -73,6 +150,7 @@ export function ServicesTab({
 
   const handleDelete = (id: string) => {
     startTransition(async () => {
+      addOptimisticService({ type: "DELETE", payload: id });
       try {
         await deleteServiceAction(id);
         toast.success("Xóa dịch vụ thành công");
@@ -81,6 +159,192 @@ export function ServicesTab({
       }
     });
   };
+
+  // --- Data Processing for SmartDataTable ---
+
+  const processedData = useMemo(() => {
+    let result = [...optimisticServices]; // Use optimistic data
+
+    // 1. Filter
+    if (Object.keys(filters).length > 0) {
+      result = result.filter((item) => {
+        return Object.entries(filters).every(([key, value]) => {
+          if (!value || value === "all") return true;
+          if (key === "category_id") return item.category_id === value;
+          if (key === "is_active") return String(item.is_active) === value;
+          return true;
+        });
+      });
+    }
+
+    // 2. Sort
+    if (sortConfig) {
+      result.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+
+        if (aValue === bValue) return 0;
+
+        // Handle null/undefined
+        if (aValue === null || aValue === undefined) return 1;
+        if (bValue === null || bValue === undefined) return -1;
+
+        if (typeof aValue === "string" && typeof bValue === "string") {
+          return sortConfig.dir === "asc"
+            ? aValue.localeCompare(bValue)
+            : bValue.localeCompare(aValue);
+        }
+
+        // Number
+        if (aValue < bValue) return sortConfig.dir === "asc" ? -1 : 1;
+        if (aValue > bValue) return sortConfig.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [optimisticServices, filters, sortConfig]);
+
+  // 3. Pagination Slice
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return processedData.slice(start, start + pageSize);
+  }, [processedData, currentPage, pageSize]);
+
+  // --- Column Definitions ---
+
+  const columns: Column<Service>[] = [
+    {
+      key: "name",
+      label: "Dịch vụ",
+      sortable: true,
+      render: (value, row) => (
+        <div>
+          <div className="font-medium">{row.name}</div>
+          {row.description && (
+            <div className="text-xs text-muted-foreground line-clamp-1 max-w-xs" title={row.description}>
+              {row.description}
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "category_id",
+      label: "Danh mục",
+      sortable: true,
+      filterable: true,
+      filterOptions: categories.map(c => ({ label: c.name, value: c.id })),
+      render: (value) => (
+        <Badge variant="outline" className="font-normal">
+          {getCategoryName(value as string)}
+        </Badge>
+      ),
+    },
+    {
+      key: "duration",
+      label: "Thời gian",
+      sortable: true,
+      render: (value, row) => (
+        <div className="text-muted-foreground">
+          {row.duration}p <span className="text-xs opacity-70">(+{row.buffer_time}p nghỉ)</span>
+        </div>
+      ),
+    },
+    {
+      key: "price",
+      label: "Giá",
+      sortable: true,
+      render: (value) => (
+        <div className="font-medium text-primary">
+          {formatPrice(value as string)}
+        </div>
+      ),
+    },
+    {
+      key: "is_active",
+      label: "Trạng thái",
+      sortable: true,
+      filterable: true,
+      filterOptions: [
+        { label: "Hoạt động", value: "true" },
+        { label: "Tạm ngưng", value: "false" },
+      ],
+      render: (value, row) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-7 px-2 text-xs gap-1.5 ${
+            row.is_active
+              ? "text-alert-success-foreground hover:bg-alert-success/20"
+              : "text-muted-foreground hover:bg-muted"
+          }`}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleToggleStatus(row.id);
+          }}
+          disabled={isPending}
+        >
+          {row.is_active ? (
+            <><Power className="h-3 w-3" /> Hoạt động</>
+          ) : (
+            <><PowerOff className="h-3 w-3" /> Tạm ngưng</>
+          )}
+        </Button>
+      ),
+    },
+    {
+      key: "actions",
+      label: "Thao tác",
+      width: "100px",
+      render: (_, row) => (
+        <div className="flex justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEdit(row);
+            }}
+          >
+            <Edit2 className="h-4 w-4" />
+          </Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                disabled={isPending}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Xóa dịch vụ "{row.name}"? Hành động này không thể hoàn tác.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Hủy</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => handleDelete(row.id)}
+                  className="bg-destructive"
+                >
+                  Xóa
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-4">
@@ -97,113 +361,26 @@ export function ServicesTab({
         </Button>
       </div>
 
-      {services.length === 0 ? (
-        <div className="text-center py-12 border rounded-lg border-dashed">
-          <p className="text-muted-foreground">Chưa có dịch vụ nào. Thêm dịch vụ đầu tiên.</p>
-          <Button variant="link" onClick={handleAdd}>Tạo dịch vụ</Button>
-        </div>
-      ) : (
-        <div className="border rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="text-left p-3 font-medium">Dịch vụ</th>
-                <th className="text-left p-3 font-medium">Danh mục</th>
-                <th className="text-right p-3 font-medium">Thời gian</th>
-                <th className="text-right p-3 font-medium">Giá</th>
-                <th className="text-center p-3 font-medium">Trạng thái</th>
-                <th className="text-right p-3 font-medium">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {services.map((service) => (
-                <tr key={service.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                  <td className="p-3">
-                    <div className="font-medium">{service.name}</div>
-                    {service.description && (
-                      <div className="text-xs text-muted-foreground line-clamp-1 max-w-xs">
-                        {service.description}
-                      </div>
-                    )}
-                  </td>
-                  <td className="p-3">
-                    <Badge variant="outline" className="font-normal">
-                      {getCategoryName(service.category_id)}
-                    </Badge>
-                  </td>
-                  <td className="p-3 text-right text-muted-foreground">
-                    {service.duration}p (+{service.buffer_time}p)
-                  </td>
-                  <td className="p-3 text-right font-medium text-primary">
-                    {formatPrice(service.price)}
-                  </td>
-                  <td className="p-3 text-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={`h-7 px-2 text-xs gap-1.5 ${
-                        service.is_active
-                          ? "text-alert-success-foreground hover:bg-alert-success/50"
-                          : "text-muted-foreground hover:bg-muted"
-                      }`}
-                      onClick={() => handleToggleStatus(service.id)}
-                      disabled={isPending}
-                    >
-                      {service.is_active ? (
-                        <><Power className="h-3 w-3" /> Hoạt động</>
-                      ) : (
-                        <><PowerOff className="h-3 w-3" /> Tạm ngưng</>
-                      )}
-                    </Button>
-                  </td>
-                  <td className="p-3 text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground"
-                        onClick={() => handleEdit(service.id)}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                            disabled={isPending}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Xóa dịch vụ "{service.name}"? Hành động này không thể hoàn tác.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Hủy</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(service.id)}
-                              className="bg-destructive"
-                            >
-                              Xóa
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <DataTable
+        columns={columns}
+        data={paginatedData}
+        onSort={(key, dir) => setSortConfig({ key, dir })}
+        onFilterChange={(key, value) => {
+         setFilters(prev => ({ ...prev, [key]: value }));
+         setCurrentPage(1); // Reset page on filter
+        }}
+        pagination={{
+          currentPage,
+          pageSize,
+          totalItems: processedData.length,
+          onPageChange: setCurrentPage,
+          pageSizeOptions: [5, 10, 20, 50],
+          onPageSizeChange: (size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          }
+        }}
+      />
 
       <ServiceFormSheet
         open={isSheetOpen}
@@ -212,6 +389,7 @@ export function ServicesTab({
         skills={skills}
         resourceGroups={resourceGroups}
         service={selectedService}
+        onSubmit={handleServiceSubmit}
       />
     </div>
   );

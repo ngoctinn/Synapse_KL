@@ -1,23 +1,24 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Plus, Edit2, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/shared/ui/button";
+import { DataTable, type Column } from "@/shared/components/smart-data-table";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
+import { Button } from "@/shared/ui/button";
+import { Edit2, Plus, Trash2 } from "lucide-react";
+import { useMemo, useState, useTransition } from "react";
+import { toast } from "sonner";
+import { deleteSkillAction } from "../actions";
 import type { Skill } from "../types";
 import { SkillFormSheet } from "./skill-form-sheet";
-import { deleteSkillAction } from "../actions";
 
 interface SkillsTabProps {
   skills: Skill[];
@@ -27,6 +28,12 @@ export function SkillsTab({ skills }: SkillsTabProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [isDeleting, startDeleteTransition] = useTransition();
+
+  // SmartDataTable State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Skill; dir: "asc" | "desc" } | null>(null);
+  const [filters, setFilters] = useState<Record<string, string>>({});
 
   const handleAdd = () => {
     setSelectedSkill(null);
@@ -49,6 +56,127 @@ export function SkillsTab({ skills }: SkillsTabProps) {
     });
   };
 
+  // --- Data Processing ---
+  const processedData = useMemo(() => {
+    let result = [...skills];
+
+    // Filter
+    if (Object.keys(filters).length > 0) {
+      result = result.filter((item) => {
+        return Object.entries(filters).every(([key, value]) => {
+          if (!value || value === "all") return true;
+          // Add specific filters here if needed
+          return true;
+        });
+      });
+    }
+
+    // Sort
+    if (sortConfig) {
+      result.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+        if (aValue === bValue) return 0;
+        if (aValue === null || aValue === undefined) return 1;
+        if (bValue === null || bValue === undefined) return -1;
+
+        if (typeof aValue === "string" && typeof bValue === "string") {
+          return sortConfig.dir === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+        }
+        if (aValue < bValue) return sortConfig.dir === "asc" ? -1 : 1;
+        if (aValue > bValue) return sortConfig.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [skills, filters, sortConfig]);
+
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return processedData.slice(start, start + pageSize);
+  }, [processedData, currentPage, pageSize]);
+
+  // --- Columns ---
+  const columns: Column<Skill>[] = [
+    {
+      key: "name",
+      label: "Tên Kỹ Năng",
+      sortable: true,
+      render: (value) => <div className="font-medium">{value as string}</div>,
+    },
+    {
+      key: "code",
+      label: "Mã",
+      sortable: true,
+      render: (value) => (
+        <code className="text-xs bg-muted px-2 py-0.5 rounded border">
+          {value ? (value as string) : "-"}
+        </code>
+      ),
+    },
+    {
+      key: "description",
+      label: "Mô tả",
+      render: (value) => (
+        <div className="text-muted-foreground line-clamp-1 max-w-xs" title={value as string}>
+          {value ? (value as string) : "-"}
+        </div>
+      ),
+    },
+    {
+      key: "actions",
+      label: "Thao tác",
+      width: "100px",
+      render: (_, row) => (
+        <div className="flex justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEdit(row);
+            }}
+          >
+            <Edit2 className="h-4 w-4" />
+          </Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                disabled={isDeleting}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Hành động này không thể hoàn tác. Kỹ năng "{row.name}" sẽ bị xóa vĩnh viễn khỏi hệ thống.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Hủy</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => handleDelete(row.id)}
+                  className="bg-destructive hover:bg-destructive/90"
+                >
+                  Xóa
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -64,84 +192,22 @@ export function SkillsTab({ skills }: SkillsTabProps) {
         </Button>
       </div>
 
-      {skills.length === 0 ? (
-        <div className="text-center py-12 border rounded-lg border-dashed">
-          <p className="text-muted-foreground">Chưa có kỹ năng nào. Thêm kỹ năng đầu tiên.</p>
-          <Button variant="link" onClick={handleAdd}>Tạo ngay</Button>
-        </div>
-      ) : (
-        <div className="border rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="text-left p-3 font-medium">Tên</th>
-                <th className="text-left p-3 font-medium w-40">Mã</th>
-                <th className="text-left p-3 font-medium">Mô tả</th>
-                <th className="text-right p-3 font-medium w-32">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {skills.map((skill) => (
-                <tr key={skill.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                  <td className="p-3 font-medium">{skill.name}</td>
-                  <td className="p-3">
-                    <code className="text-xs bg-muted px-2 py-0.5 rounded border">
-                      {skill.code}
-                    </code>
-                  </td>
-                  <td className="p-3 text-muted-foreground line-clamp-1">
-                    {skill.description || "-"}
-                  </td>
-                  <td className="p-3 text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground"
-                        onClick={() => handleEdit(skill)}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                        <span className="sr-only">Sửa</span>
-                      </Button>
-
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            disabled={isDeleting}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Xóa</span>
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Hành động này không thể hoàn tác. Kỹ năng "{skill.name}" sẽ bị xóa vĩnh viễn khỏi hệ thống.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Hủy</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(skill.id)}
-                              className="bg-destructive hover:bg-destructive/90"
-                            >
-                              Xóa
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <DataTable
+        columns={columns}
+        data={paginatedData}
+        onSort={(key, dir) => setSortConfig({ key, dir })}
+        pagination={{
+          currentPage,
+          pageSize,
+          totalItems: processedData.length,
+          onPageChange: setCurrentPage,
+          pageSizeOptions: [5, 10, 20, 50],
+          onPageSizeChange: (size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          }
+        }}
+      />
 
       <SkillFormSheet
         open={isSheetOpen}

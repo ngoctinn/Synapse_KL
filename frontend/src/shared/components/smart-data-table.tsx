@@ -318,24 +318,28 @@ export function DataTable<T extends { id: string | number }>({
                           )}
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="secondary" size="icon" className="h-8 w-8 rounded-lg shadow-sm">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[160px] rounded-xl shadow-lg border-border/50">
-                              <DropdownMenuItem className="cursor-pointer rounded-lg flex gap-2">
-                                <span>Xem chi tiết</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="cursor-pointer rounded-lg flex gap-2">
-                                <span>Chỉnh sửa</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="cursor-pointer rounded-lg text-destructive focus:text-destructive flex gap-2">
-                                <span>Xóa</span>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          {column.render ? (
+                            column.render(row[column.key as keyof T], row)
+                          ) : (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="secondary" size="icon" className="h-8 w-8 rounded-lg shadow-sm">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-[160px] rounded-xl shadow-lg border-border/50">
+                                <DropdownMenuItem className="cursor-pointer rounded-lg flex gap-2">
+                                  <span>Xem chi tiết</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="cursor-pointer rounded-lg flex gap-2">
+                                  <span>Chỉnh sửa</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="cursor-pointer rounded-lg text-destructive focus:text-destructive flex gap-2">
+                                  <span>Xóa</span>
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
                         </TableCell>
                       )
                     }
