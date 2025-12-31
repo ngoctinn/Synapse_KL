@@ -4,32 +4,32 @@ import { cn } from "@/shared/lib/utils"
 import { Button } from "@/shared/ui/button"
 import { Checkbox } from "@/shared/ui/checkbox"
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu"
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/shared/ui/select"
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/shared/ui/table"
 import {
-    ArrowUpDown,
-    ChevronLeft,
-    ChevronRight,
-    Filter,
-    MoreHorizontal
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  MoreHorizontal
 } from "lucide-react"
 import * as React from "react"
 
@@ -165,7 +165,7 @@ export function DataTable<T extends { id: string | number }>({
   return (
     <div className="space-y-4">
       {/* Table với scroll ngang, có border và rounded */}
-      <div className="overflow-x-auto rounded-lg border">
+      <div className="overflow-x-auto rounded-lg border border-neutral-10 bg-card">
         <Table className="min-w-full">
           <TableHeader>
             {/* Header Row */}
@@ -221,8 +221,8 @@ export function DataTable<T extends { id: string | number }>({
               })}
             </TableRow>
 
-            {/* Filter Row - cùng màu với header */}
-            <TableRow className="hover:bg-transparent bg-secondary border-b">
+            {/* Filter Row - Nền siêu nhạt chuẩn Airy */}
+            <TableRow className="hover:bg-transparent bg-neutral-5/15 border-b border-neutral-10">
               {columns.map((column) => {
                 const isSticky = column.key === "actions"
                 const stickyClass = isSticky
@@ -246,22 +246,19 @@ export function DataTable<T extends { id: string | number }>({
                 }
 
                 return (
-                  <TableCell key={`${column.key as string}-filter`} className="py-2 bg-inherit">
+                  <TableCell key={`${column.key as string}-filter`} className="py-1.5 px-3 bg-inherit">
                     {column.filterable ? (
-                      <div className="flex items-center gap-1.5">
-                        <Select onValueChange={(val) => onFilterChange?.(column.key as keyof T, val)}>
-                          <SelectTrigger size="sm" className="flex-1 text-xs bg-background">
-                            <SelectValue placeholder="Chọn..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">Tất cả</SelectItem>
-                            {column.filterOptions?.map(opt => (
-                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Filter className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
-                      </div>
+                      <Select onValueChange={(val) => onFilterChange?.(column.key as keyof T, val)}>
+                        <SelectTrigger className="w-full text-xs bg-background h-8 px-2 rounded-md shadow-none border-neutral-10 font-medium">
+                          <SelectValue placeholder="Chọn..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Tất cả</SelectItem>
+                          {column.filterOptions?.map(opt => (
+                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     ) : null}
                   </TableCell>
                 )

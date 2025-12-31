@@ -18,9 +18,9 @@ function Checkbox({
         // Default (Unselected)
         "border-neutral-30 bg-card hover:border-primary/60",
         // Selected (Checked)
-        "data-[state=checked]:bg-neutral-100 data-[state=checked]:border-neutral-100 data-[state=checked]:text-neutral-0",
+        "data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:text-primary-foreground",
         // Indeterminate
-        "data-[state=indeterminate]:bg-neutral-100 data-[state=indeterminate]:border-neutral-100 data-[state=indeterminate]:text-neutral-0",
+        "data-[state=indeterminate]:bg-primary data-[state=indeterminate]:border-primary data-[state=indeterminate]:text-primary-foreground",
         // DISABLED STATES
         // Inactive Unselected
         "disabled:border-neutral-20 disabled:bg-muted disabled:cursor-not-allowed",
