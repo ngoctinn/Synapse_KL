@@ -31,10 +31,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Textarea } from "@/shared/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2 } from "lucide-react";
-import { useTransition } from "react";
-import { useFieldArray, useForm, type DefaultValues } from "react-hook-form";
+import { useEffect, useTransition } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { serviceCreateSchema, type ServiceCreateForm, type ServiceCreateFormInput } from "../schemas";
+import { serviceCreateSchema, type ServiceCreateForm } from "../schemas";
 import type { ResourceGroup, ResourceGroupWithCount, ServiceCategory, ServiceWithDetails, Skill } from "../types";
 
 interface ServiceFormSheetProps {
@@ -61,7 +61,7 @@ export function ServiceFormSheet({
 
   const skillOptions = skills.map((s) => ({ label: s.name, value: s.id }));
 
-  const form = useForm<ServiceCreateFormInput, any, ServiceCreateForm>({
+  const form = useForm({
     resolver: zodResolver(serviceCreateSchema),
     defaultValues: {
       category_id: service?.category_id || "",
@@ -71,14 +71,14 @@ export function ServiceFormSheet({
       price: Number(service?.price) || 0,
       description: service?.description || "",
       is_active: service?.is_active ?? true,
-      skill_ids: (service?.skills.map((s) => s.id) || []) as string[],
-      resource_requirements: (service?.resource_requirements.map(r => ({
+      skill_ids: service?.skills.map((s) => s.id) || [],
+      resource_requirements: service?.resource_requirements.map(r => ({
         group_id: r.group_id,
         quantity: r.quantity,
         start_delay: r.start_delay,
         usage_duration: r.usage_duration ?? undefined
-      })) || []) as ServiceCreateFormInput['resource_requirements'],
-    } as DefaultValues<ServiceCreateFormInput>,
+      })) || [],
+    },
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -105,6 +105,28 @@ export function ServiceFormSheet({
       }
     });
   }
+
+  // Reset form
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        category_id: service?.category_id || "",
+        name: service?.name || "",
+        duration: service?.duration || 60,
+        buffer_time: service?.buffer_time || 10,
+        price: Number(service?.price) || 0,
+        description: service?.description || "",
+        is_active: service?.is_active ?? true,
+        skill_ids: service?.skills.map((s) => s.id) || [],
+        resource_requirements: service?.resource_requirements.map(r => ({
+          group_id: r.group_id,
+          quantity: r.quantity,
+          start_delay: r.start_delay,
+          usage_duration: r.usage_duration ?? undefined
+        })) || [],
+      });
+    }
+  }, [open, service, form]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

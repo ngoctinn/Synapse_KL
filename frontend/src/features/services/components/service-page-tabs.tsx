@@ -62,40 +62,43 @@ export function ServicePageTabs({
           </TabsList>
         </div>
 
-        {/*
-          Lazy Render:
-          Only render the active tab content to reduce initial load weight.
-          We do NOT use forceMount here.
-        */}
         <div className="mt-4">
-           {activeTab === "services" && (
-             <TabsContent value="services" className="m-0 border-none p-0">
-               <ServicesTab
-                 services={services}
-                 categories={categories}
-                 skills={skills}
-                 resourceGroups={resourceGroups as any} // Cast if type mismatch or ensure ResourcesTabProps matches
-               />
-             </TabsContent>
-           )}
+          <TabsContent 
+            value="services" 
+            forceMount 
+            className="m-0 border-none p-0 data-[state=inactive]:hidden"
+          >
+            <ServicesTab
+              services={services}
+              categories={categories}
+              skills={skills}
+              resourceGroups={resourceGroups}
+            />
+          </TabsContent>
 
-           {activeTab === "categories" && (
-             <TabsContent value="categories" className="m-0 border-none p-0">
-               <CategoriesTab categories={categories} />
-             </TabsContent>
-           )}
+          <TabsContent 
+            value="categories" 
+            forceMount 
+            className="m-0 border-none p-0 data-[state=inactive]:hidden"
+          >
+            <CategoriesTab categories={categories} />
+          </TabsContent>
 
-           {activeTab === "resources" && (
-             <TabsContent value="resources" className="m-0 border-none p-0">
-               <ResourcesTab groups={resourceGroups} />
-             </TabsContent>
-           )}
+          <TabsContent 
+            value="resources" 
+            forceMount 
+            className="m-0 border-none p-0 data-[state=inactive]:hidden"
+          >
+            <ResourcesTab groups={resourceGroups} />
+          </TabsContent>
 
-           {activeTab === "skills" && (
-             <TabsContent value="skills" className="m-0 border-none p-0">
-               <SkillsTab skills={skills} />
-             </TabsContent>
-           )}
+          <TabsContent 
+            value="skills" 
+            forceMount 
+            className="m-0 border-none p-0 data-[state=inactive]:hidden"
+          >
+            <SkillsTab skills={skills} />
+          </TabsContent>
         </div>
       </Tabs>
     </div>

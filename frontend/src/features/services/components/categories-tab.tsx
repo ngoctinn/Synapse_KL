@@ -123,6 +123,10 @@ export function CategoriesTab({ categories }: CategoriesTabProps) {
     });
   };
 
+  // Logic handleFormSubmit cho CategoryFormSheet (nếu cần xử lý tập trung)
+  // Hiện tại Sheet tự gọi action bên trong, nên ta chỉ cần sync toast.
+
+
   const filteredItems = useMemo(() => {
     if (!search) return items;
     const searchLower = search.toLowerCase();

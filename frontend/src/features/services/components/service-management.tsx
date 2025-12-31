@@ -16,10 +16,14 @@ export async function ServiceManagement() {
     getServicesAction(),
   ]);
 
-  const groupsWithCount = resourceGroups.map(group => ({
-    ...group,
-    resource_count: resources.filter(r => r.group_id === group.id).length
-  }));
+  const groupsWithCount = resourceGroups.map(group => {
+    const groupResources = resources.filter(r => r.group_id === group.id);
+    return {
+      ...group,
+      resource_count: groupResources.length,
+      active_count: groupResources.filter(r => r.status === "ACTIVE").length
+    };
+  });
 
   // No Card wrapper here - let the page layout handle container
   return (

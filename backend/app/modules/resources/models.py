@@ -66,6 +66,14 @@ class Resource(SQLModel, table=True):
     description: str | None = None
     image_url: str | None = None
     deleted_at: datetime | None = Field(default=None, sa_type=DateTime(timezone=True))
+    created_at: datetime = Field(
+        sa_type=DateTime(timezone=True),
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: datetime = Field(
+        sa_type=DateTime(timezone=True),
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
 
     # Relationships
     group: ResourceGroup | None = Relationship(back_populates="resources")

@@ -50,9 +50,10 @@ export interface Resource {
   name: string;
   code: string | null;
   status: ResourceStatus;
-
   description: string | null;
   image_url: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ResourceWithGroup extends Resource {
@@ -82,7 +83,7 @@ export interface Service {
   name: string;
   duration: number;
   buffer_time: number;
-  price: string; // Decimal as string
+  price: number;
   description: string | null;
   image_url: string | null;
   is_active: boolean;

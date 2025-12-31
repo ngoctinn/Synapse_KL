@@ -35,32 +35,40 @@ export async function getSkillsAction(): Promise<Skill[]> {
   return res.json();
 }
 
-export async function createSkillAction(data: SkillCreateInput): Promise<Skill> {
-  const res = await fetch(`${API_BASE_URL}${SKILLS_PATH}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.detail || "Không thể tạo kỹ năng");
+export async function createSkillAction(data: SkillCreateInput) {
+  try {
+    const res = await fetch(`${API_BASE_URL}${SKILLS_PATH}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      return { success: false, message: err.detail || "Không thể tạo kỹ năng" };
+    }
+    revalidatePath("/dashboard/manager/services");
+    return { success: true, message: "Tạo kỹ năng thành công" };
+  } catch (e) {
+    return { success: false, message: "Lỗi kết nối máy chủ" };
   }
-  revalidatePath("/dashboard/manager/services");
-  return res.json();
 }
 
-export async function updateSkillAction(id: string, data: SkillUpdateInput): Promise<Skill> {
-  const res = await fetch(`${API_BASE_URL}${SKILLS_PATH}/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.detail || "Không thể cập nhật kỹ năng");
+export async function updateSkillAction(id: string, data: SkillUpdateInput) {
+  try {
+    const res = await fetch(`${API_BASE_URL}${SKILLS_PATH}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      return { success: false, message: err.detail || "Không thể cập nhật kỹ năng" };
+    }
+    revalidatePath("/dashboard/manager/services");
+    return { success: true, message: "Cập nhật kỹ năng thành công" };
+  } catch (e) {
+    return { success: false, message: "Lỗi kết nối máy chủ" };
   }
-  revalidatePath("/dashboard/manager/services");
-  return res.json();
 }
 
 export async function deleteSkillAction(id: string): Promise<void> {
@@ -83,32 +91,40 @@ export async function getCategoriesAction(): Promise<ServiceCategory[]> {
   return res.json();
 }
 
-export async function createCategoryAction(data: CategoryCreateInput): Promise<ServiceCategory> {
-  const res = await fetch(`${API_BASE_URL}${CATEGORIES_PATH}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.detail || "Không thể tạo danh mục");
+export async function createCategoryAction(data: CategoryCreateInput) {
+  try {
+    const res = await fetch(`${API_BASE_URL}${CATEGORIES_PATH}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      return { success: false, message: err.detail || "Không thể tạo danh mục" };
+    }
+    revalidatePath("/dashboard/manager/services");
+    return { success: true, message: "Tạo danh mục thành công" };
+  } catch (e) {
+    return { success: false, message: "Lỗi kết nối máy chủ" };
   }
-  revalidatePath("/dashboard/manager/services");
-  return res.json();
 }
 
-export async function updateCategoryAction(id: string, data: CategoryUpdateInput): Promise<ServiceCategory> {
-  const res = await fetch(`${API_BASE_URL}${CATEGORIES_PATH}/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.detail || "Không thể cập nhật danh mục");
+export async function updateCategoryAction(id: string, data: CategoryUpdateInput) {
+  try {
+    const res = await fetch(`${API_BASE_URL}${CATEGORIES_PATH}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      return { success: false, message: err.detail || "Không thể cập nhật danh mục" };
+    }
+    revalidatePath("/dashboard/manager/services");
+    return { success: true, message: "Cập nhật danh mục thành công" };
+  } catch (e) {
+    return { success: false, message: "Lỗi kết nối máy chủ" };
   }
-  revalidatePath("/dashboard/manager/services");
-  return res.json();
 }
 
 export async function reorderCategoriesAction(ids: string[]): Promise<ServiceCategory[]> {
@@ -145,18 +161,22 @@ export async function getResourceGroupsAction(): Promise<ResourceGroup[]> {
   return res.json();
 }
 
-export async function createResourceGroupAction(data: ResourceGroupCreateInput): Promise<ResourceGroup> {
-  const res = await fetch(`${API_BASE_URL}${RESOURCES_PATH}/groups`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.detail || "Không thể tạo nhóm tài nguyên");
+export async function createResourceGroupAction(data: ResourceGroupCreateInput) {
+  try {
+    const res = await fetch(`${API_BASE_URL}${RESOURCES_PATH}/groups`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      return { success: false, message: err.detail || "Không thể tạo nhóm tài nguyên" };
+    }
+    revalidatePath("/dashboard/manager/services");
+    return { success: true, message: "Tạo nhóm tài nguyên thành công" };
+  } catch (e) {
+    return { success: false, message: "Lỗi kết nối máy chủ" };
   }
-  revalidatePath("/dashboard/manager/services");
-  return res.json();
 }
 
 export async function deleteResourceGroupAction(id: string): Promise<void> {
@@ -182,18 +202,22 @@ export async function getResourcesAction(groupId?: string): Promise<Resource[]> 
   return res.json();
 }
 
-export async function createResourceAction(data: ResourceCreateInput): Promise<Resource> {
-  const res = await fetch(`${API_BASE_URL}${RESOURCES_PATH}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.detail || "Không thể tạo tài nguyên");
+export async function createResourceAction(data: ResourceCreateInput) {
+  try {
+    const res = await fetch(`${API_BASE_URL}${RESOURCES_PATH}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      return { success: false, message: err.detail || "Không thể tạo tài nguyên" };
+    }
+    revalidatePath("/dashboard/manager/services");
+    return { success: true, message: "Tạo tài nguyên thành công" };
+  } catch (e) {
+    return { success: false, message: "Lỗi kết nối máy chủ" };
   }
-  revalidatePath("/dashboard/manager/services");
-  return res.json();
 }
 
 export async function deleteResourceAction(id: string): Promise<void> {
@@ -249,43 +273,43 @@ export async function getServiceByIdAction(id: string): Promise<ServiceWithDetai
   return res.json();
 }
 
-export async function createServiceAction(data: ServiceCreateInput): Promise<ServiceWithDetails> {
-  const payload = {
-    ...data,
-    category_id: data.category_id === "" ? null : data.category_id,
-  };
-  const res = await fetch(`${API_BASE_URL}${SERVICES_PATH}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.detail || "Không thể tạo dịch vụ");
+export async function createServiceAction(data: ServiceCreateInput) {
+  try {
+    const res = await fetch(`${API_BASE_URL}${SERVICES_PATH}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      return { success: false, message: err.detail || "Không thể tạo dịch vụ" };
+    }
+    revalidatePath("/dashboard/manager/services");
+    return { success: true, message: "Tạo dịch vụ thành công" };
+  } catch (e) {
+    return { success: false, message: "Lỗi kết nối máy chủ" };
   }
-  revalidatePath("/dashboard/manager/services");
-  return res.json();
 }
 
 export async function updateServiceAction(
   id: string,
   data: ServiceUpdateInput
-): Promise<ServiceWithDetails> {
-  const payload = {
-    ...data,
-    category_id: data.category_id === "" ? null : data.category_id,
-  };
-  const res = await fetch(`${API_BASE_URL}${SERVICES_PATH}/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.detail || "Không thể cập nhật dịch vụ");
+) {
+  try {
+    const res = await fetch(`${API_BASE_URL}${SERVICES_PATH}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      return { success: false, message: err.detail || "Không thể cập nhật dịch vụ" };
+    }
+    revalidatePath("/dashboard/manager/services");
+    return { success: true, message: "Cập nhật dịch vụ thành công" };
+  } catch (e) {
+    return { success: false, message: "Lỗi kết nối máy chủ" };
   }
-  revalidatePath("/dashboard/manager/services");
-  return res.json();
 }
 
 export async function toggleServiceStatusAction(id: string): Promise<Service> {

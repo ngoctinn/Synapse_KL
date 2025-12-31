@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/shared/ui/button";
 import {
   Form,
@@ -11,22 +9,22 @@ import {
 } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
-import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
 } from "@/shared/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
 import { Textarea } from "@/shared/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition } from "react";
+import { useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { createResourceAction } from "../actions";
@@ -55,25 +53,25 @@ export function ResourceFormSheet({
       group_id: groupId,
       name: resource?.name || "",
       code: resource?.code || "",
-      status: (resource?.status || "ACTIVE") as any,
-
+      status: resource?.status || "ACTIVE",
       description: resource?.description || "",
       image_url: resource?.image_url || "",
     },
   });
 
   // Reset form
-  if (open && (form.getValues("name") !== (resource?.name || "") || form.getValues("group_id") !== groupId)) {
-    form.reset({
-      group_id: groupId,
-      name: resource?.name || "",
-      code: resource?.code || "",
-      status: resource?.status || "ACTIVE",
-
-      description: resource?.description || "",
-      image_url: resource?.image_url || "",
-    });
-  }
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        group_id: groupId,
+        name: resource?.name || "",
+        code: resource?.code || "",
+        status: resource?.status || "ACTIVE",
+        description: resource?.description || "",
+        image_url: resource?.image_url || "",
+      });
+    }
+  }, [open, groupId, resource, form]);
 
   async function onSubmit(data: ResourceCreateForm) {
     if (isEdit) {
@@ -82,13 +80,12 @@ export function ResourceFormSheet({
     }
 
     startTransition(async () => {
-      try {
-        await createResourceAction(data);
-        toast.success("Thêm tài nguyên thành công");
+      const result = await createResourceAction(data);
+      if (result.success) {
+        toast.success(result.message);
         onOpenChange(false);
-        form.reset();
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Đã có lỗi xảy ra");
+      } else {
+        toast.error(result.message);
       }
     });
   }

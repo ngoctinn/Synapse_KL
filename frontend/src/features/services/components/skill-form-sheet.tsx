@@ -19,9 +19,10 @@ import {
 } from "@/shared/ui/sheet";
 import { Textarea } from "@/shared/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition } from "react";
+import { useActionState, useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
 import { createSkillAction, updateSkillAction } from "../actions";
 import { skillCreateSchema, type SkillCreateForm } from "../schemas";
 import type { Skill } from "../types";
@@ -50,28 +51,27 @@ export function SkillFormSheet({
   });
 
   // Reset form khi mở/đóng hoặc đổi skill
-  if (open && form.getValues("name") !== (skill?.name || "")) {
-    form.reset({
-      name: skill?.name || "",
-      code: skill?.code || "",
-      description: skill?.description || "",
-    });
-  }
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        name: skill?.name || "",
+        code: skill?.code || "",
+        description: skill?.description || "",
+      });
+    }
+  }, [open, skill, form]);
 
   async function onSubmit(data: SkillCreateForm) {
     startTransition(async () => {
-      try {
-        if (isEdit && skill) {
-          await updateSkillAction(skill.id, data);
-          toast.success("Cập nhật kỹ năng thành công");
-        } else {
-          await createSkillAction(data);
-          toast.success("Tạo kỹ năng mới thành công");
-        }
+      const result = isEdit && skill 
+        ? await updateSkillAction(skill.id, data)
+        : await createSkillAction(data);
+
+      if (result.success) {
+        toast.success(result.message);
         onOpenChange(false);
-        form.reset();
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Đã có lỗi xảy ra");
+      } else {
+        toast.error(result.message);
       }
     });
   }
