@@ -8,17 +8,17 @@ import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import { Checkbox } from "@/shared/ui/checkbox"
 import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
 } from "@/shared/ui/command"
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/shared/ui/popover"
 
 export interface Option {
@@ -125,7 +125,7 @@ export function MultiSelect({
           <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50 ml-2" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 border-sage-100 overflow-hidden shadow-xl" align="start">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 border-border overflow-hidden shadow-xl" align="start">
         <Command className="w-full">
           <CommandInput placeholder="Tìm kiếm..." className="h-9 border-none focus:ring-0" />
           <CommandList>

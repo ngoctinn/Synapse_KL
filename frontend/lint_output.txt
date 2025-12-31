@@ -1,0 +1,98 @@
+
+E:\Synapse_KL\frontend\src\app\(dashboard)\(customer)\dashboard\customer\page.tsx
+  9:5  error  Error: This value cannot be modified
+
+Modifying a variable defined outside a component or hook is not allowed. Consider using an effect.
+
+E:\Synapse_KL\frontend\src\app\(dashboard)\(customer)\dashboard\customer\page.tsx:9:5
+   7 |
+   8 |   const switchRole = (newRole: string) => {
+>  9 |     document.cookie = `user-role=${newRole}; path=/`
+     |     ^^^^^^^^ value cannot be modified
+  10 |     router.refresh()
+  11 |     router.push("/dashboard")
+  12 |   }  react-hooks/immutability
+
+E:\Synapse_KL\frontend\src\features\services\components\maintenance-sheet.tsx
+  73:44  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  73:61  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+E:\Synapse_KL\frontend\src\features\services\components\resource-form-sheet.tsx
+  51:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\Synapse_KL\frontend\src\features\services\components\service-form-sheet.tsx
+  73:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  95:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\Synapse_KL\frontend\src\features\services\components\services-tab.tsx
+   58:14  warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+   68:16  warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+   79:16  warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+  185:43  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  185:58  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+E:\Synapse_KL\frontend\src\features\services\components\skills-tab.tsx
+  123:73  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  123:86  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+E:\Synapse_KL\frontend\src\features\system-settings\actions.ts
+  33:75  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  85:75  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  93:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\Synapse_KL\frontend\src\features\system-settings\components\exception-dates-manager.tsx
+  237:30  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+E:\Synapse_KL\frontend\src\features\system-settings\components\exception-dates-manager.tsx:237:30
+  235 |                               />
+  236 |                             </FormControl>
+> 237 |                             {form.watch("open_time") && field.value && form.watch("open_time")! > field.value && (
+      |                              ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  238 |                               <div className="absolute top-full right-0 mt-1">
+  239 |                                 <Badge variant="warning" className="h-6 px-2 text-[9px] gap-1 whitespace-nowrap">
+  240 |                                   <AlertCircle className="size-3" />  react-hooks/incompatible-library
+
+E:\Synapse_KL\frontend\src\features\system-settings\components\operating-hours-form.tsx
+  65:26  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+E:\Synapse_KL\frontend\src\features\system-settings\components\operating-hours-form.tsx:65:26
+  63 |
+  64 |   React.useEffect(() => {
+> 65 |     const subscription = form.watch((value) => {
+     |                          ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  66 |       // Nếu đang trong quá trình reset, không đẩy ngược lên cha để tránh vòng lặp re-render
+  67 |       if (isResetting.current) return;
+  68 |  react-hooks/incompatible-library
+  74:6   warning  React Hook React.useEffect has a missing dependency: 'form'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    react-hooks/exhaustive-deps
+
+E:\Synapse_KL\frontend\src\shared\components\app-sidebar.tsx
+  37:5  error  Error: This value cannot be modified
+
+Modifying a variable defined outside a component or hook is not allowed. Consider using an effect.
+
+E:\Synapse_KL\frontend\src\shared\components\app-sidebar.tsx:37:5
+  35 |   // Dev helper to switch roles
+  36 |   const switchRole = (newRole: string) => {
+> 37 |     document.cookie = `user-role=${newRole}; path=/`
+     |     ^^^^^^^^ value cannot be modified
+  38 |     router.refresh()
+  39 |     router.push("/dashboard")
+  40 |   }  react-hooks/immutability
+
+E:\Synapse_KL\frontend\src\shared\components\smart-data-table.tsx
+  293:27  warning  'stickyClass' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+E:\Synapse_KL\frontend\src\shared\config\navigation.ts
+  17:9  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\Synapse_KL\frontend\src\shared\ui\data-table-faceted-filter.tsx
+  25:39  warning  '_TData' is defined but never used   @typescript-eslint/no-unused-vars
+  25:47  warning  '_TValue' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 25 problems (16 errors, 9 warnings)
+

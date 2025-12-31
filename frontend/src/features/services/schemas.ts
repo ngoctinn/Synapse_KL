@@ -46,8 +46,8 @@ export const resourceCreateSchema = z.object({
   group_id: z.string().uuid("Chọn nhóm tài nguyên"),
   name: z.string().min(1, "Tên tài nguyên là bắt buộc").max(100),
   code: z.string().max(50).optional(),
-  status: z.enum(["ACTIVE", "MAINTENANCE", "OUT_OF_SERVICE"]).default("ACTIVE"),
-  setup_time_minutes: z.number().min(0).default(0),
+  status: z.enum(["ACTIVE", "MAINTENANCE", "OUT_OF_SERVICE"]).optional().default("ACTIVE"),
+  setup_time_minutes: z.number().min(0).optional().default(0),
   description: z.string().max(500).optional(),
   image_url: z.string().url().optional().or(z.literal("")),
 });
@@ -78,12 +78,12 @@ export const serviceCreateSchema = z.object({
   category_id: z.string().uuid().optional().or(z.literal("")),
   name: z.string().min(1, "Tên dịch vụ là bắt buộc").max(255),
   duration: z.number().min(1, "Thời gian phải lớn hơn 0"),
-  buffer_time: z.number().min(0).default(10),
+  buffer_time: z.number().min(0).optional().default(10),
   price: z.number().min(0, "Giá không được âm"),
   description: z.string().max(2000).optional(),
   image_url: z.string().url().optional().or(z.literal("")),
-  skill_ids: z.array(z.string().uuid()).default([]),
-  resource_requirements: z.array(resourceRequirementSchema).default([]),
+  skill_ids: z.array(z.string().uuid()).optional().default([]),
+  resource_requirements: z.array(resourceRequirementSchema).optional().default([]),
 });
 
 export const serviceUpdateSchema = serviceCreateSchema.partial().extend({

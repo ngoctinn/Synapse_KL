@@ -21,6 +21,11 @@ export async function ServiceManagement() {
     getServicesAction(),
   ]);
 
+  const groupsWithCount = resourceGroups.map(group => ({
+    ...group,
+    resource_count: resources.filter(r => r.group_id === group.id).length
+  }));
+
   return (
     <Card>
       <CardContent className="pt-6">
@@ -54,7 +59,7 @@ export async function ServiceManagement() {
 
           <TabsContent value="resources" className="mt-6" forceMount>
             <div className="data-[state=inactive]:hidden" data-state="active">
-              <ResourcesTab groups={resourceGroups} resources={resources} />
+              <ResourcesTab groups={groupsWithCount} />
             </div>
           </TabsContent>
 

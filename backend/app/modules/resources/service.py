@@ -149,6 +149,20 @@ async def create_maintenance(
     if not resource:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tài nguyên không tồn tại")
 
+    # Check conflict
+    conflict = await session.exec(
+        select(ResourceMaintenanceSchedule).where(
+            ResourceMaintenanceSchedule.resource_id == resource_id,
+            ResourceMaintenanceSchedule.start_time < data.end_time,
+            ResourceMaintenanceSchedule.end_time > data.start_time
+        )
+    )
+    if conflict.first():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Thời gian bảo trì bị trùng với lịch trình khác"
+        )
+
     maintenance = ResourceMaintenanceSchedule(
         resource_id=resource_id,
         created_by=created_by,

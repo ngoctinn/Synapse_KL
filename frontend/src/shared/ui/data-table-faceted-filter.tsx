@@ -7,25 +7,25 @@ import { cn } from "@/shared/lib/utils"
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+    CommandSeparator,
 } from "@/shared/ui/command"
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
 } from "@/shared/ui/popover"
 import { Separator } from "@/shared/ui/separator"
 
-interface DataTableFacetedFilterProps<TData, TValue> {
+interface DataTableFacetedFilterProps<_TData, _TValue> {
   column?: {
-    getFilterValue: () => any
-    setFilterValue: (value: any) => void
+    getFilterValue: () => unknown
+    setFilterValue: (value: unknown) => void
   }
   title?: string
   options: {
@@ -86,7 +86,7 @@ export function DataTableFacetedFilter<TData, TValue>({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0 border-sage-100 shadow-xl" align="start">
+      <PopoverContent className="w-[200px] p-0 border-border shadow-xl" align="start">
         <Command>
           <CommandInput placeholder={title} />
           <CommandList>

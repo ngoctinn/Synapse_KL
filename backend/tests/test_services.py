@@ -64,3 +64,42 @@ async def test_service_lifecycle(client: AsyncClient):
     from decimal import Decimal
     assert Decimal(updated["price"]) == Decimal("600000.00")
     assert len(updated["skills"]) == 0
+
+@pytest.mark.anyio
+async def test_service_delete_integrity(client: AsyncClient):
+    # 1. Setup
+    cat_resp = await client.post("/api/v1/categories", json={"name": "Integrity Test Cat"})
+    cat_id = cat_resp.json()["id"]
+
+    skill_resp = await client.post("/api/v1/skills", json={"name": "Integrity Test Skill", "code": "INT_SKILL"})
+    skill_id = skill_resp.json()["id"]
+
+    group_resp = await client.post("/api/v1/resources/groups", json={"name": "Integrity Test Group", "type": "BED"})
+    group_id = group_resp.json()["id"]
+
+    # Create service
+    service_data = {
+        "name": "Integrity Test Service",
+        "category_id": cat_id,
+        "duration": 30,
+        "price": 100000,
+        "skill_ids": [skill_id],
+        "resource_requirements": [{"group_id": group_id, "quantity": 1}]
+    }
+    await client.post("/api/v1/services", json=service_data)
+
+    # 2. Try delete category (Should fail)
+    response = await client.delete(f"/api/v1/categories/{cat_id}")
+    assert response.status_code == 409
+    assert "Danh mục đang chứa" in response.json()["detail"]
+
+    # 3. Try delete skill (Should fail)
+    response = await client.delete(f"/api/v1/skills/{skill_id}")
+    assert response.status_code == 409
+    assert "Skill đang được sử dụng" in response.json()["detail"]
+
+    # 4. Try delete resource group (Should fail)
+    response = await client.delete(f"/api/v1/resources/groups/{group_id}")
+    assert response.status_code == 409
+    assert "Nhóm đang được dịch vụ sử dụng" in response.json()["detail"]
+
