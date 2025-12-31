@@ -1,24 +1,24 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Plus, Edit2, Trash2, Power, PowerOff } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
-import type { ResourceGroup, Service, ServiceCategory, Skill, ServiceWithDetails } from "../types";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Edit2, Plus, Power, PowerOff, Trash2 } from "lucide-react";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import { deleteServiceAction, getServiceByIdAction, toggleServiceStatusAction } from "../actions";
+import type { ResourceGroup, Service, ServiceCategory, ServiceWithDetails, Skill } from "../types";
 import { ServiceFormSheet } from "./service-form-sheet";
-import { deleteServiceAction, toggleServiceStatusAction, getServiceByIdAction } from "../actions";
 
 interface ServicesTabProps {
   services: Service[];
@@ -143,7 +143,7 @@ export function ServicesTab({
                       size="sm"
                       className={`h-7 px-2 text-xs gap-1.5 ${
                         service.is_active
-                          ? "text-green-600 hover:text-green-700 hover:bg-green-50"
+                          ? "text-alert-success-foreground hover:bg-alert-success/50"
                           : "text-muted-foreground hover:bg-muted"
                       }`}
                       onClick={() => handleToggleStatus(service.id)}

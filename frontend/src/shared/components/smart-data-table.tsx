@@ -4,32 +4,32 @@ import { cn } from "@/shared/lib/utils"
 import { Button } from "@/shared/ui/button"
 import { Checkbox } from "@/shared/ui/checkbox"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/shared/ui/select"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/shared/ui/table"
 import {
-  ArrowUpDown,
-  ChevronLeft,
-  ChevronRight,
-  Filter,
-  MoreHorizontal
+    ArrowUpDown,
+    ChevronLeft,
+    ChevronRight,
+    Filter,
+    MoreHorizontal
 } from "lucide-react"
 import * as React from "react"
 
@@ -317,7 +317,7 @@ export function DataTable<T extends { id: string | number }>({
                           key="actions"
                           className={cn(
                             "text-right sticky right-0 shadow-[-2px_0_4px_-2px_rgba(0,0,0,0.1)] transition-colors z-10",
-                            "bg-white group-hover:bg-accent group-data-[state=selected]:bg-accent/80"
+                            "bg-card group-hover:bg-accent group-data-[state=selected]:bg-accent/80"
                           )}
                           onClick={(e) => e.stopPropagation()}
                         >
