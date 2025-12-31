@@ -1,7 +1,7 @@
 """
 Service Service - Business logic cho Services.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import HTTPException
@@ -60,34 +60,33 @@ async def create_service(session: AsyncSession, data: ServiceCreate) -> Service:
             raise HTTPException(status_code=400, detail="Danh mục không tồn tại")
 
     # Verify skills exist
+    skills = []
     if data.skill_ids:
         result = await session.exec(select(Skill).where(Skill.id.in_(data.skill_ids)))
         skills = list(result.all())
         if len(skills) != len(data.skill_ids):
             raise HTTPException(status_code=400, detail="Một hoặc nhiều kỹ năng không tồn tại")
-    else:
-        skills = []
 
     # Create service
     service_data = data.model_dump(exclude={"skill_ids", "resource_requirements"})
     service = Service(**service_data)
-    session.add(service)
-    await session.flush()  # Để có service.id
 
-    # Link skills
-    for skill in skills:
-        link = ServiceRequiredSkill(service_id=service.id, skill_id=skill.id)
-        session.add(link)
+    # Assign relationships directly
+    service.skills = skills
 
-    # Link resource requirements
+    # Map resource requirements
+    reqs = []
     for req in data.resource_requirements:
-        requirement = ServiceResourceRequirement(
-            service_id=service.id,
-            **req.model_dump()
-        )
-        session.add(requirement)
+        req_obj = ServiceResourceRequirement(**req.model_dump())
+        reqs.append(req_obj)
+    service.resource_requirements = reqs
 
+    session.add(service)
     await session.commit()
+
+    # Force refresh or return known state.
+    # With direct assignment, 'service' object in memory is up to date.
+    # But to get eager loaded fields (like category) behaving consistently, fetch again.
     return await get_service_by_id(session, service.id)
 
 
@@ -100,41 +99,31 @@ async def update_service(session: AsyncSession, service_id: UUID, data: ServiceU
     for key, value in update_data.items():
         setattr(service, key, value)
 
-    service.updated_at = datetime.utcnow()
+    service.updated_at = datetime.now(timezone.utc)
 
     # Update skills if provided
     if data.skill_ids is not None:
-        # Delete existing links
-        result = await session.exec(
-            select(ServiceRequiredSkill).where(ServiceRequiredSkill.service_id == service_id)
-        )
-        for link in result.all():
-            await session.delete(link)
-
-        # Create new links
-        for skill_id in data.skill_ids:
-            link = ServiceRequiredSkill(service_id=service_id, skill_id=skill_id)
-            session.add(link)
+        if not data.skill_ids:
+             service.skills = []
+        else:
+             skill_result = await session.exec(select(Skill).where(Skill.id.in_(data.skill_ids)))
+             new_skills = list(skill_result.all())
+             if len(new_skills) != len(data.skill_ids):
+                 raise HTTPException(status_code=400, detail="Một hoặc nhiều kỹ năng không tồn tại")
+             service.skills = new_skills
 
     # Update resource requirements if provided
     if data.resource_requirements is not None:
-        # Delete existing
-        result = await session.exec(
-            select(ServiceResourceRequirement).where(ServiceResourceRequirement.service_id == service_id)
-        )
-        for req in result.all():
-            await session.delete(req)
-
-        # Create new
+        new_reqs = []
         for req in data.resource_requirements:
-            requirement = ServiceResourceRequirement(
-                service_id=service_id,
-                **req.model_dump()
-            )
-            session.add(requirement)
+            req_obj = ServiceResourceRequirement(**req.model_dump(), service_id=service_id)
+            new_reqs.append(req_obj)
+        service.resource_requirements = new_reqs
 
     session.add(service)
     await session.commit()
+    # Direct assignment updates the session object, so it shouldn't be stale.
+    # However, to ensure consistency with other sessions/db triggers (if any), fetching is safe.
     return await get_service_by_id(session, service_id)
 
 
@@ -144,11 +133,10 @@ async def toggle_service_status(session: AsyncSession, service_id: UUID) -> Serv
         raise HTTPException(status_code=404, detail="Dịch vụ không tồn tại")
 
     service.is_active = not service.is_active
-    service.updated_at = datetime.utcnow()
+    service.updated_at = datetime.now(timezone.utc)
     session.add(service)
     await session.commit()
-    await session.refresh(service)
-    return service
+    return await get_service_by_id(session, service.id)
 
 
 async def delete_service(session: AsyncSession, service_id: UUID) -> None:
@@ -157,6 +145,6 @@ async def delete_service(session: AsyncSession, service_id: UUID) -> None:
     if not service:
         raise HTTPException(status_code=404, detail="Dịch vụ không tồn tại")
 
-    service.deleted_at = datetime.utcnow()
+    service.deleted_at = datetime.now(timezone.utc)
     session.add(service)
     await session.commit()

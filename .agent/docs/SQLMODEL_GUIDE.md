@@ -126,11 +126,15 @@ class Service(SQLModel, table=True):
 ```
 
 ## Checklist
-- [ ] `|` thay `Optional`
-- [ ] `__tablename__` explicit
-- [ ] `back_populates` bidirectional
-- [ ] `expire_on_commit=False` async
-- [ ] `session.exec()` không phải `execute()`
-- [ ] `AsyncSession` từ `sqlmodel.ext.asyncio.session`
-- [ ] `selectinload`/`joinedload` eager
 - [ ] `str, Enum` for enums
+
+## 11. Circular Import & M-N Best Practice (CRITICAL)
+- **Problem**: `Relationship(link_model="String")` gây lỗi `NoInspectionAvailable`.
+- **Rule**: `link_model` BẮT BUỘC phải là **Class Object**, không được dùng chuỗi.
+- **Solution**: Tách link model ra file riêng (VD: `link_models.py`) để cả 2 module cùng import mà không bị circular dependency.
+- **Pattern**:
+  ```python
+  # Trong models.py
+  from .link_models import HeroTeamLink # Import class thật
+  heroes: list["Hero"] = Relationship(back_populates="teams", link_model=HeroTeamLink)
+  ```

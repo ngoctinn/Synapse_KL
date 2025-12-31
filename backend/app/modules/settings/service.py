@@ -1,7 +1,6 @@
 from sqlmodel import select, delete
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel.ext.asyncio.session import AsyncSession
 from datetime import time
-from typing import List
 
 from .models import OperatingHour, ExceptionDate
 from .schemas import OperationalSettingsUpdate, OperationalSettingsRead, OperatingHourBase, ExceptionDateBase
@@ -21,16 +20,16 @@ class SettingsService:
         Nếu chưa có dữ liệu, trả về cấu hình mặc định (08:00 - 20:00).
         """
         # Fetch Operating Hours
-        result_hours = await db.execute(select(OperatingHour).order_by(OperatingHour.day_of_week))
-        hours = result_hours.scalars().all()
+        result_hours = await db.exec(select(OperatingHour).order_by(OperatingHour.day_of_week))
+        hours = result_hours.all()
 
         # If empty, return default
         if not hours:
             hours = self._get_default_hours()
 
         # Fetch Exception Dates
-        result_dates = await db.execute(select(ExceptionDate).order_by(ExceptionDate.date))
-        dates = result_dates.scalars().all()
+        result_dates = await db.exec(select(ExceptionDate).order_by(ExceptionDate.date))
+        dates = result_dates.all()
 
         return OperationalSettingsRead(
             regular_operating_hours=hours,
@@ -44,8 +43,8 @@ class SettingsService:
         """
         async with db.begin():
             # Clear existing data
-            await db.execute(delete(OperatingHour))
-            await db.execute(delete(ExceptionDate))
+            await db.exec(delete(OperatingHour))
+            await db.exec(delete(ExceptionDate))
 
             # Insert new data
             # Convert Pydantic models to SQLModel instances
@@ -57,7 +56,7 @@ class SettingsService:
         # Return updated state
         return await self.get_settings(db)
 
-    def _get_default_hours(self) -> List[OperatingHour]:
+    def _get_default_hours(self) -> list[OperatingHour]:
         """Tạo cấu hình mặc định: Tất cả các ngày đều mở từ 08:00 - 20:00."""
         defaults = []
         for day in range(7): # 0=Sun to 6=Sat (SQLModel Model uses 0-6 convention)

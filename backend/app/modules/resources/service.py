@@ -1,6 +1,4 @@
-"""
-Resource Service - Business logic cho ResourceGroups và Resources.
-"""
+from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -83,8 +81,7 @@ async def delete_group(session: AsyncSession, group_id: UUID) -> None:
     if (result.one() or 0) > 0:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Không thể xóa. Nhóm đang được dịch vụ sử dụng")
 
-    from datetime import datetime
-    group.deleted_at = datetime.utcnow()
+    group.deleted_at = datetime.now(timezone.utc)
     session.add(group)
     await session.commit()
 
@@ -139,8 +136,7 @@ async def delete_resource(session: AsyncSession, resource_id: UUID) -> None:
     if not resource:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tài nguyên không tồn tại")
 
-    from datetime import datetime
-    resource.deleted_at = datetime.utcnow()
+    resource.deleted_at = datetime.now(timezone.utc)
     session.add(resource)
     await session.commit()
 
@@ -161,8 +157,7 @@ async def create_maintenance(
     session.add(maintenance)
 
     # Tự động set status MAINTENANCE nếu thời gian bảo trì đang active
-    from datetime import datetime
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     if data.start_time <= now <= data.end_time:
         resource.status = ResourceStatus.MAINTENANCE
         session.add(resource)

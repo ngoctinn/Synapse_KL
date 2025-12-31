@@ -2,11 +2,15 @@
 Resource Models - Quản lý tài nguyên vật lý của Spa.
 Bao gồm: ResourceGroup (nhóm), Resource (giường/thiết bị), MaintenanceSchedule (lịch bảo trì).
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from uuid import UUID, uuid4
+from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+    from app.modules.services.models import ServiceResourceRequirement
 
 
 class ResourceType(str, Enum):
@@ -35,10 +39,11 @@ class ResourceGroup(SQLModel, table=True):
     type: ResourceType
     description: str | None = None
     deleted_at: datetime | None = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Relationship: Group chứa nhiều Resources (1-N)
     resources: list["Resource"] = Relationship(back_populates="group")
+    service_requirements: list["ServiceResourceRequirement"] = Relationship(back_populates="group")
 
 
 class Resource(SQLModel, table=True):
@@ -78,7 +83,7 @@ class ResourceMaintenanceSchedule(SQLModel, table=True):
     end_time: datetime
     reason: str | None = None
     created_by: UUID | None = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Relationship
     resource: Resource = Relationship(back_populates="maintenance_schedules")

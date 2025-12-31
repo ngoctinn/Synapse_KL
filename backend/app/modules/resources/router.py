@@ -3,7 +3,7 @@ Resource Router - API endpoints cho ResourceGroups và Resources.
 """
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, status, HTTPException
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.db import get_db
@@ -32,7 +32,6 @@ async def list_groups(session: AsyncSession = Depends(get_db)):
 async def get_group(group_id: UUID, session: AsyncSession = Depends(get_db)):
     group = await service.get_group_by_id(session, group_id)
     if not group:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Nhóm tài nguyên không tồn tại")
     return group
 
@@ -66,7 +65,6 @@ async def list_resources(
 async def get_resource(resource_id: UUID, session: AsyncSession = Depends(get_db)):
     resource = await service.get_resource_by_id(session, resource_id)
     if not resource:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Tài nguyên không tồn tại")
     return resource
 

@@ -3,7 +3,7 @@ Category Router - API endpoints cho ServiceCategories.
 """
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.db import get_db
@@ -27,7 +27,6 @@ async def list_categories(session: AsyncSession = Depends(get_db)):
 async def get_category(category_id: UUID, session: AsyncSession = Depends(get_db)):
     category = await service.get_category_by_id(session, category_id)
     if not category:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Danh mục không tồn tại")
     return category
 

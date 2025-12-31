@@ -3,8 +3,13 @@ Skill Model - Kỹ năng chuyên môn của nhân viên Spa.
 Dùng để match dịch vụ với nhân viên có đủ năng lực thực hiện.
 """
 from uuid import UUID, uuid4
+from typing import TYPE_CHECKING
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+    from app.modules.services.models import Service
+from app.modules.services.link_models import ServiceRequiredSkill
 
 
 class Skill(SQLModel, table=True):
@@ -20,4 +25,7 @@ class Skill(SQLModel, table=True):
     description: str | None = None
 
     # Relationship: Skill được nhiều Services yêu cầu (M-N qua link table)
-    # Sẽ define sau khi có Service model để tránh circular import
+    services: list["Service"] = Relationship(
+        back_populates="skills",
+        link_model=ServiceRequiredSkill
+    )

@@ -38,7 +38,12 @@ trigger: always_on
 - **Zero Emoji**: No icons/emojis in code, comments, or commits.
 - **Comments**: Comment "Why" (complex logic), NEVER "What".
 - **Simplicity**: Flat code over deep abstractions.
-- **Verif**: Proactively run `npm run build` after major changes.
+- **Verif**: Proactively run `pnpm build` after major changes.
 
 - **No Nested Cards**: Avoid placing Cards inside other Cards/Tabs. Use flat divisions (div + header) for cleaner UI.
   - *Exception*: A single large Card wrapping a Tabs component is allowed.
+
+## 7. PACKAGE MANAGER (STRICT)
+- **Primary**: `pnpm` ONLY.
+- **Forbidden**: `npm`, `yarn`, `bun` directly in project (except global CLI).
+- **Lockfile**: `pnpm-lock.yaml` must be the single source of truth. `package-lock.json` is FORBIDDEN.

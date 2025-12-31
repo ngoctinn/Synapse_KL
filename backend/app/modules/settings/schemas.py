@@ -36,8 +36,8 @@ class ExceptionDateBase(BaseModel):
         return self
 
 class OperationalSettingsUpdate(BaseModel):
-    regular_operating_hours: List[OperatingHourBase]
-    exception_dates: List[ExceptionDateBase]
+    regular_operating_hours: list[OperatingHourBase]
+    exception_dates: list[ExceptionDateBase]
 
 class OperationalSettingsRead(OperationalSettingsUpdate):
     model_config = ConfigDict(from_attributes=True)

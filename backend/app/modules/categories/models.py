@@ -3,8 +3,12 @@ ServiceCategory Model - Danh mục phân loại dịch vụ Spa.
 VD: Massage, Chăm sóc da, Nail, Tóc...
 """
 from uuid import UUID, uuid4
+from typing import TYPE_CHECKING
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+    from app.modules.services.models import Service
 
 
 class ServiceCategory(SQLModel, table=True):
@@ -20,4 +24,4 @@ class ServiceCategory(SQLModel, table=True):
     sort_order: int = Field(default=0)
 
     # Relationship: Category chứa nhiều Services (1-N)
-    # Sẽ define sau khi có Service model để tránh circular import
+    services: list["Service"] = Relationship(back_populates="category")

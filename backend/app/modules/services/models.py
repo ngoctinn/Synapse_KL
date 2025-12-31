@@ -2,7 +2,7 @@
 Service Models - Dịch vụ Spa và các bảng liên kết.
 Bao gồm: Service, ServiceRequiredSkill (M-N), ServiceResourceRequirement (M-N với extra columns).
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from uuid import UUID, uuid4
 
@@ -11,17 +11,9 @@ from sqlmodel import Field, Relationship, SQLModel
 from app.modules.categories.models import ServiceCategory
 from app.modules.resources.models import ResourceGroup
 from app.modules.skills.models import Skill
+from app.modules.services.link_models import ServiceRequiredSkill
 
 
-class ServiceRequiredSkill(SQLModel, table=True):
-    """
-    Bảng liên kết M-N giữa Service và Skill.
-    Dịch vụ yêu cầu nhân viên có TẤT CẢ skills trong bảng này (AND logic).
-    """
-    __tablename__ = "service_required_skills"
-
-    service_id: UUID = Field(foreign_key="services.id", primary_key=True)
-    skill_id: UUID = Field(foreign_key="skills.id", primary_key=True)
 
 
 class ServiceResourceRequirement(SQLModel, table=True):
@@ -39,7 +31,7 @@ class ServiceResourceRequirement(SQLModel, table=True):
 
     # Relationships cho truy vấn 2 chiều
     service: "Service" = Relationship(back_populates="resource_requirements")
-    group: ResourceGroup = Relationship()
+    group: ResourceGroup = Relationship(back_populates="service_requirements")
 
 
 class Service(SQLModel, table=True):
@@ -59,12 +51,13 @@ class Service(SQLModel, table=True):
     image_url: str | None = None
     is_active: bool = Field(default=True)
     deleted_at: datetime | None = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Relationships
-    category: ServiceCategory | None = Relationship()
-    skills: list[Skill] = Relationship(link_model=ServiceRequiredSkill)
+    category: ServiceCategory | None = Relationship(back_populates="services")
+    skills: list[Skill] = Relationship(back_populates="services", link_model=ServiceRequiredSkill)
     resource_requirements: list[ServiceResourceRequirement] = Relationship(
-        back_populates="service"
+        back_populates="service",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )

@@ -3,7 +3,7 @@ Service Router - API endpoints cho Services.
 """
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, status, HTTPException
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.db import get_db
@@ -31,7 +31,6 @@ async def list_services(
 async def get_service(service_id: UUID, session: AsyncSession = Depends(get_db)):
     svc = await service.get_service_by_id(session, service_id)
     if not svc:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Dịch vụ không tồn tại")
     return svc
 
