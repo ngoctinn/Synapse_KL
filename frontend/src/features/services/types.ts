@@ -41,6 +41,7 @@ export interface ResourceGroup {
 
 export interface ResourceGroupWithCount extends ResourceGroup {
   resource_count: number;
+  active_count: number;
 }
 
 export interface Resource {
@@ -49,7 +50,7 @@ export interface Resource {
   name: string;
   code: string | null;
   status: ResourceStatus;
-  setup_time_minutes: number;
+
   description: string | null;
   image_url: string | null;
 }
@@ -128,7 +129,7 @@ export interface ResourceCreateInput {
   name: string;
   code?: string;
   status?: ResourceStatus;
-  setup_time_minutes?: number;
+
   description?: string;
   image_url?: string;
 }
@@ -156,6 +157,7 @@ export interface ServiceCreateInput {
   image_url?: string;
   skill_ids?: string[];
   resource_requirements?: ServiceResourceRequirementInput[];
+  is_active?: boolean;
 }
 
 export interface ServiceUpdateInput {

@@ -98,7 +98,7 @@ export function CategoryFormSheet({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tên danh mục</FormLabel>
+                  <FormLabel required>Tên danh mục</FormLabel>
                   <FormControl>
                     <Input placeholder="VD: Chăm sóc da mặt" {...field} />
                   </FormControl>

@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from sqlalchemy import func
+from sqlalchemy import func, case
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -22,9 +22,28 @@ from app.modules.resources.schemas import (
 
 
 # ResourceGroup CRUD
-async def get_all_groups(session: AsyncSession) -> list[ResourceGroup]:
-    result = await session.exec(select(ResourceGroup).where(ResourceGroup.deleted_at.is_(None)))
-    return list(result.all())
+async def get_all_groups(session: AsyncSession):
+    stmt = (
+        select(
+            ResourceGroup,
+            func.count(Resource.id).label("resource_count"),
+            func.count(case((Resource.status == ResourceStatus.ACTIVE, Resource.id), else_=None)).label("active_count")
+        )
+        .outerjoin(Resource, (Resource.group_id == ResourceGroup.id) & (Resource.deleted_at.is_(None)))
+        .where(ResourceGroup.deleted_at.is_(None))
+        .group_by(ResourceGroup.id)
+    )
+    result = await session.exec(stmt)
+
+    # Pack into dicts for Pydantic schema
+    groups_data = []
+    for group, total, active in result:
+        g_dict = group.model_dump()
+        g_dict["resource_count"] = total
+        g_dict["active_count"] = active
+        groups_data.append(g_dict)
+
+    return groups_data
 
 
 async def get_group_by_id(session: AsyncSession, group_id: UUID) -> ResourceGroup | None:

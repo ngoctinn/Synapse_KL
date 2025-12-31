@@ -1,5 +1,6 @@
 "use client";
 
+import { PageHeader } from "@/shared/components/page-header";
 import { DataTable, type Column } from "@/shared/components/smart-data-table";
 import {
   AlertDialog,
@@ -14,7 +15,15 @@ import {
 } from "@/shared/ui/alert-dialog";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { Bed, CalendarClock, Plus, Trash2, Wrench } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
+import { Bed, CalendarClock, MoreHorizontal, Plus, Trash2, Wrench } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { deleteResourceAction, deleteResourceGroupAction, getResourcesAction } from "../actions";
@@ -36,6 +45,7 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
   const [activeGroupId, setActiveGroupId] = useState<string>("");
 
   const [resourcesByGroup, setResourcesByGroup] = useState<Record<string, Resource[]>>({});
+  const [search, setSearch] = useState("");
   const [, startDeleteTransition] = useTransition();
 
   const handleAddGroup = () => {
@@ -92,29 +102,30 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
     }
   };
 
+  const filteredGroups = useMemo(() => {
+    if (!search) return groups;
+    const searchLower = search.toLowerCase();
+    return groups.filter(g => g.name.toLowerCase().includes(searchLower));
+  }, [groups, search]);
+
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-medium">Tài nguyên</h3>
-          <p className="text-sm text-muted-foreground">
-            Quản lý giường, thiết bị, phòng của Spa
-          </p>
-        </div>
-        <Button onClick={handleAddGroup} size="sm" variant="outline" className="gap-2">
-          <Plus className="h-4 w-4" />
-          Thêm nhóm
-        </Button>
-      </div>
+      <PageHeader
+        title="Tài nguyên"
+        subtitle="Quản lý giường, thiết bị, phòng của Spa"
+        actionLabel="Thêm nhóm"
+        onActionClick={handleAddGroup}
+        onSearch={setSearch}
+      />
 
-      {groups.length === 0 ? (
+      {filteredGroups.length === 0 ? (
         <div className="text-center py-12 border rounded-lg border-dashed">
-          <p className="text-muted-foreground">Chưa có nhóm tài nguyên nào.</p>
-          <Button variant="link" onClick={handleAddGroup}>Tạo nhóm đầu tiên</Button>
+          <p className="text-muted-foreground">Không tìm thấy nhóm tài nguyên nào.</p>
+          <Button variant="link" onClick={handleAddGroup}>Tạo nhóm mới</Button>
         </div>
       ) : (
         <div className="grid gap-4">
-          {groups.map((group) => (
+          {filteredGroups.map((group) => (
             <div key={group.id} className="border rounded-lg overflow-hidden">
               <div className="p-4 flex items-center justify-between bg-muted/30">
                 <div className="flex items-center gap-3">
@@ -139,14 +150,14 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-muted-foreground"
+                    className="text-muted-foreground"
                     onClick={() => handleAddResource(group.id)}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10">
+                      <Button variant="ghost" size="icon" className="text-destructive">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </AlertDialogTrigger>
@@ -170,6 +181,7 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
                 <div className="p-2 border-t bg-background animation-in slide-in-from-top-2 duration-200">
                   <ResourcesDataTable
                     data={resourcesByGroup[group.id]}
+                    search={search}
                     onMaintenance={handleMaintenance}
                     onDelete={handleDeleteResource}
                   />
@@ -205,10 +217,12 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
 // Inner Component for isolated state per table
 function ResourcesDataTable({
   data,
+  search,
   onMaintenance,
   onDelete
 }: {
   data: Resource[];
+  search: string;
   onMaintenance: (r: Resource) => void;
   onDelete: (id: string) => void;
 }) {
@@ -218,6 +232,15 @@ function ResourcesDataTable({
 
   const processedData = useMemo(() => {
     let result = [...data];
+
+    if (search) {
+      const searchLower = search.toLowerCase();
+      result = result.filter(res =>
+        res.name.toLowerCase().includes(searchLower) ||
+        (res.code && res.code.toLowerCase().includes(searchLower))
+      );
+    }
+
     if (sortConfig) {
       result.sort((a, b) => {
         const aValue = a[sortConfig.key];
@@ -239,6 +262,8 @@ function ResourcesDataTable({
   }, [processedData, currentPage, pageSize]);
 
   const columns: Column<Resource>[] = [
+    { key: "no", label: "No", width: "50px" },
+    { key: "selection", label: "", width: "40px" },
     { key: "name", label: "Tên tài nguyên", sortable: true, render: (v) => <span className="font-medium">{v as string}</span> },
     { key: "code", label: "Mã", sortable: true, render: (v) => <code className="text-xs bg-muted px-1 rounded">{v ? v as string : "-"}</code> },
     {
@@ -254,41 +279,52 @@ function ResourcesDataTable({
     {
       key: "actions",
       label: "Thao tác",
-      width: "100px",
+      width: "80px",
       render: (_, res) => (
-        <div className="flex justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
-            title="Lên lịch bảo trì"
-            onClick={(e) => { e.stopPropagation(); onMaintenance(res); }}
-          >
-            <CalendarClock className="h-3.5 w-3.5" />
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 text-destructive hover:bg-destructive/10"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
-                <AlertDialogDescription>Xóa tài nguyên "{res.name}"? Hành động này không thể hoàn tác.</AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Hủy</AlertDialogCancel>
-                <AlertDialogAction onClick={() => onDelete(res.id)} className="bg-destructive">Xóa</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[180px]">
+            <DropdownMenuLabel>Hành động</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => onMaintenance(res)}>
+              <CalendarClock className="mr-2 h-4 w-4 text-warning" />
+              Lên lịch bảo trì
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <div
+                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-destructive hover:text-destructive-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-destructive"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Xóa tài nguyên
+                </div>
+              </AlertDialogTrigger>
+              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Xóa tài nguyên "{res.name}"? Hành động này không thể hoàn tác.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Hủy</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => onDelete(res.id)}
+                    className="bg-destructive"
+                  >
+                    Xóa
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )
     }
   ];

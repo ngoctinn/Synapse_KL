@@ -1,36 +1,36 @@
 "use client";
 
+import { Button } from "@/shared/ui/button";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/shared/ui/form";
+import { Input } from "@/shared/ui/input";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/shared/ui/select";
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from "@/shared/ui/sheet";
+import { Textarea } from "@/shared/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/shared/ui/sheet";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/shared/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
-import { Input } from "@/shared/ui/input";
-import { Button } from "@/shared/ui/button";
-import { Textarea } from "@/shared/ui/textarea";
-import { resourceGroupCreateSchema, type ResourceGroupCreateForm } from "../schemas";
 import { createResourceGroupAction } from "../actions";
+import { resourceGroupCreateSchema, type ResourceGroupCreateForm } from "../schemas";
 import type { ResourceGroup } from "../types";
 
 interface ResourceGroupFormSheetProps {
@@ -103,9 +103,9 @@ export function ResourceGroupFormSheet({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tên nhóm</FormLabel>
+                  <FormLabel required>Tên nhóm tài nguyên</FormLabel>
                   <FormControl>
-                    <Input placeholder="VD: Giường Massage" {...field} />
+                    <Input placeholder="VD: Giường chức năng" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -117,7 +117,7 @@ export function ResourceGroupFormSheet({
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Loại tài nguyên</FormLabel>
+                  <FormLabel required>Loại tài nguyên</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}

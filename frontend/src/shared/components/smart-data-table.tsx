@@ -165,7 +165,7 @@ export function DataTable<T extends { id: string | number }>({
   return (
     <div className="space-y-4">
       {/* Table với scroll ngang, có border và rounded */}
-      <div className="overflow-x-auto rounded-lg border border-neutral-10 bg-card">
+      <div className="overflow-x-auto rounded-lg border border-border bg-card">
         <Table className="min-w-full">
           <TableHeader>
             {/* Header Row */}
@@ -173,7 +173,7 @@ export function DataTable<T extends { id: string | number }>({
               {columns.map((column) => {
                 const isSticky = column.key === "actions"
                 const stickyClass = isSticky
-                  ? "sticky right-0 bg-secondary shadow-[-2px_0_4px_-2px_rgba(0,0,0,0.1)] z-10"
+                  ? "sticky right-0 bg-secondary z-10"
                   : ""
 
                 if (column.key === "no") {
@@ -209,10 +209,10 @@ export function DataTable<T extends { id: string | number }>({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6 p-0 hover:bg-muted opacity-60 hover:opacity-100 transition-opacity"
+                          className="opacity-60 transition-opacity"
                           onClick={() => handleSort(column.key as string)}
                         >
-                          <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+                          <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
                         </Button>
                       )}
                     </div>
@@ -222,48 +222,50 @@ export function DataTable<T extends { id: string | number }>({
             </TableRow>
 
             {/* Filter Row - Nền siêu nhạt chuẩn Airy */}
-            <TableRow className="hover:bg-transparent bg-neutral-5/15 border-b border-neutral-10">
-              {columns.map((column) => {
-                const isSticky = column.key === "actions"
-                const stickyClass = isSticky
-                  ? "sticky right-0 bg-secondary shadow-[-2px_0_4px_-2px_rgba(0,0,0,0.1)] z-10"
-                  : ""
+            {columns.some(c => c.filterable) && (
+              <TableRow className="bg-muted/50 border-b border-border">
+                {columns.map((column) => {
+                  const isSticky = column.key === "actions"
+                  const stickyClass = isSticky
+                    ? "sticky right-0 bg-secondary z-10"
+                    : ""
 
-                if (column.key === "no") {
-                  return <TableCell key="no" className="py-2 bg-inherit"></TableCell>
-                }
-                if (column.key === "selection") {
-                  return <TableCell key="selection" className="py-2 bg-inherit"></TableCell>
-                }
-                if (column.key === "actions") {
+                  if (column.key === "no") {
+                    return <TableCell key="no" className="py-2 bg-inherit"></TableCell>
+                  }
+                  if (column.key === "selection") {
+                    return <TableCell key="selection" className="py-2 bg-inherit"></TableCell>
+                  }
+                  if (column.key === "actions") {
+                    return (
+                       <TableCell key="actions-filter" className={cn("py-2", stickyClass)}>
+                          <div className="flex justify-end">
+                            <Filter className="h-4 w-4 text-muted-foreground/40" />
+                          </div>
+                       </TableCell>
+                    )
+                  }
+
                   return (
-                     <TableCell key="actions-filter" className={cn("py-2", stickyClass)}>
-                        <div className="flex justify-end">
-                          <Filter className="h-4 w-4 text-muted-foreground/40" />
-                        </div>
-                     </TableCell>
+                    <TableCell key={`${column.key as string}-filter`} className="py-1.5 px-3 bg-inherit">
+                      {column.filterable ? (
+                        <Select onValueChange={(val) => onFilterChange?.(column.key as keyof T, val)}>
+                          <SelectTrigger className="w-full text-xs bg-background h-10 px-2 rounded-md shadow-none border-border font-medium">
+                            <SelectValue placeholder="Chọn..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">Tất cả</SelectItem>
+                            {column.filterOptions?.map(opt => (
+                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : null}
+                    </TableCell>
                   )
-                }
-
-                return (
-                  <TableCell key={`${column.key as string}-filter`} className="py-1.5 px-3 bg-inherit">
-                    {column.filterable ? (
-                      <Select onValueChange={(val) => onFilterChange?.(column.key as keyof T, val)}>
-                        <SelectTrigger className="w-full text-xs bg-background h-8 px-2 rounded-md shadow-none border-neutral-10 font-medium">
-                          <SelectValue placeholder="Chọn..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Tất cả</SelectItem>
-                          {column.filterOptions?.map(opt => (
-                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : null}
-                  </TableCell>
-                )
-              })}
-            </TableRow>
+                })}
+              </TableRow>
+            )}
           </TableHeader>
 
           <TableBody>
@@ -288,7 +290,7 @@ export function DataTable<T extends { id: string | number }>({
                   {columns.map((column) => {
                     const isSticky = column.key === "actions"
                     const stickyClass = isSticky
-                      ? "sticky right-0 bg-card shadow-[-2px_0_4px_-2px_rgba(0,0,0,0.1)]"
+                      ? "sticky right-0 bg-card"
                       : ""
 
                     if (column.key === "no") {
@@ -313,8 +315,7 @@ export function DataTable<T extends { id: string | number }>({
                         <TableCell
                           key="actions"
                           className={cn(
-                            "text-right sticky right-0 shadow-[-2px_0_4px_-2px_rgba(0,0,0,0.1)] transition-colors z-10",
-                            "bg-card group-hover:bg-accent group-data-[state=selected]:bg-accent/80"
+                            "text-right sticky right-0 z-10 bg-card",
                           )}
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -323,7 +324,7 @@ export function DataTable<T extends { id: string | number }>({
                           ) : (
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="secondary" size="icon" className="h-8 w-8 rounded-lg shadow-sm">
+                                <Button variant="secondary" size="icon">
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>

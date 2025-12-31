@@ -1,16 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/shared/ui/sheet";
+import { Button } from "@/shared/ui/button";
 import {
   Form,
   FormControl,
@@ -20,10 +10,27 @@ import {
   FormMessage,
 } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
-import { Button } from "@/shared/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/shared/ui/sheet";
 import { Textarea } from "@/shared/ui/textarea";
-import { resourceCreateSchema, type ResourceCreateForm } from "../schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { createResourceAction } from "../actions";
+import { resourceCreateSchema, type ResourceCreateForm } from "../schemas";
 import type { Resource } from "../types";
 
 interface ResourceFormSheetProps {
@@ -49,7 +56,7 @@ export function ResourceFormSheet({
       name: resource?.name || "",
       code: resource?.code || "",
       status: (resource?.status || "ACTIVE") as any,
-      setup_time_minutes: resource?.setup_time_minutes ?? 0,
+
       description: resource?.description || "",
       image_url: resource?.image_url || "",
     },
@@ -62,7 +69,7 @@ export function ResourceFormSheet({
       name: resource?.name || "",
       code: resource?.code || "",
       status: resource?.status || "ACTIVE",
-      setup_time_minutes: resource?.setup_time_minutes ?? 0,
+
       description: resource?.description || "",
       image_url: resource?.image_url || "",
     });
@@ -103,10 +110,32 @@ export function ResourceFormSheet({
           >
             <FormField
               control={form.control}
+              name="group_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel required>Nhóm tài nguyên</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isEdit}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn nhóm tài nguyên" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {/* This should be dynamically populated with actual group options */}
+                      <SelectItem value={groupId}>{groupId}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tên tài nguyên</FormLabel>
+                  <FormLabel required>Tên tài nguyên</FormLabel>
                   <FormControl>
                     <Input placeholder="VD: Giường 01" {...field} />
                   </FormControl>
@@ -136,23 +165,7 @@ export function ResourceFormSheet({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="setup_time_minutes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Thời gian chuẩn bị (phút)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+
 
             <FormField
               control={form.control}

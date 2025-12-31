@@ -1,19 +1,28 @@
 "use client";
 
+import { PageHeader } from "@/shared/components/page-header";
 import { DataTable, type Column } from "@/shared/components/smart-data-table";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
-import { Edit2, Plus, Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
+import { Edit2, MoreHorizontal, Trash2 } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { deleteSkillAction } from "../actions";
@@ -34,6 +43,7 @@ export function SkillsTab({ skills }: SkillsTabProps) {
   const [pageSize, setPageSize] = useState(10);
   const [sortConfig, setSortConfig] = useState<{ key: keyof Skill; dir: "asc" | "desc" } | null>(null);
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [search, setSearch] = useState("");
 
   const handleAdd = () => {
     setSelectedSkill(null);
@@ -59,6 +69,16 @@ export function SkillsTab({ skills }: SkillsTabProps) {
   // --- Data Processing ---
   const processedData = useMemo(() => {
     let result = [...skills];
+
+    // Search
+    if (search) {
+      const searchLower = search.toLowerCase();
+      result = result.filter(item =>
+        item.name.toLowerCase().includes(searchLower) ||
+        (item.description && item.description.toLowerCase().includes(searchLower)) ||
+        (item.code && item.code.toLowerCase().includes(searchLower))
+      );
+    }
 
     // Filter
     if (Object.keys(filters).length > 0) {
@@ -100,6 +120,16 @@ export function SkillsTab({ skills }: SkillsTabProps) {
   // --- Columns ---
   const columns: Column<Skill>[] = [
     {
+      key: "no",
+      label: "No",
+      width: "50px",
+    },
+    {
+      key: "selection",
+      label: "",
+      width: "40px",
+    },
+    {
       key: "name",
       label: "Tên Kỹ Năng",
       sortable: true,
@@ -127,70 +157,65 @@ export function SkillsTab({ skills }: SkillsTabProps) {
     {
       key: "actions",
       label: "Thao tác",
-      width: "100px",
+      width: "80px",
       render: (_, row) => (
-        <div className="flex justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleEdit(row);
-            }}
-          >
-            <Edit2 className="h-4 w-4" />
-          </Button>
-
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                disabled={isDeleting}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Hành động này không thể hoàn tác. Kỹ năng "{row.name}" sẽ bị xóa vĩnh viễn khỏi hệ thống.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Hủy</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => handleDelete(row.id)}
-                  className="bg-destructive hover:bg-destructive/90"
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[180px]">
+            <DropdownMenuLabel>Hành động</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => handleEdit(row)}>
+              <Edit2 className="mr-2 h-4 w-4" />
+              Chỉnh sửa
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <div
+                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-destructive hover:text-destructive-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-destructive"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  Xóa
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Xóa kỹ năng
+                </div>
+              </AlertDialogTrigger>
+              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Hành động này không thể hoàn tác. Kỹ năng "{row.name}" sẽ bị xóa vĩnh viễn khỏi hệ thống.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Hủy</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => handleDelete(row.id)}
+                    className="bg-destructive"
+                  >
+                    Xóa
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </DropdownMenuContent>
+        </DropdownMenu>
       ),
     },
   ];
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-medium">Kỹ năng</h3>
-          <p className="text-sm text-muted-foreground">
-            Quản lý các kỹ năng mà kỹ thuật viên có thể thực hiện
-          </p>
-        </div>
-        <Button onClick={handleAdd} size="sm" className="gap-2">
-          <Plus className="h-4 w-4" />
-          Thêm kỹ năng
-        </Button>
-      </div>
+      <PageHeader
+        title="Kỹ năng"
+        subtitle="Quản lý các kỹ năng mà kỹ thuật viên có thể thực hiện"
+        actionLabel="Thêm kỹ năng"
+        onActionClick={handleAdd}
+        onSearch={setSearch}
+      />
 
       <DataTable
         columns={columns}

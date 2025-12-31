@@ -54,7 +54,7 @@ export function ServicePageTabs({
         className="w-full"
       >
         <div className="flex items-center justify-between mb-4">
-          <TabsList className="bg-background border grid w-[400px] grid-cols-4 p-1">
+          <TabsList>
             <TabsTrigger value="services">Dịch vụ</TabsTrigger>
             <TabsTrigger value="categories">Danh mục</TabsTrigger>
             <TabsTrigger value="resources">Tài nguyên</TabsTrigger>
@@ -67,7 +67,7 @@ export function ServicePageTabs({
           Only render the active tab content to reduce initial load weight.
           We do NOT use forceMount here.
         */}
-        <div className="mt-4 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+        <div className="mt-4">
            {activeTab === "services" && (
              <TabsContent value="services" className="m-0 border-none p-0">
                <ServicesTab

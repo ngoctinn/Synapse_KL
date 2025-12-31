@@ -33,6 +33,7 @@ class ResourceGroupRead(SQLModel):
 
 class ResourceGroupReadWithCount(ResourceGroupRead):
     resource_count: int = 0
+    active_count: int = 0
 
 
 # Resource Schemas
@@ -41,7 +42,7 @@ class ResourceCreate(SQLModel):
     name: str
     code: str | None = None
     status: ResourceStatus = ResourceStatus.ACTIVE
-    setup_time_minutes: int = 0
+
     description: str | None = None
     image_url: str | None = None
 
@@ -50,7 +51,7 @@ class ResourceUpdate(SQLModel):
     name: str | None = None
     code: str | None = None
     status: ResourceStatus | None = None
-    setup_time_minutes: int | None = None
+
     description: str | None = None
     image_url: str | None = None
 
@@ -61,7 +62,7 @@ class ResourceRead(SQLModel):
     name: str
     code: str | None
     status: ResourceStatus
-    setup_time_minutes: int
+
     description: str | None = None
     image_url: str | None = None
 

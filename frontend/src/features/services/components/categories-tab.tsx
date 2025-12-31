@@ -1,5 +1,6 @@
 "use client";
 
+import { PageHeader } from "@/shared/components/page-header";
 import { cn } from "@/shared/lib/utils";
 import {
   AlertDialog,
@@ -13,6 +14,15 @@ import {
   AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
+import { Checkbox } from "@/shared/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -38,8 +48,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Edit2, GripVertical, Plus, Trash2 } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
+import { Edit2, GripVertical, MoreHorizontal, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { deleteCategoryAction, reorderCategoriesAction } from "../actions";
 import type { ServiceCategory } from "../types";
@@ -53,6 +63,7 @@ export function CategoriesTab({ categories }: CategoriesTabProps) {
   const [items, setItems] = useState(categories);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
+  const [search, setSearch] = useState("");
   const [isDeleting, startDeleteTransition] = useTransition();
 
   // Update items if prop changes (e.g. initial load or external update)
@@ -112,22 +123,26 @@ export function CategoriesTab({ categories }: CategoriesTabProps) {
     });
   };
 
+  const filteredItems = useMemo(() => {
+    if (!search) return items;
+    const searchLower = search.toLowerCase();
+    return items.filter(cat =>
+        cat.name.toLowerCase().includes(searchLower) ||
+        (cat.description && cat.description.toLowerCase().includes(searchLower))
+    );
+  }, [items, search]);
+
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-medium">Danh mục dịch vụ</h3>
-          <p className="text-sm text-muted-foreground">
-            Kéo thả để sắp xếp thứ tự hiển thị trên bảng giá và website
-          </p>
-        </div>
-        <Button onClick={handleAdd} size="sm" className="gap-2">
-          <Plus className="h-4 w-4" />
-          Thêm danh mục
-        </Button>
-      </div>
+      <PageHeader
+        title="Danh mục dịch vụ"
+        subtitle="Kéo thả để sắp xếp thứ tự hiển thị trên bảng giá và website"
+        actionLabel="Thêm danh mục"
+        onActionClick={handleAdd}
+        onSearch={setSearch}
+      />
 
-      <div className="overflow-x-auto rounded-lg border border-neutral-10">
+      <div className="overflow-x-auto rounded-lg border border-border">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -137,24 +152,29 @@ export function CategoriesTab({ categories }: CategoriesTabProps) {
             <TableHeader>
               <TableRow className="hover:bg-transparent border-b-0">
                 <TableHead className="w-12 bg-inherit"></TableHead>
+                <TableHead className="w-12 font-bold text-foreground bg-inherit text-sm">No</TableHead>
+                <TableHead className="w-12 bg-inherit">
+                  <Checkbox disabled />
+                </TableHead>
                 <TableHead className="bg-inherit font-bold text-foreground text-sm">Tên Danh Mục</TableHead>
                 <TableHead className="bg-inherit font-bold text-foreground text-sm">Mô tả</TableHead>
-                <TableHead className="bg-inherit font-bold text-foreground text-sm text-right sticky right-0 bg-secondary shadow-[-2px_0_4px_-2px_rgba(0,0,0,0.1)] z-10 w-[100px]">Thao tác</TableHead>
+                <TableHead className="bg-inherit font-bold text-foreground text-sm text-right sticky right-0 bg-secondary z-10 w-[80px]">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              <SortableContext items={items} strategy={verticalListSortingStrategy}>
-                {items.length === 0 ? (
+              <SortableContext items={filteredItems} strategy={verticalListSortingStrategy}>
+                {filteredItems.length === 0 ? (
                     <TableRow>
-                        <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                            Chưa có danh mục nào.
+                        <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                            {search ? "Không tìm thấy danh mục nào." : "Chưa có danh mục nào."}
                         </TableCell>
                     </TableRow>
                 ) : (
-                    items.map((category) => (
+                    filteredItems.map((category: ServiceCategory, idx: number) => (
                     <SortableCategoryRow
                         key={category.id}
                         category={category}
+                        index={idx}
                         isDeleting={isDeleting}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
@@ -179,12 +199,13 @@ export function CategoriesTab({ categories }: CategoriesTabProps) {
 // --- Sortable Row Component ---
 interface SortableCategoryRowProps {
   category: ServiceCategory;
+  index: number;
   isDeleting: boolean;
   onEdit: (category: ServiceCategory) => void;
   onDelete: (id: string) => void;
 }
 
-function SortableCategoryRow({ category, isDeleting, onEdit, onDelete }: SortableCategoryRowProps) {
+function SortableCategoryRow({ category, index, isDeleting, onEdit, onDelete }: SortableCategoryRowProps) {
   const {
     attributes,
     listeners,
@@ -206,20 +227,25 @@ function SortableCategoryRow({ category, isDeleting, onEdit, onDelete }: Sortabl
       ref={setNodeRef}
       style={style}
       className={cn(
-        "hover:bg-muted/30 transition-colors",
-        isDragging && "bg-accent opacity-80 shadow-md"
+        isDragging && "bg-accent opacity-80"
       )}
     >
       <TableCell className="w-12 py-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-grab active:cursor-grabbing text-muted-foreground hover:bg-muted"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="h-4 w-4" />
-        </Button>
+         <Button
+           variant="ghost"
+           size="icon"
+           className="cursor-grab active:cursor-grabbing text-muted-foreground"
+           {...attributes}
+           {...listeners}
+         >
+           <GripVertical className="h-4 w-4" />
+         </Button>
+      </TableCell>
+      <TableCell className="font-medium text-muted-foreground/80 py-2 w-12">
+        {index + 1}
+      </TableCell>
+      <TableCell className="w-12 py-2">
+        <Checkbox disabled />
       </TableCell>
       <TableCell className="font-medium py-2">
         {category.name}
@@ -227,47 +253,51 @@ function SortableCategoryRow({ category, isDeleting, onEdit, onDelete }: Sortabl
       <TableCell className="py-2 text-muted-foreground line-clamp-1 max-w-sm" title={category.description || ""}>
          {category.description || "-"}
       </TableCell>
-      <TableCell className="py-2 text-right sticky right-0 bg-card shadow-[-2px_0_4px_-2px_rgba(0,0,0,0.1)] z-10 w-[100px]">
-        <div className="flex justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground"
-            onClick={() => onEdit(category)}
-          >
-            <Edit2 className="h-4 w-4" />
-          </Button>
-
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                disabled={isDeleting}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Danh mục "{category.name}" sẽ bị xóa. Bạn không thể xóa nếu danh mục này đang chứa dịch vụ.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Hủy</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => onDelete(category.id)}
-                  className="bg-destructive hover:bg-destructive/90"
+      <TableCell className="py-2 text-right sticky right-0 bg-card z-10 w-[80px]">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[180px]">
+            <DropdownMenuLabel>Hành động</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => onEdit(category)}>
+              <Edit2 className="mr-2 h-4 w-4" />
+              Chỉnh sửa
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <div
+                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-destructive hover:text-destructive-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-destructive"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  Xóa
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Xóa danh mục
+                </div>
+              </AlertDialogTrigger>
+              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Danh mục "{category.name}" sẽ bị xóa. Bạn không thể xóa nếu danh mục này đang chứa dịch vụ.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Hủy</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => onDelete(category.id)}
+                    className="bg-destructive"
+                  >
+                    Xóa
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </TableCell>
     </TableRow>
   );

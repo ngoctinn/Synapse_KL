@@ -1,16 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/shared/ui/sheet";
+import { Button } from "@/shared/ui/button";
 import {
   Form,
   FormControl,
@@ -20,10 +10,20 @@ import {
   FormMessage,
 } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
-import { Button } from "@/shared/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/shared/ui/sheet";
 import { Textarea } from "@/shared/ui/textarea";
-import { skillCreateSchema, type SkillCreateForm } from "../schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { createSkillAction, updateSkillAction } from "../actions";
+import { skillCreateSchema, type SkillCreateForm } from "../schemas";
 import type { Skill } from "../types";
 
 interface SkillFormSheetProps {
@@ -98,7 +98,7 @@ export function SkillFormSheet({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tên kỹ năng</FormLabel>
+                  <FormLabel required>Tên kỹ năng</FormLabel>
                   <FormControl>
                     <Input placeholder="VD: Massage Thái" {...field} />
                   </FormControl>

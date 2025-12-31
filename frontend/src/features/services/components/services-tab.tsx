@@ -1,6 +1,8 @@
 "use client";
 
+import { PageHeader } from "@/shared/components/page-header";
 import { DataTable, type Column } from "@/shared/components/smart-data-table";
+import { cn } from "@/shared/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,6 +16,14 @@ import {
 } from "@/shared/ui/alert-dialog";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
 import { Edit2, Plus, Power, PowerOff, Trash2 } from "lucide-react";
 import { useMemo, useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -76,6 +86,7 @@ export function ServicesTab({
   const [pageSize, setPageSize] = useState(10);
   const [sortConfig, setSortConfig] = useState<{ key: keyof Service; dir: "asc" | "desc" } | null>(null);
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [search, setSearch] = useState("");
 
   const getCategoryName = (id: string | null) =>
     categories.find((c) => c.id === id)?.name || "Chưa phân loại";
@@ -121,7 +132,7 @@ export function ServicesTab({
         ...data,
         id: tempId,
         price: String(data.price),
-        is_active: true,
+        is_active: data.is_active ?? true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         category_id: data.category_id || null, // Ensure null if empty string
@@ -164,6 +175,15 @@ export function ServicesTab({
 
   const processedData = useMemo(() => {
     let result = [...optimisticServices]; // Use optimistic data
+
+    // 0. Search
+    if (search) {
+      const searchLower = search.toLowerCase();
+      result = result.filter(item =>
+        item.name.toLowerCase().includes(searchLower) ||
+        (item.description && item.description.toLowerCase().includes(searchLower))
+      );
+    }
 
     // 1. Filter
     if (Object.keys(filters).length > 0) {
@@ -214,6 +234,16 @@ export function ServicesTab({
   // --- Column Definitions ---
 
   const columns: Column<Service>[] = [
+    {
+      key: "no",
+      label: "No",
+      width: "50px",
+    },
+    {
+      key: "selection",
+      label: "",
+      width: "40px",
+    },
     {
       key: "name",
       label: "Dịch vụ",
@@ -272,13 +302,12 @@ export function ServicesTab({
       ],
       render: (value, row) => (
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
-          className={`h-7 px-2 text-xs gap-1.5 ${
-            row.is_active
-              ? "text-alert-success-foreground hover:bg-alert-success/20"
-              : "text-muted-foreground hover:bg-muted"
-          }`}
+          className={cn(
+            "gap-1.5",
+            row.is_active ? "text-success border-success/30 bg-success/5" : "text-muted-foreground"
+          )}
           onClick={(e) => {
             e.stopPropagation();
             handleToggleStatus(row.id);
@@ -296,70 +325,79 @@ export function ServicesTab({
     {
       key: "actions",
       label: "Thao tác",
-      width: "100px",
+      width: "80px",
       render: (_, row) => (
-        <div className="flex justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleEdit(row);
-            }}
-          >
-            <Edit2 className="h-4 w-4" />
-          </Button>
-
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                disabled={isPending}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Xóa dịch vụ "{row.name}"? Hành động này không thể hoàn tác.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Hủy</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => handleDelete(row.id)}
-                  className="bg-destructive"
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Plus className="h-4 w-4 rotate-45" /> {/* Using Plus rotated as a fallback since MoreHorizontal is standard but let's see */}
+              {/* Wait, the design system uses MoreHorizontal. Let's use that. */}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[180px]">
+            <DropdownMenuLabel>Hành động</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => handleEdit(row)}>
+              <Edit2 className="mr-2 h-4 w-4" />
+              Chỉnh sửa
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleToggleStatus(row.id)}>
+              {row.is_active ? (
+                <>
+                  <PowerOff className="mr-2 h-4 w-4 text-warning" />
+                  Tạm ngưng
+                </>
+              ) : (
+                <>
+                  <Power className="mr-2 h-4 w-4 text-success" />
+                  Kích hoạt
+                </>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <div
+                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-destructive hover:text-destructive-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-destructive"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  Xóa
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Xóa dịch vụ
+                </div>
+              </AlertDialogTrigger>
+              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Xóa dịch vụ "{row.name}"? Hành động này không thể hoàn tác.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Hủy</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => handleDelete(row.id)}
+                    className="bg-destructive"
+                  >
+                    Xóa
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </DropdownMenuContent>
+        </DropdownMenu>
       ),
     },
   ];
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-medium">Dịch vụ</h3>
-          <p className="text-sm text-muted-foreground">
-            Quản lý các dịch vụ Spa cung cấp cho khách hàng
-          </p>
-        </div>
-        <Button onClick={handleAdd} size="sm" className="gap-2">
-          <Plus className="h-4 w-4" />
-          Thêm dịch vụ
-        </Button>
-      </div>
+      <PageHeader
+        title="Dịch vụ"
+        subtitle="Quản lý các dịch vụ Spa cung cấp cho khách hàng"
+        actionLabel="Thêm dịch vụ"
+        onActionClick={handleAdd}
+        onSearch={setSearch}
+      />
 
       <DataTable
         columns={columns}

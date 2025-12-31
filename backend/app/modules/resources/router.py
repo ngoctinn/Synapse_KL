@@ -14,6 +14,7 @@ from app.modules.resources.schemas import (
     ResourceCreate,
     ResourceGroupCreate,
     ResourceGroupRead,
+    ResourceGroupReadWithCount,
     ResourceGroupUpdate,
     ResourceRead,
     ResourceUpdate,
@@ -23,7 +24,7 @@ router = APIRouter(prefix="/resources", tags=["Resources"])
 
 
 # ResourceGroup endpoints
-@router.get("/groups", response_model=list[ResourceGroupRead])
+@router.get("/groups", response_model=list[ResourceGroupReadWithCount])
 async def list_groups(session: AsyncSession = Depends(get_db)):
     return await service.get_all_groups(session)
 

@@ -1,5 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID, uuid4
+from sqlalchemy import DateTime
 from sqlmodel import SQLModel, Field
 
 class BaseUUIDModel(SQLModel):
@@ -12,5 +13,13 @@ class BaseUUIDModel(SQLModel):
         index=True,
         nullable=False
     )
-    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
-    updated_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    created_at: datetime = Field(
+        sa_type=DateTime(timezone=True),
+        default_factory=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+    updated_at: datetime = Field(
+        sa_type=DateTime(timezone=True),
+        default_factory=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )

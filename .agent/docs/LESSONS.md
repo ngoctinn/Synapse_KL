@@ -49,3 +49,12 @@ description: Các bài học kỹ thuật quan trọng rút ra từ quá trình 
 - **Circular import**: Forward reference dùng `"ClassName"` (quotes) cho Relationship type hints.
 - **ruff config**: Thêm `[tool.ruff]` vào `pyproject.toml`, set `line-length = 120`.
 
+## 9. DATETIME & TIMEZONES (PostgreSQL + Asyncpg)
+- **Problem**: `asyncpg` crash với lỗi `can't subtract offset-naive and offset-aware datetimes` nếu DB là naive datetime.
+- **Schema**: Mọi field datetime PHẢI dùng `sa_type=DateTime(timezone=True)` (TIMESTAMPTZ).
+  ```python
+  from sqlalchemy import DateTime
+  created_at: datetime = Field(sa_type=DateTime(timezone=True), default_factory=lambda: datetime.now(timezone.utc))
+  ```
+- **Application**: TUYỆT ĐỐI KHÔNG dùng `datetime.now()` (trả về local/naive). LUÔN dùng `datetime.now(timezone.utc)`.
+- **Legacy/Migrate**: Nếu DB lỡ tạo naive, phải migrate ép về `TIMESTAMPTZ` ngay.
