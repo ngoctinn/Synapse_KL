@@ -1,39 +1,42 @@
 "use client";
 
-import { bulkCreateSchedulesAction } from "@/features/staff/actions";
+import { bulkCreateSchedulesAction, deleteSchedulesBatchAction } from "@/features/staff/actions";
 import { type GridCellCoords } from "@/features/staff/hooks/use-drag-select";
 import type { Shift, StaffProfile } from "@/features/staff/types";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/shared/ui/form";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/shared/ui/select";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
 } from "@/shared/ui/sheet";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { Loader2, Save, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+
+const UNDO_TIMEOUT_MS = 8000;
 
 const formSchema = z.object({
   shift_id: z.string().uuid({ message: "Vui lòng chọn ca làm việc" }),
@@ -58,7 +61,12 @@ export function ScheduleFormSheet({
   shifts,
   onSuccess,
 }: ScheduleFormSheetProps) {
-  const [isPending, setIsPending] = useState(false); // Manually managing loading state for clearer UI feedback
+  const router = useRouter();
+  const [isPending, setIsPending] = useState(false);
+
+  // Undo state
+  const lastCreatedIdsRef = useRef<string[]>([]);
+  const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -118,10 +126,49 @@ export function ScheduleFormSheet({
         const result = await bulkCreateSchedulesAction(payloads);
 
         if (result.success) {
-          toast.success(result.message || `Đã phân ca thành công cho ${selectedCells.length} ô`);
+          // Store created IDs for potential undo
+          lastCreatedIdsRef.current = result.createdIds || [];
+
+          // Clear any existing timeout
+          if (undoTimeoutRef.current) {
+            clearTimeout(undoTimeoutRef.current);
+          }
+
           onOpenChange(false);
           form.reset();
           onSuccess();
+
+          // Show success toast with undo action
+          if (lastCreatedIdsRef.current.length > 0) {
+            toast.success(result.message || `Đã phân ca thành công cho ${selectedCells.length} ô`, {
+              duration: UNDO_TIMEOUT_MS,
+              action: {
+                label: "Hoàn tác",
+                onClick: async () => {
+                  const idsToDelete = lastCreatedIdsRef.current;
+                  if (idsToDelete.length === 0) {
+                    toast.error("Không có gì để hoàn tác");
+                    return;
+                  }
+                  const deleteResult = await deleteSchedulesBatchAction(idsToDelete);
+                  if (deleteResult.success) {
+                    toast.success("Đã hoàn tác phân ca");
+                    router.refresh();
+                  } else {
+                    toast.error(deleteResult.message);
+                  }
+                  lastCreatedIdsRef.current = [];
+                },
+              },
+            });
+
+            // Auto-clear undo state after timeout
+            undoTimeoutRef.current = setTimeout(() => {
+              lastCreatedIdsRef.current = [];
+            }, UNDO_TIMEOUT_MS);
+          } else {
+            toast.success(result.message || `Đã phân ca thành công`);
+          }
         } else {
           toast.error(result.message || "Có lỗi xảy ra khi phân ca");
         }

@@ -128,12 +128,29 @@ export function StaffTable({ data }: StaffTableProps) {
         </Button>
       </div>
 
-      <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
-        <DataTable
-          columns={columns}
-          data={tableData}
-        />
-      </div>
+      {data.length === 0 ? (
+        <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+          <div className="flex flex-col items-center justify-center py-16 px-4 gap-4">
+            <div className="rounded-full bg-muted p-4">
+              <Plus className="h-8 w-8 text-muted-foreground/50" />
+            </div>
+            <div className="text-center space-y-1">
+              <p className="text-sm font-medium text-foreground">Chưa có nhân viên nào</p>
+              <p className="text-xs text-muted-foreground">Thêm nhân viên đầu tiên để bắt đầu quản lý đội ngũ.</p>
+            </div>
+            <Button onClick={handleCreate} variant="outline" className="mt-2">
+              Thêm nhân viên đầu tiên
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+          <DataTable
+            columns={columns}
+            data={tableData}
+          />
+        </div>
+      )}
 
       <StaffFormSheet
         open={isSheetOpen}

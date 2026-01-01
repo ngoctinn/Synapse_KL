@@ -65,6 +65,13 @@ export interface ShiftCreateInput {
   color_code?: string | null;
 }
 
+export interface ShiftUpdateInput {
+  name?: string;
+  start_time?: string;
+  end_time?: string;
+  color_code?: string | null;
+}
+
 export interface StaffScheduleCreateInput {
   staff_id: string;
   shift_id: string;

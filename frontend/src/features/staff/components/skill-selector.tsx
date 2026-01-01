@@ -3,6 +3,7 @@
 import { getSkillsAction } from "@/features/services/actions";
 import type { Skill } from "@/features/staff/types";
 import { MultiSelect } from "@/shared/components/multi-select";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { useEffect, useState } from "react";
 
 interface SkillSelectorProps {
@@ -28,6 +29,10 @@ export function SkillSelector({ value, onChange, disabled }: SkillSelectorProps)
     };
     fetchSkills();
   }, []);
+
+  if (isLoading) {
+    return <Skeleton className="h-10 w-full rounded-xl" />;
+  }
 
   const options = skills.map((s) => ({
     label: s.name,

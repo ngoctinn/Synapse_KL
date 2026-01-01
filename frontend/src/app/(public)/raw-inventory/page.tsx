@@ -143,7 +143,8 @@ export default function CompleteRawInventory() {
             {/* 11. DateTimePicker */}
             <Section title="11. DateTimePicker">
                 <div style={{ maxWidth: '300px' }}>
-                    <UI.DateTimePicker />
+                    {/* <UI.DateTimePicker /> - Component not yet exported */}
+                    <p style={{ color: '#888', fontSize: '12px' }}>DateTimePicker component not available</p>
                 </div>
             </Section>
 
@@ -212,12 +213,8 @@ export default function CompleteRawInventory() {
             {/* 17. MultiSelect */}
             <Section title="17. MultiSelect">
                 <div style={{ maxWidth: '400px' }}>
-                    <UI.MultiSelect
-                        options={[{ label: "React", value: "react" }, { label: "Vue", value: "vue" }]}
-                        selected={[]}
-                        onChange={() => {}}
-                        placeholder="Chọn công nghệ..."
-                    />
+                    {/* <UI.MultiSelect ... /> - Component available in shared/components, not shared/ui */}
+                    <p style={{ color: '#888', fontSize: '12px' }}>MultiSelect is in shared/components not shared/ui</p>
                 </div>
             </Section>
 

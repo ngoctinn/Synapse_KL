@@ -2,9 +2,17 @@
 
 import { ScheduleFormSheet } from "@/features/staff/components/schedule-form-sheet";
 import { type GridCellCoords, useDragToSelect } from "@/features/staff/hooks/use-drag-select";
+import { useGridKeyboard } from "@/features/staff/hooks/use-grid-keyboard";
 import type { Shift, StaffProfile, StaffScheduleWithDetails } from "@/features/staff/types";
+import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/ui/tooltip";
 import {
   addDays,
   format,
@@ -14,14 +22,17 @@ import {
 } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
+  AlertTriangle,
   Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
   Clock,
-  Plus
+  MousePointerClick,
+  Plus,
+  Users
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface SchedulingGridProps {
   staff: StaffProfile[];
@@ -32,12 +43,23 @@ interface SchedulingGridProps {
 
 export function SchedulingGrid({ staff, shifts, schedules, currentDate }: SchedulingGridProps) {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedCells, setSelectedCells] = useState<GridCellCoords[]>([]);
+  const [isSelectMode, setIsSelectMode] = useState(false); // Touch-friendly selection mode
 
   const start = startOfWeek(currentDate, { weekStartsOn: 1 });
-  // const end = endOfWeek(currentDate, { weekStartsOn: 1 }); // Unused
-  const weekDays = useMemo(() => [...Array(7)].map((_, i) => addDays(start, i)), [start]);
+
+  // Mobile shows fewer days for better usability
+  const daysToShow = isMobile ? 3 : 7;
+  const allWeekDays = useMemo(() => [...Array(7)].map((_, i) => addDays(start, i)), [start]);
+
+  // Calculate which days to show on mobile (centered around current day or start of selection)
+  const [mobileStartIndex, setMobileStartIndex] = useState(0);
+  const weekDays = useMemo(() => {
+    if (!isMobile) return allWeekDays;
+    return allWeekDays.slice(mobileStartIndex, mobileStartIndex + daysToShow);
+  }, [isMobile, allWeekDays, mobileStartIndex, daysToShow]);
 
   // --- Optimization: O(1) Lookup Map ---
   const scheduleMap = useMemo(() => {
@@ -110,11 +132,52 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
     return set;
   }, [selectedCells]);
 
-  // Conflict Detection
-  const hasConflict = useMemo(() => selectedCells.some(cell => {
-    const key = `${cell.staffId}_${cell.dateStr}`;
-    return scheduleMap.has(key) && scheduleMap.get(key)!.length > 0;
-  }), [selectedCells, scheduleMap]);
+  // Real-time selection count during drag
+  const dragSelectionCount = useMemo(() => {
+    if (!selection.isSelecting || !selection.start || !selection.end) return 0;
+    const minCol = Math.min(selection.start.colIndex, selection.end.colIndex);
+    const maxCol = Math.max(selection.start.colIndex, selection.end.colIndex);
+    const minRow = Math.min(selection.start.rowIndex, selection.end.rowIndex);
+    const maxRow = Math.max(selection.start.rowIndex, selection.end.rowIndex);
+    return (maxCol - minCol + 1) * (maxRow - minRow + 1);
+  }, [selection]);
+
+  // Conflict Detection with details
+  const conflictDetails = useMemo(() => {
+    const conflicts: { staffName: string; date: string; existingShift: string }[] = [];
+    selectedCells.forEach(cell => {
+      const key = `${cell.staffId}_${cell.dateStr}`;
+      const existing = scheduleMap.get(key);
+      if (existing && existing.length > 0) {
+        const staffMember = staff.find(s => s.user_id === cell.staffId);
+        conflicts.push({
+          staffName: staffMember?.full_name || "Nhân viên",
+          date: format(new Date(cell.dateStr), "dd/MM"),
+          existingShift: existing[0].shift_name || "Ca làm",
+        });
+      }
+    });
+    return conflicts;
+  }, [selectedCells, scheduleMap, staff]);
+
+  const hasConflict = conflictDetails.length > 0;
+
+  // Keyboard navigation
+  const gridRef = useRef<HTMLTableElement>(null);
+  const formatDateForKeyboard = useCallback((date: Date) => format(date, "yyyy-MM-dd"), []);
+
+  const {
+    handleKeyDown,
+    isCellFocused,
+    focusCell,
+  } = useGridKeyboard({
+    totalRows: staff.length,
+    totalCols: 7,
+    staff,
+    weekDays,
+    formatDate: formatDateForKeyboard,
+    enabled: !isSheetOpen,
+  });
 
 
   const handleSheetSuccess = () => {
@@ -136,8 +199,25 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
     router.push(`?${params.toString()}`);
   };
 
+  // Empty state when no staff
+  if (staff.length === 0) {
+    return (
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+        <div className="flex flex-col items-center justify-center py-16 px-4 gap-4">
+          <div className="rounded-full bg-muted p-4">
+            <Users className="h-8 w-8 text-muted-foreground/50" />
+          </div>
+          <div className="text-center space-y-1">
+            <p className="text-sm font-medium text-foreground">Chưa có nhân viên nào đang hoạt động</p>
+            <p className="text-xs text-muted-foreground">Thêm nhân viên và kích hoạt trạng thái để bắt đầu lập lịch.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-4">
+    <div className={cn("space-y-4", selection.isSelecting && "cursor-crosshair")}>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" onClick={() => navigateWeek("prev")} className="h-9 w-9">
@@ -154,15 +234,57 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
           </Button>
         </div>
 
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => navigateWeek("today")}
-          className="h-9 px-4 font-medium"
-        >
-          HÔM NAY
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Mobile: Select Mode Toggle */}
+          {isMobile && (
+            <Button
+              variant={isSelectMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsSelectMode(!isSelectMode)}
+              className="h-9 px-3 gap-2"
+            >
+              <MousePointerClick className="w-4 h-4" />
+              <span className="hidden sm:inline">{isSelectMode ? "Thoát chọn" : "Chọn ô"}</span>
+            </Button>
+          )}
+
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => navigateWeek("today")}
+            className="h-9 px-4 font-medium"
+          >
+            HÔM NAY
+          </Button>
+        </div>
       </div>
+
+      {/* Mobile Day Navigation */}
+      {isMobile && (
+        <div className="flex items-center justify-between gap-2 px-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setMobileStartIndex(prev => Math.max(0, prev - 1))}
+            disabled={mobileStartIndex === 0}
+            className="h-8 px-2"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <span className="text-xs text-muted-foreground">
+            Đang xem {daysToShow}/{7} ngày - vuốt để xem thêm
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setMobileStartIndex(prev => Math.min(7 - daysToShow, prev + 1))}
+            disabled={mobileStartIndex >= 7 - daysToShow}
+            className="h-8 px-2"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
 
       <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden"
            onPointerUp={handlePointerUp}> {/* Catch pointer up bubble */}
@@ -224,13 +346,39 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
                     return (
                       <td
                         key={key}
+                        tabIndex={0}
+                        role="gridcell"
+                        aria-selected={isSelected}
                         className={cn(
-                          "p-1.5 border-b border-r border-border/50 last:border-r-0 cursor-pointer relative select-none touch-none transition-colors",
+                          "p-1.5 border-b border-r border-border/50 last:border-r-0 cursor-pointer relative select-none transition-colors outline-none",
+                          // Allow touch scroll except when in select mode
+                          !isSelectMode && "touch-auto",
+                          isSelectMode && "touch-none",
                           isToday && "bg-primary/5",
-                          isSelected && "bg-primary/20 ring-inset ring-1 ring-primary/30"
+                          isSelected && "bg-primary/20 ring-inset ring-1 ring-primary/30",
+                          isCellFocused(rowIndex, colIndex) && "ring-2 ring-primary ring-offset-1",
+                          // Visual hint when select mode is active on mobile
+                          isSelectMode && !isSelected && "after:absolute after:inset-0 after:border-2 after:border-dashed after:border-primary/20 after:rounded-sm after:pointer-events-none"
                         )}
-                        onPointerDown={(e) => handlePointerDown(cellCoords, e)}
+                        onPointerDown={(e) => {
+                          // On mobile in select mode, use tap-to-toggle instead of drag
+                          if (isMobile && isSelectMode) {
+                            e.preventDefault();
+                            // Toggle cell in selection
+                            const cellKey = `${rowIndex}_${colIndex}`;
+                            if (selectedKeys.has(cellKey)) {
+                              setSelectedCells(prev => prev.filter(c => !(c.rowIndex === rowIndex && c.colIndex === colIndex)));
+                            } else {
+                              setSelectedCells(prev => [...prev, cellCoords]);
+                            }
+                            return;
+                          }
+                          // Desktop: normal drag-to-select
+                          handlePointerDown(cellCoords, e);
+                        }}
                         onPointerEnter={() => handlePointerEnter(cellCoords)}
+                        onFocus={() => focusCell(rowIndex, colIndex)}
+                        onKeyDown={handleKeyDown}
                       >
                         <div className="min-h-[64px] h-full flex flex-col gap-1 w-full justify-center">
                           {daySchedules.length > 0 ? (
@@ -241,7 +389,8 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
                             <div className={cn(
                                 "h-full w-full rounded-md flex items-center justify-center opacity-0 transition-all duration-200",
                                 "group-hover/cell:opacity-100 group-hover:bg-muted/10",
-                                isSelected && "opacity-100"
+                                isSelected && "opacity-100",
+                                isSelectMode && "opacity-50"
                             )}>
                               <Plus className="w-4 h-4 text-muted-foreground/50" />
                             </div>
@@ -257,8 +406,16 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
         </div>
       </div>
 
+      {/* Real-time Drag Counter */}
+      {selection.isSelecting && dragSelectionCount > 0 && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-primary text-primary-foreground border shadow-xl rounded-full px-4 py-2 flex items-center gap-2 animate-in fade-in zoom-in-95 duration-100">
+          <span className="text-sm font-bold">{dragSelectionCount} ô</span>
+        </div>
+      )}
+
       {/* Floating Action Bar */}
       {selectedCells.length > 0 && !isSheetOpen && !selection.isSelecting && (
+        <TooltipProvider>
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-popover border shadow-xl rounded-full px-6 py-2.5 flex items-center gap-4 animate-in slide-in-from-bottom-5 fade-in zoom-in-95 duration-200">
              <div className="flex flex-col">
                 <span className="text-sm font-bold flex items-center gap-2 text-foreground">
@@ -266,7 +423,30 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
                         {selectedCells.length}
                     </span>
                     ô đang chọn
-                    {hasConflict && <span className="text-[10px] bg-destructive/10 text-destructive px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Trùng lặp</span>}
+                    {hasConflict && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-[10px] bg-destructive/10 text-destructive px-1.5 py-0.5 rounded font-bold uppercase tracking-wider cursor-help flex items-center gap-1">
+                            <AlertTriangle className="w-3 h-3" />
+                            {conflictDetails.length} trùng lặp
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <div className="text-xs space-y-1">
+                            <p className="font-semibold">Các ô đã có lịch:</p>
+                            <ul className="list-disc pl-4">
+                              {conflictDetails.slice(0, 5).map((c, i) => (
+                                <li key={i}>{c.staffName} - {c.date}: {c.existingShift}</li>
+                              ))}
+                              {conflictDetails.length > 5 && (
+                                <li>...và {conflictDetails.length - 5} ô khác</li>
+                              )}
+                            </ul>
+                            <p className="text-muted-foreground mt-2">Tiếp tục sẽ tạo thêm ca trùng.</p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
                 </span>
              </div>
 
@@ -282,6 +462,7 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
                  </Button>
              </div>
         </div>
+        </TooltipProvider>
       )}
 
       {isSheetOpen && selectedCells.length > 0 && (

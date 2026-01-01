@@ -3,14 +3,15 @@
 import { API_BASE_URL } from "@/shared/api";
 import { revalidatePath } from "next/cache";
 import type {
-    Shift,
-    ShiftCreateInput,
-    StaffProfileCreateInput,
-    StaffProfileUpdateInput,
-    StaffProfileWithSkills,
-    StaffScheduleBatchCreateInput,
-    StaffScheduleWithDetails,
-    StaffSkillsUpdate,
+  Shift,
+  ShiftCreateInput,
+  ShiftUpdateInput,
+  StaffProfileCreateInput,
+  StaffProfileUpdateInput,
+  StaffProfileWithSkills,
+  StaffScheduleBatchCreateInput,
+  StaffScheduleWithDetails,
+  StaffSkillsUpdate,
 } from "./types";
 
 const STAFF_PATH = "/api/v1/staff";
@@ -155,6 +156,24 @@ export async function createShiftAction(data: ShiftCreateInput) {
   }
 }
 
+export async function updateShiftAction(id: string, data: ShiftUpdateInput) {
+  try {
+    const res = await fetch(`${API_BASE_URL}${SCHEDULING_PATH}/shifts/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = (await res.json()) as APIErrorResponse;
+      return { success: false, message: err.detail || "Không thể cập nhật ca làm việc" };
+    }
+    revalidatePath("/dashboard/manager/staff");
+    return { success: true, message: "Cập nhật ca làm việc thành công" };
+  } catch (e) {
+    return { success: false, message: "Lỗi kết nối máy chủ" };
+  }
+}
+
 export async function getSchedulesAction(startDate: string, endDate: string, staffId?: string): Promise<StaffScheduleWithDetails[]> {
   const params = new URLSearchParams({
     start_date: startDate,
@@ -191,7 +210,7 @@ export async function batchCreateSchedulesAction(data: StaffScheduleBatchCreateI
 export async function bulkCreateSchedulesAction(items: StaffScheduleBatchCreateInput[]) {
   try {
     // Parallelize requests on the server side (low latency to backend)
-    const results = await Promise.all(
+    const responses = await Promise.all(
       items.map(item =>
         fetch(`${API_BASE_URL}${SCHEDULING_PATH}/schedules/batch`, {
           method: "POST",
@@ -202,15 +221,65 @@ export async function bulkCreateSchedulesAction(items: StaffScheduleBatchCreateI
             const err = (await res.json()) as APIErrorResponse;
             throw new Error(err.detail || `Lỗi với nhân viên ${item.staff_id}`);
           }
-          return res;
+          // Parse response to get created schedule IDs
+          const data = await res.json();
+          // API returns array of created schedules with IDs
+          return data as { id: string }[];
         })
       )
     );
 
+    // Flatten all created schedule IDs
+    const createdIds = responses.flat().map(s => s.id).filter(Boolean);
+
     revalidatePath("/dashboard/manager/staff");
-    return { success: true, message: `Đã phân ca cho ${results.length} nhân viên` };
+    return {
+      success: true,
+      message: `Đã phân ca cho ${items.length} nhân viên`,
+      createdIds
+    };
   } catch (error: any) {
     console.error("Bulk Create Schedules Error:", error);
-    return { success: false, message: error.message || "Lỗi khi xử lý hàng loạt" };
+    return { success: false, message: error.message || "Lỗi khi xử lý hàng loạt", createdIds: [] };
   }
 }
+
+export async function deleteScheduleAction(id: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}${SCHEDULING_PATH}/schedules/${id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      const err = (await res.json()) as APIErrorResponse;
+      return { success: false, message: err.detail || "Không thể xóa lịch làm việc" };
+    }
+    revalidatePath("/dashboard/manager/staff");
+    return { success: true, message: "Đã xóa lịch làm việc" };
+  } catch (e) {
+    return { success: false, message: "Lỗi kết nối máy chủ" };
+  }
+}
+
+export async function deleteSchedulesBatchAction(ids: string[]) {
+  try {
+    const results = await Promise.all(
+      ids.map(id =>
+        fetch(`${API_BASE_URL}${SCHEDULING_PATH}/schedules/${id}`, {
+          method: "DELETE",
+        }).then(async res => {
+          if (!res.ok) {
+            const err = (await res.json()) as APIErrorResponse;
+            throw new Error(err.detail || `Không thể xóa lịch ${id}`);
+          }
+          return res;
+        })
+      )
+    );
+    revalidatePath("/dashboard/manager/staff");
+    return { success: true, message: `Đã xóa ${results.length} lịch làm việc` };
+  } catch (error: any) {
+    console.error("Batch Delete Schedules Error:", error);
+    return { success: false, message: error.message || "Lỗi khi xóa hàng loạt" };
+  }
+}
+
