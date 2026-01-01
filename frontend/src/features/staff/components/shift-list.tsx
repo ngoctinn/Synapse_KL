@@ -1,36 +1,22 @@
 "use client";
 
-import { getShiftsAction } from "@/features/staff/actions";
 import { ShiftFormSheet } from "@/features/staff/components/shift-form-sheet";
 import type { Shift } from "@/features/staff/types";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Skeleton } from "@/shared/ui/skeleton";
 import { Clock, Plus, Settings2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-export function ShiftList() {
-  const [shifts, setShifts] = useState<Shift[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+interface ShiftListProps {
+  shifts: Shift[];
+}
+
+export function ShiftList({ shifts }: ShiftListProps) {
+  const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedShift, setSelectedShift] = useState<Shift | undefined>();
-
-  const fetchData = async () => {
-    try {
-      setIsLoading(true);
-      const data = await getShiftsAction();
-      setShifts(data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const handleAdd = () => {
     setSelectedShift(undefined);
@@ -40,6 +26,12 @@ export function ShiftList() {
   const handleEdit = (shift: Shift) => {
     setSelectedShift(shift);
     setIsSheetOpen(true);
+  };
+
+  const handleSuccess = () => {
+    router.refresh();
+    setIsSheetOpen(false); // Close sheet on success if desired, or keep open? Usually close.
+    // The sheet itself might interact with state, but router.refresh() updates the Server Component props.
   };
 
   return (
@@ -56,11 +48,7 @@ export function ShiftList() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {isLoading ? (
-          [...Array(3)].map((_, i) => (
-            <Skeleton key={i} className="h-48 w-full rounded-2xl" />
-          ))
-        ) : shifts.length === 0 ? (
+        {shifts.length === 0 ? (
           <Card className="col-span-full border-dashed bg-muted/20 rounded-2xl p-12 text-center">
             <div className="flex flex-col items-center gap-2">
               <Clock className="w-12 h-12 text-muted-foreground/30" />
@@ -111,7 +99,7 @@ export function ShiftList() {
         open={isSheetOpen}
         onOpenChange={setIsSheetOpen}
         shift={selectedShift}
-        onSuccess={fetchData}
+        onSuccess={handleSuccess}
       />
     </div>
   );
@@ -127,3 +115,4 @@ function calculateDuration(start: string, end: string) {
   const mins = diff % 60;
   return `${hours}h ${mins > 0 ? `${mins}m` : ""}`;
 }
+

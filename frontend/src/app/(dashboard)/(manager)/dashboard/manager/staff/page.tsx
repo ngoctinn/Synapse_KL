@@ -72,7 +72,7 @@ export default async function StaffPage({ searchParams }: PageProps) {
 
           <TabsContent value="shifts" forceMount={true} className="data-[state=inactive]:hidden focus-visible:outline-none">
             <Suspense fallback={<StaffLoading />}>
-              <ShiftList />
+              <ShiftList shifts={shifts} />
             </Suspense>
           </TabsContent>
 
