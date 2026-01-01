@@ -2,11 +2,11 @@
 
 import { cn } from "@/shared/lib/utils";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/shared/ui/select";
 import * as React from "react";
 
@@ -60,7 +60,7 @@ export function DurationSelect({
       onValueChange={(val) => onValueChange(Number(val))}
       disabled={disabled}
     >
-      <SelectTrigger className={cn("w-full justify-start font-normal", className)}>
+      <SelectTrigger className={cn("w-full justify-start font-normal h-11", className)}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>

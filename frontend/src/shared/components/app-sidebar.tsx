@@ -1,8 +1,8 @@
 "use client"
 
 import {
-  ChevronRight,
-  Flower2
+    ChevronRight,
+    Flower2
 } from "lucide-react"
 
 import { navigationConfig } from "@/shared/config/navigation"
@@ -10,15 +10,15 @@ import { cn } from "@/shared/lib/utils"
 import { UserRole } from "@/shared/types"
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
 } from "@/shared/ui/sidebar"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
@@ -91,7 +91,7 @@ export function AppSidebar({ role = "manager" }: AppSidebarProps) {
                           "w-6 h-6 shrink-0 transition-colors",
                           isActive
                             ? "text-sidebar-accent-foreground"
-                            : "text-[#A0A0A0] group-hover/menu-item:text-sidebar-accent-foreground"
+                            : "text-muted-foreground group-hover/menu-item:text-sidebar-accent-foreground"
                         )} />
                         <span className="ml-2 text-[15px] font-medium group-data-[collapsible=icon]:hidden whitespace-nowrap">{item.title}</span>
                       </Link>

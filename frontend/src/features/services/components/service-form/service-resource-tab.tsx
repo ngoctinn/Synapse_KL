@@ -1,6 +1,7 @@
 "use client";
 
 import { DurationSelect } from "@/shared/components/duration-select";
+import { MultiSelect } from "@/shared/components/multi-select";
 import { Button } from "@/shared/ui/button";
 import {
     FormControl,
@@ -10,7 +11,6 @@ import {
     FormMessage,
 } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
-import { MultiSelect } from "@/shared/ui/multi-select";
 import {
     Select,
     SelectContent,

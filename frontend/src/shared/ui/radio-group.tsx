@@ -29,11 +29,11 @@ function RadioGroupItem({
       className={cn(
         "aspect-square size-5 rounded-full border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 cursor-pointer group",
         // Unselected
-        "border-neutral-30 bg-white shadow-none hover:border-primary/60",
+        "border-neutral-30 bg-card shadow-none hover:border-primary/60",
         // Selected
         "data-[state=checked]:border-primary",
         // Disabled (Inactive)
-        "disabled:border-neutral-20 disabled:bg-white disabled:cursor-not-allowed",
+        "disabled:border-neutral-20 disabled:bg-card disabled:cursor-not-allowed",
         className
       )}
       {...props}

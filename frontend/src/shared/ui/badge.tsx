@@ -14,11 +14,12 @@ const badgeVariants = cva(
         secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
         destructive: "border-transparent bg-destructive/15 text-destructive hover:bg-destructive/25",
         outline: "border-border bg-background text-foreground hover:bg-accent",
-        success: "border-transparent bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400",
-        warning: "border-transparent bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-400",
-        error: "border-transparent bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400",
-        "soft-error": "border-transparent bg-rose-100 text-rose-600 hover:bg-rose-200 dark:bg-rose-900/30 dark:text-rose-400",
-        info: "border-transparent bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400",
+        // Semantic variants using alert tokens from globals.css
+        success: "border-[hsl(var(--alert-success-border))] bg-[hsl(var(--alert-success))] text-[hsl(var(--alert-success-foreground))] hover:bg-[hsl(var(--alert-success))]/80",
+        warning: "border-[hsl(var(--alert-warning-border))] bg-[hsl(var(--alert-warning))] text-[hsl(var(--alert-warning-foreground))] hover:bg-[hsl(var(--alert-warning))]/80",
+        error: "border-transparent bg-destructive/15 text-destructive hover:bg-destructive/25",
+        "soft-error": "border-transparent bg-destructive/10 text-destructive hover:bg-destructive/20",
+        info: "border-[hsl(var(--alert-info-border))] bg-[hsl(var(--alert-info))] text-[hsl(var(--alert-info-foreground))] hover:bg-[hsl(var(--alert-info))]/80",
       },
       size: {
         sm: "h-5 px-2 text-[10px]",
@@ -53,3 +54,4 @@ function Badge({
 }
 
 export { Badge, badgeVariants }
+

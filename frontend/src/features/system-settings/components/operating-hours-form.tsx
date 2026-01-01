@@ -6,18 +6,18 @@ import * as React from "react"
 import { useFieldArray, useForm } from "react-hook-form"
 import * as z from "zod"
 
+import { TimePickerDropdown } from "@/shared/components/time-picker-dropdown"
 import { cn } from "@/shared/lib/utils"
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormMessage,
 } from "@/shared/ui/form"
 import { Switch } from "@/shared/ui/switch"
-import { TimePickerDropdown } from "@/shared/ui/time-picker-dropdown"
 import { DayOfWeek, DAYS_OF_WEEK, OperatingHour } from "../types"
 
 const operatingHourSchema = z.object({

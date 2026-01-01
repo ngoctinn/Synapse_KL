@@ -33,7 +33,7 @@ function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
   return (
     <tbody
       data-slot="table-body"
-      className={cn("[&_tr:last-child]:border-0 bg-white", className)}
+      className={cn("[&_tr:last-child]:border-0 bg-card", className)}
       {...props}
     />
   )
@@ -105,7 +105,7 @@ function TableCaption({
 }
 
 export {
-  Table, TableBody, TableCaption, TableCell, TableFooter,
-  TableHead, TableHeader, TableRow
+    Table, TableBody, TableCaption, TableCell, TableFooter,
+    TableHead, TableHeader, TableRow
 }
 

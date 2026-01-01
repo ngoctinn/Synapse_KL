@@ -2,10 +2,14 @@
 
 import { AlertCircle, Calendar as CalendarIcon, Check, ChevronsUpDown, CreditCard, Settings, User as UserIcon, X } from "lucide-react"
 import * as React from "react"
-import { toast } from "sonner"
 import { DateRange } from "react-day-picker"
+import { toast } from "sonner"
 
+import { DatePickerWithRange } from "@/shared/components/date-range-picker"
+import { DateTimePicker } from "@/shared/components/date-time-picker"
+import { MultiSelect } from "@/shared/components/multi-select"
 import { PageHeader } from "@/shared/components/page-header"
+import { SearchInput } from "@/shared/components/search-input"
 import { DataTable } from "@/shared/components/smart-data-table"
 import {
   AlertDialog,
@@ -24,17 +28,15 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { Button } from "@/shared/ui/button"
 import { Calendar } from "@/shared/ui/calendar"
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/shared/ui/card"
 import { Checkbox } from "@/shared/ui/checkbox"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/shared/ui/collapsible"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/shared/ui/command"
-import { DatePickerWithRange } from "@/shared/ui/date-range-picker"
-import { DateTimePicker } from "@/shared/ui/date-time-picker"
 import {
   Dialog,
   DialogContent,
@@ -54,12 +56,10 @@ import {
 } from "@/shared/ui/dropdown-menu"
 import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
-import { MultiSelect } from "@/shared/ui/multi-select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover"
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group"
-import { SearchInput } from "@/shared/ui/search-input"
 import {
-    Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue
+  Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue
 } from "@/shared/ui/select"
 import { Separator } from "@/shared/ui/separator"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/shared/ui/sheet"

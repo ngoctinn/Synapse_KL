@@ -5,29 +5,29 @@ import { vi } from "date-fns/locale"
 import { AlertCircle, Plus, Trash2 } from "lucide-react"
 import * as React from "react"
 
+import { DatePickerWithRange } from "@/shared/components/date-range-picker"
+import { TimePickerDropdown } from "@/shared/components/time-picker-dropdown"
 import { cn } from "@/shared/lib/utils"
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
-import { DatePickerWithRange } from "@/shared/ui/date-range-picker"
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from "@/shared/ui/dialog"
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/shared/ui/form"
 import { Input } from "@/shared/ui/input"
 import { Switch } from "@/shared/ui/switch"
-import { TimePickerDropdown } from "@/shared/ui/time-picker-dropdown"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { eachDayOfInterval, getDay, isSameDay } from "date-fns"
 import { useForm } from "react-hook-form"

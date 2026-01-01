@@ -8,17 +8,17 @@ import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import { Checkbox } from "@/shared/ui/checkbox"
 import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
 } from "@/shared/ui/command"
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/shared/ui/popover"
 
 export interface Option {
@@ -84,12 +84,14 @@ export function MultiSelect({
                     <Badge
                       key={value}
                       variant="default"
-                      className="gap-1 rounded-md py-0.5 px-2 h-7 bg-primary/10 text-primary border-0 font-medium"
+                      className="gap-0 rounded-md p-0 h-8 bg-primary/10 text-primary border-0 font-medium overflow-hidden"
                     >
-                      {option?.label}
+                      <span className="px-2 py-0.5">{option?.label}</span>
                       <span
                         role="button"
-                        className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
+                        tabIndex={0}
+                        aria-label={`Xóa ${option?.label}`}
+                        className="flex items-center justify-center min-h-6 min-w-6 px-1 border-l border-primary/10 hover:bg-primary/20 transition-colors focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer group"
                         onKeyDown={(e) => {
                           if (e.key === "Enter" || e.key === " ") {
                             e.preventDefault()
@@ -107,7 +109,7 @@ export function MultiSelect({
                           handleUnselect(value)
                         }}
                       >
-                        <X className="h-3 w-3 text-primary/70 hover:text-primary" />
+                        <X className="h-4 w-4 text-primary/70 group-hover:text-primary" />
                       </span>
                     </Badge>
                   )
