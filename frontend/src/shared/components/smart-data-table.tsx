@@ -4,25 +4,25 @@ import { cn } from "@/shared/lib/utils"
 import { Button } from "@/shared/ui/button"
 import { Checkbox } from "@/shared/ui/checkbox"
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu"
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/shared/ui/select"
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/shared/ui/table"
 import { ArrowUpDown, Filter, MoreHorizontal } from "lucide-react"
 import * as React from "react"
@@ -30,7 +30,6 @@ import * as React from "react"
 import { DataTableEmptyState } from "./data-table/data-table-empty-state"
 import { DataTablePagination } from "./data-table/data-table-pagination"
 import { DATA_TABLE_TEXT } from "./data-table/data-table-text"
-import { DataTableToolbar } from "./data-table/data-table-toolbar"
 import { useSelection } from "./data-table/use-selection"
 import { useSorting } from "./data-table/use-sorting"
 
@@ -61,14 +60,6 @@ interface DataTableProps<T> {
   onSort?: (key: keyof T, direction: "asc" | "desc") => void
   onFilterChange?: (key: keyof T, value: string) => void
   pagination?: PaginationConfig
-  /** Custom toolbar content (buttons, etc.) */
-  toolbarContent?: React.ReactNode
-  /** Search value for controlled search */
-  searchValue?: string
-  /** Search change handler */
-  onSearchChange?: (value: string) => void
-  /** Hide the default toolbar */
-  hideToolbar?: boolean
 }
 
 /**
@@ -83,10 +74,6 @@ export function DataTable<T extends { id: string | number }>({
   onSort,
   onFilterChange,
   pagination,
-  toolbarContent,
-  searchValue,
-  onSearchChange,
-  hideToolbar = false,
 }: DataTableProps<T>) {
   // Use composable hooks
   const { selectedIds, isAllSelected, toggleAll, toggleRow, isSelected } = useSelection({
@@ -139,16 +126,6 @@ export function DataTable<T extends { id: string | number }>({
 
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
-      {!hideToolbar && (
-        <DataTableToolbar
-          searchValue={searchValue}
-          onSearchChange={onSearchChange}
-        >
-          {toolbarContent}
-        </DataTableToolbar>
-      )}
-
       {/* Table */}
       <div className="overflow-x-auto rounded-lg border border-border bg-card">
         <Table className="min-w-full">

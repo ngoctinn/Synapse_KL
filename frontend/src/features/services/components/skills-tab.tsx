@@ -1,26 +1,26 @@
 "use client";
 
-import { PageHeader } from "@/shared/components/page-header";
 import { DataTable, type Column } from "@/shared/components/smart-data-table";
+import { TabToolbar } from "@/shared/components/tab-toolbar";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { Edit2, MoreHorizontal, Trash2 } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
@@ -209,12 +209,11 @@ export function SkillsTab({ skills }: SkillsTabProps) {
 
   return (
     <div className="space-y-4">
-      <PageHeader
-        title="Kỹ năng"
-        subtitle="Quản lý các kỹ năng mà kỹ thuật viên có thể thực hiện"
+      <TabToolbar
+        searchPlaceholder="Tìm kiếm kỹ năng..."
+        onSearch={setSearch}
         actionLabel="Thêm kỹ năng"
         onActionClick={handleAdd}
-        onSearch={setSearch}
       />
 
       <DataTable

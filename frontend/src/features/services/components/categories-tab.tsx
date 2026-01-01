@@ -1,55 +1,55 @@
 "use client";
 
-import { PageHeader } from "@/shared/components/page-header";
+import { TabToolbar } from "@/shared/components/tab-toolbar";
 import { cn } from "@/shared/lib/utils";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/shared/ui/table";
 import {
-  closestCenter,
-  DndContext,
-  DragEndEvent,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
+    closestCenter,
+    DndContext,
+    DragEndEvent,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
 } from "@dnd-kit/core";
 import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Edit2, GripVertical, MoreHorizontal, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useState, useTransition, useId } from "react";
+import { useEffect, useId, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { deleteCategoryAction, reorderCategoriesAction } from "../actions";
 import type { ServiceCategory } from "../types";
@@ -139,12 +139,11 @@ export function CategoriesTab({ categories }: CategoriesTabProps) {
 
   return (
     <div className="space-y-4">
-      <PageHeader
-        title="Danh mục dịch vụ"
-        subtitle="Kéo thả để sắp xếp thứ tự hiển thị trên bảng giá và website"
+      <TabToolbar
+        searchPlaceholder="Tìm kiếm danh mục..."
+        onSearch={setSearch}
         actionLabel="Thêm danh mục"
         onActionClick={handleAdd}
-        onSearch={setSearch}
       />
 
       <div className="overflow-x-auto rounded-lg border border-border">

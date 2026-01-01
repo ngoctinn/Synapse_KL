@@ -1,0 +1,96 @@
+
+E:\Synapse_KL\frontend\src\features\services\actions.ts
+   51:12  warning  'e' is defined but never used                    @typescript-eslint/no-unused-vars
+   69:12  warning  'e' is defined but never used                    @typescript-eslint/no-unused-vars
+  107:12  warning  'e' is defined but never used                    @typescript-eslint/no-unused-vars
+  125:12  warning  'e' is defined but never used                    @typescript-eslint/no-unused-vars
+  177:12  warning  'e' is defined but never used                    @typescript-eslint/no-unused-vars
+  218:12  warning  'e' is defined but never used                    @typescript-eslint/no-unused-vars
+  253:11  warning  'ServiceListResponse' is defined but never used  @typescript-eslint/no-unused-vars
+  299:12  warning  'e' is defined but never used                    @typescript-eslint/no-unused-vars
+  320:12  warning  'e' is defined but never used                    @typescript-eslint/no-unused-vars
+
+E:\Synapse_KL\frontend\src\features\services\components\categories-tab.tsx
+  213:49  warning  'isDeleting' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\Synapse_KL\frontend\src\features\services\components\service-form\price-input-field.tsx
+   9:32  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+   9:37  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+  18:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\Synapse_KL\frontend\src\features\services\components\service-form\price-input-field.tsx:18:7
+  16 |   useEffect(() => {
+  17 |     if (field.value === 0) {
+> 18 |       setDisplayValue("");
+     |       ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  19 |       return;
+  20 |     }
+  21 |     const formatted = field.value ? new Intl.NumberFormat("vi-VN").format(field.value) : "";  react-hooks/set-state-in-effect
+  47:6   warning  React Hook useEffect has a missing dependency: 'displayValue'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            react-hooks/exhaustive-deps
+
+E:\Synapse_KL\frontend\src\features\services\components\service-management.tsx
+  14:43  warning  'searchParams' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\Synapse_KL\frontend\src\features\services\components\service-page-tabs.tsx
+  35:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\Synapse_KL\frontend\src\features\services\components\service-page-tabs.tsx:35:5
+  33 |   // Sync state with URL if it changes externally (e.g. back button)
+  34 |   useEffect(() => {
+> 35 |     setActiveTab(searchParams.get("view") || "services");
+     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  36 |   }, [searchParams]);
+  37 |
+  38 |   const handleTabChange = useCallback(  react-hooks/set-state-in-effect
+
+E:\Synapse_KL\frontend\src\features\services\components\services-tab.tsx
+   73:78  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  115:37  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  119:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  165:23  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  177:23  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\Synapse_KL\frontend\src\features\services\components\skills-tab.tsx
+   39:10  warning  'isDeleting' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+   45:19  warning  'setFilters' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+   70:33  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `search`, but the source dependencies were [skills, filters, sortConfig]. Inferred different dependency than source.
+
+E:\Synapse_KL\frontend\src\features\services\components\skills-tab.tsx:70:33
+   68 |
+   69 |   // --- Data Processing ---
+>  70 |   const processedData = useMemo(() => {
+      |                                 ^^^^^^^
+>  71 |     let result = [...skills];
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  72 |
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 112 |     return result;
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 113 |   }, [skills, filters, sortConfig]);
+      | ^^^^ Could not preserve existing manual memoization
+  114 |
+  115 |   const paginatedData = useMemo(() => {
+  116 |     const start = (currentPage - 1) * pageSize;  react-hooks/preserve-manual-memoization
+   85:31  warning  'item' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+   86:48  warning  'key' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  113:6   warning  React Hook useMemo has a missing dependency: 'search'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react-hooks/exhaustive-deps
+  190:63  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react/no-unescaped-entities
+  190:74  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react/no-unescaped-entities
+
+✖ 29 problems (11 errors, 18 warnings)
+

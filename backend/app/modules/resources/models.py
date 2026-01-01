@@ -15,9 +15,10 @@ if TYPE_CHECKING:
 
 
 class ResourceType(str, Enum):
-    """Loại tài nguyên: Giường hoặc Thiết bị."""
+    """Loại tài nguyên: Giường, Thiết bị hoặc Phòng."""
     BED = "BED"
     EQUIPMENT = "EQUIPMENT"
+    ROOM = "ROOM"
 
 
 class ResourceStatus(str, Enum):

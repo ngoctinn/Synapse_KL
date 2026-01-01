@@ -94,3 +94,10 @@ class ServiceReadWithDetails(ServiceRead):
     category: CategoryRead | None = None
     skills: list[SkillRead] = []
     resource_requirements: list[ServiceResourceRequirementRead] = []
+
+
+class ServiceListResponse(SQLModel):
+    data: list[ServiceRead]
+    total: int
+    page: int
+    limit: int

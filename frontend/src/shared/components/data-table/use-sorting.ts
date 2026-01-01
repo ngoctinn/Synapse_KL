@@ -30,14 +30,12 @@ export function useSorting<T>({
   const [sortConfig, setSortConfig] = React.useState<SortConfig | null>(null)
 
   const handleSort = React.useCallback((key: string) => {
-    setSortConfig(prev => {
-      const direction: SortDirection =
-        prev?.key === key && prev.direction === "asc" ? "desc" : "asc"
+    const direction: SortDirection =
+      sortConfig?.key === key && sortConfig.direction === "asc" ? "desc" : "asc"
 
-      onSort?.(key as keyof T, direction)
-      return { key, direction }
-    })
-  }, [onSort])
+    setSortConfig({ key, direction })
+    onSort?.(key as keyof T, direction)
+  }, [sortConfig, onSort])
 
   const getSortDirection = React.useCallback((key: string): SortDirection | null => {
     if (sortConfig?.key === key) {

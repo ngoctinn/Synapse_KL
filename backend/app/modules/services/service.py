@@ -15,10 +15,8 @@ from app.modules.services.models import (
     ServiceRequiredSkill,
     ServiceResourceRequirement,
 )
-from app.modules.services.schemas import ServiceCreate, ServiceUpdate
 from app.modules.skills.models import Skill
-
-
+from app.modules.services.schemas import ServiceCreate, ServiceUpdate
 async def get_all_services(
     session: AsyncSession,
     category_id: UUID | None = None,

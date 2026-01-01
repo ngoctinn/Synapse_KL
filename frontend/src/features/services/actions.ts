@@ -3,22 +3,22 @@
 import { API_BASE_URL } from "@/shared/api";
 import { revalidatePath } from "next/cache";
 import type {
-  CategoryCreateInput,
-  CategoryUpdateInput,
-  MaintenanceCreateInput,
-  Resource,
-  ResourceCreateInput,
-  ResourceGroup,
-  ResourceGroupCreateInput,
-  ResourceMaintenance,
-  Service,
-  ServiceCategory,
-  ServiceCreateInput,
-  ServiceUpdateInput,
-  ServiceWithDetails,
-  Skill,
-  SkillCreateInput,
-  SkillUpdateInput,
+    CategoryCreateInput,
+    CategoryUpdateInput,
+    MaintenanceCreateInput,
+    Resource,
+    ResourceCreateInput,
+    ResourceGroup,
+    ResourceGroupCreateInput,
+    ResourceMaintenance,
+    Service,
+    ServiceCategory,
+    ServiceCreateInput,
+    ServiceUpdateInput,
+    ServiceWithDetails,
+    Skill,
+    SkillCreateInput,
+    SkillUpdateInput,
 } from "./types";
 
 const SERVICES_PATH = "/api/v1/services";
@@ -249,6 +249,15 @@ export async function createMaintenanceAction(
 }
 
 // ========== Services Actions ==========
+// Response type for paginated services
+interface ServiceListResponse {
+  data: Service[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+
 export async function getServicesAction(
   categoryId?: string,
   isActive?: boolean
@@ -257,10 +266,11 @@ export async function getServicesAction(
   if (categoryId) params.append("category_id", categoryId);
   if (isActive !== undefined) params.append("is_active", String(isActive));
 
-  const url = `${API_BASE_URL}${SERVICES_PATH}${params.toString() ? `?${params}` : ""}`;
+  const url = `${API_BASE_URL}${SERVICES_PATH}?${params.toString()}`;
   const res = await fetch(url, {
     next: { revalidate: 60, tags: ["services"] },
   });
+
   if (!res.ok) throw new Error("Không thể tải danh sách dịch vụ");
   return res.json();
 }

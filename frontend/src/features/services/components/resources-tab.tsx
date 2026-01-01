@@ -1,27 +1,27 @@
 "use client";
 
-import { PageHeader } from "@/shared/components/page-header";
 import { DataTable, type Column } from "@/shared/components/smart-data-table";
+import { TabToolbar } from "@/shared/components/tab-toolbar";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { Bed, CalendarClock, MoreHorizontal, Plus, Trash2, Wrench } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
@@ -112,12 +112,11 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
 
   return (
     <div className="space-y-4">
-      <PageHeader
-        title="Tài nguyên"
-        subtitle="Quản lý giường, thiết bị, phòng của Spa"
+      <TabToolbar
+        searchPlaceholder="Tìm kiếm tài nguyên..."
+        onSearch={setSearch}
         actionLabel="Thêm nhóm"
         onActionClick={handleAddGroup}
-        onSearch={setSearch}
       />
 
       {filteredGroups.length === 0 ? (

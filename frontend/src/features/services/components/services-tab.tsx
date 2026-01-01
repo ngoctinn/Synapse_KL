@@ -1,53 +1,47 @@
-"use client";
 
-import { PageHeader } from "@/shared/components/page-header";
 import { DataTable, type Column } from "@/shared/components/smart-data-table";
+import { TabToolbar } from "@/shared/components/tab-toolbar";
 import { cn } from "@/shared/lib/utils";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@/shared/ui/tooltip";
 import { Edit2, Plus, Power, PowerOff, Trash2 } from "lucide-react";
 import { useMemo, useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
-    createServiceAction,
-    deleteServiceAction,
-    getServiceByIdAction,
-    toggleServiceStatusAction,
-    updateServiceAction
+  createServiceAction,
+  deleteServiceAction,
+  getServiceByIdAction,
+  toggleServiceStatusAction,
+  updateServiceAction
 } from "../actions";
 import type { ServiceCreateForm } from "../schemas";
 import type { ResourceGroup, Service, ServiceCategory, ServiceWithDetails, Skill } from "../types";
 import { ServiceFormSheet } from "./service-form-sheet";
-
-// ... (rest of imports)
-
-// ... (component function start)
-
 
 interface ServicesTabProps {
   services: Service[];
@@ -69,12 +63,12 @@ export function ServicesTab({
   // Optimistic UI State
   const [optimisticServices, addOptimisticService] = useOptimistic(
     services,
-    (state, action: { type: "ADD" | "UPDATE" | "DELETE" | "TOGGLE"; payload: any }) => {
+    (state, action: { type: "ADD" | "UPDATE" | "DELETE" | "TOGGLE"; payload: Service | string }) => {
       switch (action.type) {
         case "ADD":
-          return [action.payload, ...state];
+          return [action.payload as Service, ...state];
         case "UPDATE":
-          return state.map((s) => (s.id === action.payload.id ? { ...s, ...action.payload } : s));
+          return state.map((s) => (s.id === (action.payload as Service).id ? { ...s, ...(action.payload as Service) } : s));
         case "DELETE":
           return state.filter((s) => s.id !== action.payload);
         case "TOGGLE":
@@ -88,11 +82,13 @@ export function ServicesTab({
   );
 
   // SmartDataTable State
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
   const [sortConfig, setSortConfig] = useState<{ key: keyof Service; dir: "asc" | "desc" } | null>(null);
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
+
+  // Client-side Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
 
   const getCategoryName = (id: string | null) =>
     categories.find((c) => c.id === id)?.name || "Chưa phân loại";
@@ -109,11 +105,17 @@ export function ServicesTab({
 
   const handleEdit = async (service: Service) => {
     try {
-      setSelectedService(service as any);
+      // Set partial data while loading full details
+      setSelectedService({
+        ...service,
+        category: null,
+        skills: [],
+        resource_requirements: []
+      });
       setIsSheetOpen(true);
       const data = await getServiceByIdAction(service.id);
       setSelectedService(data);
-    } catch (error) {
+    } catch {
       toast.error("Không thể tải chi tiết dịch vụ");
     }
   };
@@ -124,7 +126,9 @@ export function ServicesTab({
       const updatedService = {
         ...selectedService,
         ...data,
-        price: String(data.price),
+        price: Number(data.price),
+        description: data.description ?? null,
+        image_url: data.image_url ?? null,
       };
 
       startTransition(async () => {
@@ -137,11 +141,13 @@ export function ServicesTab({
       const tempService = {
         ...data,
         id: tempId,
-        price: String(data.price),
+        price: Number(data.price),
         is_active: data.is_active ?? true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        category_id: data.category_id || null, // Ensure null if empty string
+        category_id: data.category_id || null,
+        description: data.description ?? null,
+        image_url: data.image_url ?? null,
       };
 
       startTransition(async () => {
@@ -159,8 +165,8 @@ export function ServicesTab({
         if (result) {
           toast.success("Đã thay đổi trạng thái dịch vụ");
         }
-      } catch (error: any) {
-        toast.error(error.message || "Không thể thay đổi trạng thái");
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Không thể thay đổi trạng thái");
       }
     });
   };
@@ -171,8 +177,8 @@ export function ServicesTab({
       try {
         await deleteServiceAction(id);
         toast.success("Xóa dịch vụ thành công");
-      } catch (error: any) {
-        toast.error(error.message || "Không thể xóa dịch vụ");
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Không thể xóa dịch vụ");
       }
     });
   };
@@ -406,12 +412,11 @@ export function ServicesTab({
 
   return (
     <div className="space-y-4">
-      <PageHeader
-        title="Dịch vụ"
-        subtitle="Quản lý các dịch vụ Spa cung cấp cho khách hàng"
+      <TabToolbar
+        searchPlaceholder="Tìm kiếm dịch vụ..."
+        onSearch={setSearch}
         actionLabel="Thêm dịch vụ"
         onActionClick={handleAdd}
-        onSearch={setSearch}
       />
 
       <DataTable
@@ -447,4 +452,3 @@ export function ServicesTab({
     </div>
   );
 }
-

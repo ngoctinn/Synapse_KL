@@ -4,19 +4,19 @@ import { DurationSelect } from "@/shared/components/duration-select";
 import { MultiSelect } from "@/shared/components/multi-select";
 import { Button } from "@/shared/ui/button";
 import {
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/shared/ui/select";
 import { Plus, Trash2 } from "lucide-react";
 import { useFieldArray, useFormContext } from "react-hook-form";
@@ -93,7 +93,7 @@ export function ServiceResourceTab({ skills, resourceGroups, onAddSkill }: Servi
           </Button>
         </div>
 
-        <ServiceResourceTimeline />
+        <ServiceResourceTimeline resourceGroups={resourceGroups} />
 
         <div className="space-y-3">
           {fields.map((item, index) => (

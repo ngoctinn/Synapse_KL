@@ -1,9 +1,15 @@
 "use client";
 
+import { cn } from "@/shared/lib/utils";
 import { useFormContext } from "react-hook-form";
 import { type ServiceCreateForm } from "../../schemas";
+import type { ResourceGroup, ResourceGroupWithCount } from "../../types";
 
-export function ServiceResourceTimeline() {
+interface ServiceResourceTimelineProps {
+  resourceGroups: ResourceGroupWithCount[] | ResourceGroup[];
+}
+
+export function ServiceResourceTimeline({ resourceGroups }: ServiceResourceTimelineProps) {
   const form = useFormContext<ServiceCreateForm>();
   const duration = form.watch("duration") || 60;
   const buffer = form.watch("buffer_time") || 0;
@@ -11,67 +17,122 @@ export function ServiceResourceTimeline() {
 
   const total = duration + buffer;
 
+  // Calculate grid intervals (every 15 mins)
+  const intervals = [];
+  for (let i = 0; i <= total; i += 15) {
+    intervals.push(i);
+  }
+  // Ensure the last marker is included if it's not a multiple of 15
+  if (total % 15 !== 0) {
+    intervals.push(total);
+  }
+
+  const getGroupName = (groupId: string) => {
+    return resourceGroups.find(g => g.id === groupId)?.name || "Chưa chọn nhóm";
+  };
+
   return (
-    <div className="border rounded-md p-4 bg-muted/20 space-y-4">
-      <div className="flex justify-between items-center text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-        <span className="bg-muted px-1.5 py-0.5 rounded">0p</span>
-        <span className="text-primary/80 font-semibold">Tổng thời gian: {total} phút</span>
+    <div className="border rounded-xl p-5 bg-card/50 backdrop-blur-sm shadow-sm space-y-6 overflow-hidden">
+      {/* Time Header */}
+      <div className="relative h-6 mb-2 border-b border-dashed border-border/50">
+        {intervals.map((time) => (
+          <div
+            key={time}
+            className="absolute top-0 flex flex-col items-center -translate-x-1/2"
+            style={{ left: `${(time / total) * 100}%` }}
+          >
+            <span className="text-[9px] font-bold text-muted-foreground/80 tabular-nums">
+              {time}m
+            </span>
+            <div className="h-1 w-px bg-border/60 mt-0.5" />
+          </div>
+        ))}
       </div>
 
-      <div className="relative h-12 bg-background/50 rounded-lg border border-muted-foreground/10 overflow-hidden flex items-center shadow-inner">
-        {/* Main Service Area (Duration) */}
+      {/* Gantt Area */}
+      <div className="relative space-y-3 min-h-[40px]">
+        {/* Background Grid */}
+        <div className="absolute inset-0 flex pointer-events-none z-0">
+          {intervals.map((time) => (
+            <div
+              key={`grid-${time}`}
+              className="h-full border-r border-muted/20 last:border-0"
+              style={{ width: `${(15 / total) * 100}%` }}
+            />
+          ))}
+        </div>
+
+        {/* Global Service Scope (Light Background) */}
         <div
-          className="absolute inset-y-0 left-0 bg-primary/10 border-r border-primary/30 z-0"
-          style={{
-            width: `${(duration / total) * 100}%`
-          }}
+          className="absolute inset-y-0 left-0 bg-primary/[0.03] border-r border-primary/10 rounded-l-md pointer-events-none"
+          style={{ width: `${(duration / total) * 100}%` }}
         />
 
-        {/* Buffer Area */}
+        {/* Buffer Scope (Hatched Background) */}
         <div
-          className="absolute inset-y-0 right-0 bg-orange-500/[0.08] h-full flex items-center justify-center z-0"
-          style={{
-            width: `${(buffer / total) * 100}%`
-          }}
+          className="absolute inset-y-0 right-0 bg-orange-500/[0.04] rounded-r-md overflow-hidden pointer-events-none"
+          style={{ width: `${(buffer / total) * 100}%` }}
         >
-          <div className="w-full h-full opacity-20" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #f97316 0, #f97316 1px, transparent 0, transparent 4px)', backgroundSize: '6px 6px' }} />
+          <div className="w-full h-full opacity-10" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #f97316 0, #f97316 1px, transparent 0, transparent 4px)', backgroundSize: '6px 6px' }} />
         </div>
 
-        {requirements.map((req, index) => {
-          if (!req?.group_id) return null;
+        {/* Requirements Rows */}
+        {requirements.length > 0 ? (
+          requirements.map((req, index) => {
+            const start = req.start_delay || 0;
+            const usage = req.usage_duration || (duration - start);
 
-          const start = req.start_delay || 0;
-          const usage = req.usage_duration || (duration - start);
+            const left = (start / total) * 100;
+            const width = (usage / total) * 100;
+            const groupName = getGroupName(req.group_id);
 
-          const left = (start / total) * 100;
-          const width = (usage / total) * 100;
+            return (
+              <div key={index} className="relative h-8 flex items-center group/row">
+                {/* Row Label (Visible on hover or if space permits) */}
+                <div className="absolute -left-1 opacity-0 group-hover/row:opacity-100 transition-opacity bg-background/90 px-2 py-0.5 rounded border text-[10px] font-medium z-30 pointer-events-none whitespace-nowrap shadow-sm">
+                  {groupName} ({usage}p)
+                </div>
 
-          return (
-            <div
-              key={index}
-              className="absolute h-2 bg-primary/70 rounded-full border border-primary/40 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.1)] z-10"
-              style={{
-                left: `${Math.max(0, Math.min(100, left))}%`,
-                width: `${Math.max(1, Math.min(100 - left, width))}%`,
-                top: `${Math.max(4, 4 + index * 10)}px`
-              }}
-              title={`Tài nguyên ${index + 1}`}
-            />
-          );
-        })}
+                {/* Resource Bar */}
+                <div
+                  className={cn(
+                    "absolute h-5 rounded-md border transition-all duration-300 z-20",
+                    "bg-primary/80 border-primary/30 shadow-[0_1px_3px_rgba(0,0,0,0.2)]",
+                    "hover:scale-[1.02] hover:bg-primary",
+                    "flex items-center px-2 cursor-help"
+                  )}
+                  style={{
+                    left: `${Math.max(0, Math.min(100, left))}%`,
+                    width: `${Math.max(1, Math.min(100 - left, width))}%`,
+                  }}
+                  title={`${groupName}: Bắt đầu sau ${start}p, Dùng trong ${usage}p`}
+                >
+                  <span className="text-[9px] font-bold text-primary-foreground leading-none truncate select-none">
+                    {groupName}
+                  </span>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="h-8 flex items-center justify-center border border-dashed rounded-lg bg-muted/5">
+             <span className="text-[11px] text-muted-foreground italic">Chưa cấu hình tài nguyên</span>
+          </div>
+        )}
       </div>
 
-      <div className="flex items-center justify-center gap-6 text-[10px] font-medium text-muted-foreground pt-1">
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 bg-primary/70 border border-primary/40 rounded-sm shadow-sm" /> Tài nguyên
+      {/* Legend */}
+      <div className="flex items-center justify-center gap-6 text-[10px] font-semibold text-muted-foreground/70 pt-2 border-t border-border/40">
+        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors">
+          <div className="w-3 h-3 bg-primary/80 border border-primary/30 rounded-full shadow-sm" /> Tài nguyên sử dụng
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 bg-primary/15 border border-primary/30 rounded-sm" /> Trong liệu trình
+        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors">
+          <div className="w-3 h-3 bg-primary/10 border border-primary/20 rounded-sm" /> Thời gian liệu trình
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors">
           <div className="w-3 h-3 bg-orange-500/10 border border-orange-500/20 rounded-sm overflow-hidden relative">
-              <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #f97316 0, #f97316 1px, transparent 0, transparent 3px)', backgroundSize: '4px 4px' }} />
-          </div> Thời gian nghỉ
+              <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #f97316 0, #f97316 1px, transparent 0, transparent 3px)', backgroundSize: '4px 4px' }} />
+          </div> Nghỉ/Chuẩn bị
         </div>
       </div>
     </div>

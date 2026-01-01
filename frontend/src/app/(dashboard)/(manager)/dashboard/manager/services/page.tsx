@@ -7,19 +7,15 @@ export const metadata = {
   description: "Quản lý danh mục, kỹ năng, tài nguyên và dịch vụ Spa",
 };
 
-export default function ServicesPage() {
-  return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Quản lý Dịch vụ</h1>
-        <p className="text-muted-foreground">
-          Quản lý kỹ năng, danh mục, tài nguyên và dịch vụ của Spa
-        </p>
-      </div>
+interface PageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
 
-      <Suspense fallback={<ServiceManagementSkeleton />}>
-        <ServiceManagement />
-      </Suspense>
-    </div>
+export default async function ServicesPage(props: PageProps) {
+  const searchParams = await props.searchParams;
+  return (
+    <Suspense fallback={<ServiceManagementSkeleton />}>
+      <ServiceManagement />
+    </Suspense>
   );
 }

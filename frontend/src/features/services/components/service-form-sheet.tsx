@@ -2,31 +2,31 @@
 
 import { useFormGuard } from "@/shared/hooks/use-form-guard";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
 } from "@/shared/ui/dialog";
 import { Form } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
 } from "@/shared/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,8 +35,8 @@ import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import {
-  createCategoryAction,
-  createSkillAction
+    createCategoryAction,
+    createSkillAction
 } from "../actions";
 import { serviceCreateSchema, type ServiceCreateForm } from "../schemas";
 import type { ResourceGroup, ResourceGroupWithCount, ServiceCategory, ServiceWithDetails, Skill } from "../types";
@@ -156,8 +156,8 @@ export function ServiceFormSheet({
     startTransition(async () => {
       try {
         await onSubmit(data);
+        form.reset(data); // Reset with new data to clear isDirty
         onOpenChange(false);
-        form.reset();
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Đã có lỗi xảy ra");
       }
