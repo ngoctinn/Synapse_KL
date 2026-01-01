@@ -2,8 +2,7 @@
 
 import {
   createStaffProfileAction,
-  updateStaffProfileAction,
-  updateStaffSkillsAction
+  updateStaffWithSkillsAction
 } from "@/features/staff/actions";
 import { SkillSelector } from "@/features/staff/components/skill-selector";
 import { staffProfileSchema } from "@/features/staff/schemas";
@@ -85,9 +84,8 @@ export function StaffFormSheet({ open, onOpenChange, staff, onSuccess }: StaffFo
 
       let result;
       if (isEdit) {
-        result = await updateStaffProfileAction(staff.user_id, values);
-        // Cập nhật skills riêng biệt nếu cần (Backend thiết kế patch profile riêng, skills riêng)
-        await updateStaffSkillsAction(staff.user_id, { skill_ids: skillIds });
+        // Combined update for atomicity at action level
+        result = await updateStaffWithSkillsAction(staff.user_id, values, { skill_ids: skillIds });
       } else {
         // Luồng mời nhân viên (GIẢ ĐỊNH - Cần backend hỗ trợ invite endpoint thực thụ)
         // Hiện tại giả định user_id được sinh ra hoặc gán tay cho MVP.

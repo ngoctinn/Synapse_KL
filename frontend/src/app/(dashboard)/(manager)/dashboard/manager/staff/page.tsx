@@ -1,4 +1,6 @@
+import { getSchedulesAction, getShiftsAction, getStaffAction } from "@/features/staff/actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { endOfWeek, format, startOfWeek } from "date-fns";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import StaffLoading from "./loading";
@@ -16,7 +18,32 @@ const SchedulingGrid = dynamic(() => import("@/features/staff/components/schedul
   loading: () => <StaffLoading />
 });
 
-export default function StaffPage() {
+// Next.js 16/15 props for Page
+interface PageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function StaffPage({ searchParams }: PageProps) {
+  // 1. Resolve params
+  const params = await searchParams;
+  const dateParam = typeof params.date === "string" ? params.date : undefined;
+
+  // 2. Calculate Date Range
+  const currentDate = dateParam ? new Date(dateParam) : new Date();
+
+  // Safety check for invalid date
+  const safeDate = isNaN(currentDate.getTime()) ? new Date() : currentDate;
+
+  const start = startOfWeek(safeDate, { weekStartsOn: 1 });
+  const end = endOfWeek(safeDate, { weekStartsOn: 1 });
+
+  // 3. Parallel Data Fetching
+  const [staff, shifts, schedules] = await Promise.all([
+    getStaffAction(),
+    getShiftsAction(),
+    getSchedulesAction(format(start, "yyyy-MM-dd"), format(end, "yyyy-MM-dd"))
+  ]);
+
   return (
     <div className="space-y-6">
       {/* Page Header aligned with ServicePageTabs standard */}
@@ -39,7 +66,7 @@ export default function StaffPage() {
         <div className="mt-4">
           <TabsContent value="technicians" forceMount={true} className="data-[state=inactive]:hidden focus-visible:outline-none">
             <Suspense fallback={<StaffLoading />}>
-              <StaffTable />
+              <StaffTable data={staff} />
             </Suspense>
           </TabsContent>
 
@@ -51,7 +78,13 @@ export default function StaffPage() {
 
           <TabsContent value="schedule" forceMount={true} className="data-[state=inactive]:hidden focus-visible:outline-none">
             <Suspense fallback={<StaffLoading />}>
-              <SchedulingGrid />
+              {/* Dependency Injection: Pass all server data to Client Component */}
+              <SchedulingGrid
+                staff={staff.filter(s => s.is_active)}
+                shifts={shifts}
+                schedules={schedules}
+                currentDate={safeDate}
+              />
             </Suspense>
           </TabsContent>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { batchCreateSchedulesAction } from "@/features/staff/actions";
+import { bulkCreateSchedulesAction } from "@/features/staff/actions";
 import { type GridCellCoords } from "@/features/staff/hooks/use-drag-select";
 import type { Shift, StaffProfile } from "@/features/staff/types";
 import { Badge } from "@/shared/ui/badge";
@@ -100,31 +100,30 @@ export function ScheduleFormSheet({
     setIsPending(true);
 
       try {
-        // Loop through each unique staff member and batch create their schedules
-        const results = await Promise.all(
-             activeStaffIds.map(staffId => {
-                 const dates = selectedCells
-                    .filter(c => c.staffId === staffId)
-                    .map(c => c.dateStr);
+        // Collect payloads for bulk processing
+        const payloads = activeStaffIds.map(staffId => {
+            const dates = selectedCells
+               .filter(c => c.staffId === staffId)
+               .map(c => c.dateStr);
 
-                 return batchCreateSchedulesAction({
-                    staff_id: staffId,
-                    shift_id: values.shift_id,
-                    work_dates: dates,
-                    status: "DRAFT"
-                 });
-             })
-        );
+            return {
+               staff_id: staffId,
+               shift_id: values.shift_id,
+               work_dates: dates,
+               status: "DRAFT" as const
+            };
+        });
 
-        const allSuccess = results.every(r => r.success);
+        // Single server action call
+        const result = await bulkCreateSchedulesAction(payloads);
 
-        if (allSuccess) {
-          toast.success(`Đã phân ca thành công cho ${selectedCells.length} ô`);
+        if (result.success) {
+          toast.success(result.message || `Đã phân ca thành công cho ${selectedCells.length} ô`);
           onOpenChange(false);
           form.reset();
           onSuccess();
         } else {
-          toast.error("Có lỗi xảy ra khi phân ca cho một số nhân viên");
+          toast.error(result.message || "Có lỗi xảy ra khi phân ca");
         }
       } catch (error) {
         toast.error("Lỗi hệ thống", { description: String(error) });
