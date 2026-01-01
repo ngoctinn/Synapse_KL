@@ -1,4 +1,4 @@
-  """add_room_to_resource_type
+"""add_room_to_resource_type
 
 Revision ID: 2b3877664e70
 Revises: f73f287705ff
@@ -8,8 +8,6 @@ Create Date: 2026-01-01 15:24:54.421174
 from typing import Sequence, Union
 
 from alembic import op
-import sqlalchemy as sa
-
 
 # revision identifiers, used by Alembic.
 revision: str = '2b3877664e70'

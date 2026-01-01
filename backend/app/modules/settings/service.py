@@ -1,9 +1,11 @@
-from sqlmodel import select, delete
-from sqlmodel.ext.asyncio.session import AsyncSession
 from datetime import time
 
-from .models import OperatingHour, ExceptionDate
-from .schemas import OperationalSettingsUpdate, OperationalSettingsRead, OperatingHourBase, ExceptionDateBase
+from sqlmodel import delete, select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
+from .models import ExceptionDate, OperatingHour
+from .schemas import OperationalSettingsRead, OperationalSettingsUpdate
+
 
 class SettingsService:
     """

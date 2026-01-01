@@ -2,16 +2,19 @@
 Skill Model - Kỹ năng chuyên môn của nhân viên Spa.
 Dùng để match dịch vụ với nhân viên có đủ năng lực thực hiện.
 """
-from uuid import UUID, uuid4
-from typing import TYPE_CHECKING
 from datetime import datetime, timezone
-from sqlalchemy import DateTime
+from typing import TYPE_CHECKING
+from uuid import UUID, uuid4
 
+from sqlalchemy import DateTime
 from sqlmodel import Field, Relationship, SQLModel
+
+from app.modules.services.link_models import ServiceRequiredSkill
+from app.modules.staff.link_models import StaffSkillLink
 
 if TYPE_CHECKING:
     from app.modules.services.models import Service
-from app.modules.services.link_models import ServiceRequiredSkill
+    from app.modules.staff.models import StaffProfile
 
 
 class Skill(SQLModel, table=True):
@@ -40,3 +43,8 @@ class Skill(SQLModel, table=True):
         link_model=ServiceRequiredSkill
     )
 
+    # Relationship: Skill được nhiều Staff sở hữu (M-N qua link table)
+    staff_members: list["StaffProfile"] = Relationship(
+        back_populates="skills",
+        link_model=StaffSkillLink
+    )

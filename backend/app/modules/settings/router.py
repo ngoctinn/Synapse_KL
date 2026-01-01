@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlmodel.ext.asyncio.session import AsyncSession
+
 from app.core.db import get_db
-from app.core.auth import get_current_user
+
 from .schemas import OperationalSettingsRead, OperationalSettingsUpdate
 from .service import settings_service
 

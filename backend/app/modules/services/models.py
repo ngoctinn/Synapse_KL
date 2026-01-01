@@ -11,10 +11,8 @@ from sqlmodel import Field, Relationship, SQLModel
 
 from app.modules.categories.models import ServiceCategory
 from app.modules.resources.models import ResourceGroup
-from app.modules.skills.models import Skill
 from app.modules.services.link_models import ServiceRequiredSkill
-
-
+from app.modules.skills.models import Skill
 
 
 class ServiceResourceRequirement(SQLModel, table=True):

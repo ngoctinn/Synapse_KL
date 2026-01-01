@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
+
 from sqlalchemy import DateTime
-from sqlmodel import SQLModel, Field
+from sqlmodel import Field, SQLModel
+
 
 class BaseUUIDModel(SQLModel):
     """

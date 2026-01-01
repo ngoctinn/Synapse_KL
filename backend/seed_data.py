@@ -1,20 +1,21 @@
 
 import asyncio
-import sys
 import os
+import sys
 from decimal import Decimal
 
 # Add current dir to path
 sys.path.append(os.getcwd())
 
-from sqlmodel import select
 from sqlalchemy import delete
+
 from app.core.db import AsyncSessionLocal
-from app.modules.services.models import Service, ServiceResourceRequirement
 from app.modules.categories.models import ServiceCategory
-from app.modules.skills.models import Skill
-from app.modules.resources.models import ResourceGroup, Resource, ResourceType, ResourceStatus
+from app.modules.resources.models import Resource, ResourceGroup, ResourceType
 from app.modules.services.link_models import ServiceRequiredSkill
+from app.modules.services.models import Service, ServiceResourceRequirement
+from app.modules.skills.models import Skill
+
 
 async def seed_data():
     async with AsyncSessionLocal() as session:

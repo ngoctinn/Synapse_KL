@@ -1,9 +1,11 @@
+import ssl
+
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
+
 from app.core.config import settings
-import ssl
 
 # Create custom SSL context that disables verification
 # This is needed for Supabase Pooler to avoid 'self-signed certificate' errors

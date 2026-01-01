@@ -3,7 +3,7 @@ Skill Router - API endpoints cho Skills.
 """
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.db import get_db

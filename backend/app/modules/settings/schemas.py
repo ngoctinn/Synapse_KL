@@ -1,6 +1,8 @@
+from datetime import date, time
+from typing import Self
+
 from pydantic import BaseModel, ConfigDict, model_validator
-from datetime import time, date
-from typing import List, Self
+
 
 class OperatingHourBase(BaseModel):
     day_of_week: int

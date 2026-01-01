@@ -3,14 +3,13 @@ Service Router - API endpoints cho Services.
 """
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, status, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.db import get_db
 from app.modules.services import service
 from app.modules.services.schemas import (
     ServiceCreate,
-    ServiceListResponse,
     ServiceRead,
     ServiceReadWithDetails,
     ServiceUpdate,

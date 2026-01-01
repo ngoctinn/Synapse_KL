@@ -1,7 +1,11 @@
 from __future__ import annotations
-from sqlmodel import SQLModel, Field
-from datetime import time, date as date_type
+
+from datetime import date as date_type
+from datetime import time
 from uuid import UUID, uuid4
+
+from sqlmodel import Field, SQLModel
+
 
 class OperatingHour(SQLModel, table=True):
     __tablename__ = "operating_hours"

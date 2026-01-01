@@ -1,9 +1,11 @@
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import jwt, JWTError
-from pydantic import BaseModel
 from typing import Optional
 from uuid import UUID
+
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError, jwt
+from pydantic import BaseModel
+
 from app.core.config import settings
 
 security = HTTPBearer()
@@ -44,7 +46,7 @@ async def get_current_user(
             role=token_data.role
         )
 
-    except (JWTError, ValueError) as e:
+    except (JWTError, ValueError):
         # ValueError can happen if UUID is invalid
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

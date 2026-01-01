@@ -2,7 +2,9 @@
 Link Models for Services module - Broken out to avoid circular imports.
 """
 from uuid import UUID
+
 from sqlmodel import Field, SQLModel
+
 
 class ServiceRequiredSkill(SQLModel, table=True):
     """

@@ -1,14 +1,14 @@
 import asyncio
-from logging.config import fileConfig
 import os
-import sys
 import ssl
-from dotenv import load_dotenv
+import sys
+from logging.config import fileConfig
 
+from alembic import context
+from dotenv import load_dotenv
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlmodel import SQLModel
-from alembic import context
 
 # Add backend directory to path
 sys.path.append(os.getcwd())
@@ -19,15 +19,15 @@ if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
 
 # Import tất cả models để Alembic nhận metadata
-from app.modules.settings.models import OperatingHour, ExceptionDate
-from app.modules.skills.models import Skill
 from app.modules.categories.models import ServiceCategory
-from app.modules.resources.models import (
-    ResourceGroup, Resource, ResourceMaintenanceSchedule
-)
-from app.modules.services.models import (
-    Service, ServiceRequiredSkill, ServiceResourceRequirement
-)
+from app.modules.resources.models import ResourceGroup
+from app.modules.skills.models import Skill
+from app.modules.services.models import Service, ServiceResourceRequirement
+from app.modules.services.link_models import ServiceRequiredSkill
+from app.modules.staff.models import StaffProfile
+from app.modules.staff.link_models import StaffSkillLink
+from app.modules.scheduling.models import Shift, StaffSchedule
+from app.modules.settings.models import OperationalSetting
 
 from app.core.config import settings
 

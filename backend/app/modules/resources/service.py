@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from sqlalchemy import func, case
+from sqlalchemy import case, func
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 

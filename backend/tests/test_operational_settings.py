@@ -1,7 +1,10 @@
+from datetime import time
+
 import pytest
-from datetime import time, date
 from pydantic import ValidationError
-from app.modules.settings.schemas import OperatingHourBase, ExceptionDateBase
+
+from app.modules.settings.schemas import ExceptionDateBase, OperatingHourBase
+
 
 def test_operating_hour_validation():
     """

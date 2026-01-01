@@ -1,6 +1,7 @@
 import pytest
 from httpx import AsyncClient
 
+
 @pytest.mark.anyio
 async def test_list_skills_empty(client: AsyncClient):
     response = await client.get("/api/v1/skills")

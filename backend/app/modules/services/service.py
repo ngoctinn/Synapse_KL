@@ -12,11 +12,12 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.modules.categories.models import ServiceCategory
 from app.modules.services.models import (
     Service,
-    ServiceRequiredSkill,
     ServiceResourceRequirement,
 )
-from app.modules.skills.models import Skill
 from app.modules.services.schemas import ServiceCreate, ServiceUpdate
+from app.modules.skills.models import Skill
+
+
 async def get_all_services(
     session: AsyncSession,
     category_id: UUID | None = None,

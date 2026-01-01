@@ -1,6 +1,7 @@
 import pytest
 from httpx import AsyncClient
 
+
 @pytest.mark.anyio
 async def test_resource_groups_crud(client: AsyncClient):
     # 1. Create Group

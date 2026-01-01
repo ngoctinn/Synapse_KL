@@ -1,8 +1,8 @@
 from typing import List, Union
-from pydantic import AnyHttpUrl, field_validator, ConfigDict
-from pydantic_settings import BaseSettings
+
 from dotenv import load_dotenv
-import os
+from pydantic import AnyHttpUrl, ConfigDict, field_validator
+from pydantic_settings import BaseSettings
 
 # Explicitly load .env file
 load_dotenv()

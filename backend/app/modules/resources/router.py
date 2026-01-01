@@ -3,7 +3,7 @@ Resource Router - API endpoints cho ResourceGroups và Resources.
 """
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, status, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.db import get_db

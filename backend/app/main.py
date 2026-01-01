@@ -1,7 +1,11 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.api.router import api_router
 from app.core.config import settings
-from contextlib import asynccontextmanager
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,8 +38,6 @@ async def root():
         "status": "online"
     }
 
-# Import và include các router
-from app.api.router import api_router
-
+# Include các router
 app.include_router(api_router, prefix=settings.API_V1_STR)
 

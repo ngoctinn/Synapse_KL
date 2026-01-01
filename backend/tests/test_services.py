@@ -1,6 +1,7 @@
 import pytest
 from httpx import AsyncClient
 
+
 @pytest.mark.anyio
 async def test_service_lifecycle(client: AsyncClient):
     # 1. Setup Dependencies (Category & Skill & ResourceGroup)

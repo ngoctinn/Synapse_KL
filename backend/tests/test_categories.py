@@ -1,6 +1,7 @@
 import pytest
 from httpx import AsyncClient
 
+
 @pytest.mark.anyio
 async def test_categories_workflow(client: AsyncClient):
     # 1. Create Category
