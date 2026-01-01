@@ -1,16 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/shared/ui/sheet";
+import { Button } from "@/shared/ui/button";
 import {
   Form,
   FormControl,
@@ -20,12 +10,23 @@ import {
   FormMessage,
 } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
-import { Button } from "@/shared/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/shared/ui/sheet";
 import { Textarea } from "@/shared/ui/textarea";
-import { maintenanceCreateSchema, type MaintenanceCreateForm } from "../schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { createMaintenanceAction } from "../actions";
+import { maintenanceCreateSchema, type MaintenanceCreateForm } from "../schemas";
 import type { Resource } from "../types";
 
+import { useFormGuard } from "@/shared/hooks/use-form-guard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,7 +37,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/shared/ui/alert-dialog";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 interface MaintenanceSheetProps {
   open: boolean;
@@ -50,7 +51,6 @@ export function MaintenanceSheet({
   resource,
 }: MaintenanceSheetProps) {
   const [isPending, startTransition] = useTransition();
-  const [showExitConfirm, setShowExitConfirm] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(maintenanceCreateSchema),
@@ -71,6 +71,18 @@ export function MaintenanceSheet({
       });
     }
   }, [open, form]);
+
+  const {
+    handleOpenChange,
+    showExitConfirm,
+    setShowExitConfirm,
+    handleConfirmExit,
+    contentProps
+  } = useFormGuard({
+    isDirty: form.formState.isDirty,
+    onClose: () => onOpenChange(false),
+    onReset: () => form.reset(),
+  });
 
   async function onSubmit(data: MaintenanceCreateForm) {
     if (!resource) return;
@@ -95,25 +107,12 @@ export function MaintenanceSheet({
     });
   }
 
-  const handleOpenChange = (open: boolean) => {
-    if (!open && form.formState.isDirty) {
-      setShowExitConfirm(true);
-      return;
-    }
-    onOpenChange(open);
-  };
-
   return (
     <>
       <Sheet open={open} onOpenChange={handleOpenChange}>
-        <SheetContent 
+        <SheetContent
           className="sm:max-w-md flex flex-col"
-          onPointerDownOutside={(e) => {
-            if (form.formState.isDirty) e.preventDefault();
-          }}
-          onEscapeKeyDown={(e) => {
-            if (form.formState.isDirty) e.preventDefault();
-          }}
+          {...contentProps}
         >
           <SheetHeader>
             <SheetTitle>Lên lịch bảo trì</SheetTitle>
@@ -202,12 +201,8 @@ export function MaintenanceSheet({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Tiếp tục</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={() => {
-                setShowExitConfirm(false);
-                onOpenChange(false);
-                form.reset();
-              }}
+            <AlertDialogAction
+              onClick={handleConfirmExit}
               className="bg-destructive hover:bg-destructive/90"
             >
               Thoát

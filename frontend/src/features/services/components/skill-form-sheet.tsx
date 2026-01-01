@@ -1,28 +1,38 @@
 "use client";
 
+import { useFormGuard } from "@/shared/hooks/use-form-guard";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
 } from "@/shared/ui/sheet";
 import { Textarea } from "@/shared/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useActionState, useEffect, useTransition } from "react";
+import { useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
 import { createSkillAction, updateSkillAction } from "../actions";
 import { skillCreateSchema, type SkillCreateForm } from "../schemas";
 import type { Skill } from "../types";
@@ -61,9 +71,21 @@ export function SkillFormSheet({
     }
   }, [open, skill, form]);
 
+  const {
+    handleOpenChange,
+    showExitConfirm,
+    setShowExitConfirm,
+    handleConfirmExit,
+    contentProps
+  } = useFormGuard({
+    isDirty: form.formState.isDirty,
+    onClose: () => onOpenChange(false),
+    onReset: () => form.reset(),
+  });
+
   async function onSubmit(data: SkillCreateForm) {
     startTransition(async () => {
-      const result = isEdit && skill 
+      const result = isEdit && skill
         ? await updateSkillAction(skill.id, data)
         : await createSkillAction(data);
 
@@ -76,27 +98,10 @@ export function SkillFormSheet({
     });
   }
 
-  const handleOpenChange = (open: boolean) => {
-    if (!open && form.formState.isDirty) {
-      if (confirm("Bạn có thay đổi chưa lưu. Bạn có chắc muốn thoát không?")) {
-        onOpenChange(false);
-      }
-      return;
-    }
-    onOpenChange(open);
-  };
-
   return (
-    <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent 
-        className="sm:max-w-md"
-        onPointerDownOutside={(e) => {
-          if (form.formState.isDirty) e.preventDefault();
-        }}
-        onEscapeKeyDown={(e) => {
-          if (form.formState.isDirty) e.preventDefault();
-        }}
-      >
+    <>
+      <Sheet open={open} onOpenChange={handleOpenChange}>
+        <SheetContent className="sm:max-w-md" {...contentProps}>
         <SheetHeader>
           <SheetTitle>{isEdit ? "Chỉnh sửa kỹ năng" : "Thêm kỹ năng mới"}</SheetTitle>
           <SheetDescription>
@@ -168,7 +173,7 @@ export function SkillFormSheet({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => handleOpenChange(false)}
               >
                 Hủy
               </Button>
@@ -179,6 +184,27 @@ export function SkillFormSheet({
           </form>
         </Form>
       </SheetContent>
+
+      <AlertDialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Thay đổi chưa được lưu</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn đang nhập dở thông tin. Thoát bây giờ sẽ làm mất các dữ liệu này.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Tiếp tục chỉnh sửa</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmExit}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Thoát và bỏ qua
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Sheet>
+    </>
   );
 }

@@ -8,17 +8,17 @@ import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import { Checkbox } from "@/shared/ui/checkbox"
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
 } from "@/shared/ui/command"
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
 } from "@/shared/ui/popover"
 
 export interface Option {
@@ -71,7 +71,7 @@ export function MultiSelect({
           role="combobox"
           aria-expanded={open}
           className={cn(
-            "w-full justify-between h-auto min-h-12 px-4 py-2 font-normal",
+            "w-full justify-between h-auto min-h-11 px-4 py-1 font-normal",
             className
           )}
         >

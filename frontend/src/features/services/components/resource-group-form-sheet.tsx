@@ -1,5 +1,16 @@
 "use client";
 
+import { useFormGuard } from "@/shared/hooks/use-form-guard";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
 import {
     Form,
@@ -26,7 +37,7 @@ import {
 } from "@/shared/ui/sheet";
 import { Textarea } from "@/shared/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition } from "react";
+import { useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { createResourceGroupAction } from "../actions";
@@ -56,14 +67,29 @@ export function ResourceGroupFormSheet({
     },
   });
 
-  // Reset form
-  if (open && form.getValues("name") !== (group?.name || "")) {
-    form.reset({
-      name: group?.name || "",
-      type: group?.type || "BED",
-      description: group?.description || "",
-    });
-  }
+  // 1. Fix: Side-effect (resetting form) inside useEffect
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        name: group?.name || "",
+        type: group?.type || "BED",
+        description: group?.description || "",
+      });
+    }
+  }, [open, group, form]);
+
+  // 2. Fix: Use standardized dirty guard
+  const {
+    handleOpenChange,
+    showExitConfirm,
+    setShowExitConfirm,
+    handleConfirmExit,
+    contentProps
+  } = useFormGuard({
+    isDirty: form.formState.isDirty,
+    onClose: () => onOpenChange(false),
+    onReset: () => form.reset(),
+  });
 
   async function onSubmit(data: ResourceGroupCreateForm) {
     if (isEdit) {
@@ -84,8 +110,9 @@ export function ResourceGroupFormSheet({
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md">
+    <>
+      <Sheet open={open} onOpenChange={handleOpenChange}>
+        <SheetContent className="sm:max-w-md" {...contentProps}>
         <SheetHeader>
           <SheetTitle>{isEdit ? "Chỉnh sửa nhóm" : "Thêm nhóm tài nguyên"}</SheetTitle>
           <SheetDescription>
@@ -162,7 +189,7 @@ export function ResourceGroupFormSheet({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => handleOpenChange(false)}
               >
                 Hủy
               </Button>
@@ -173,6 +200,27 @@ export function ResourceGroupFormSheet({
           </form>
         </Form>
       </SheetContent>
+
+      <AlertDialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Thay đổi chưa được lưu</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn đang nhập dở thông tin. Thoát bây giờ sẽ làm mất các dữ liệu này.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Tiếp tục chỉnh sửa</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmExit}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Thoát và bỏ qua
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Sheet>
+    </>
   );
 }

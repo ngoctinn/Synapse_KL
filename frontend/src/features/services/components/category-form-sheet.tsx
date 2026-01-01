@@ -1,21 +1,32 @@
 "use client";
 
+import { useFormGuard } from "@/shared/hooks/use-form-guard";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
 } from "@/shared/ui/sheet";
 import { Textarea } from "@/shared/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -58,6 +69,18 @@ export function CategoryFormSheet({
     }
   }, [open, category, form]);
 
+  const {
+    handleOpenChange,
+    showExitConfirm,
+    setShowExitConfirm,
+    handleConfirmExit,
+    contentProps
+  } = useFormGuard({
+    isDirty: form.formState.isDirty,
+    onClose: () => onOpenChange(false),
+    onReset: () => form.reset(),
+  });
+
   async function onSubmit(data: CategoryCreateForm) {
     startTransition(async () => {
       const result = isEdit && category
@@ -73,27 +96,10 @@ export function CategoryFormSheet({
     });
   }
 
-  const handleOpenChange = (open: boolean) => {
-    if (!open && form.formState.isDirty) {
-      if (confirm("Bạn có thay đổi chưa lưu. Bạn có chắc muốn thoát không?")) {
-        onOpenChange(false);
-      }
-      return;
-    }
-    onOpenChange(open);
-  };
-
   return (
-    <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent 
-        className="sm:max-w-md"
-        onPointerDownOutside={(e) => {
-          if (form.formState.isDirty) e.preventDefault();
-        }}
-        onEscapeKeyDown={(e) => {
-          if (form.formState.isDirty) e.preventDefault();
-        }}
-      >
+    <>
+      <Sheet open={open} onOpenChange={handleOpenChange}>
+        <SheetContent className="sm:max-w-md" {...contentProps}>
         <SheetHeader>
           <SheetTitle>{isEdit ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}</SheetTitle>
           <SheetDescription>
@@ -144,7 +150,7 @@ export function CategoryFormSheet({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => handleOpenChange(false)}
               >
                 Hủy
               </Button>
@@ -155,6 +161,27 @@ export function CategoryFormSheet({
           </form>
         </Form>
       </SheetContent>
+
+      <AlertDialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Thay đổi chưa được lưu</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn đang nhập dở thông tin. Thoát bây giờ sẽ làm mất các dữ liệu này.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Tiếp tục chỉnh sửa</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmExit}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Thoát và bỏ qua
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Sheet>
+    </>
   );
 }

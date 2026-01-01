@@ -1,5 +1,6 @@
 "use client"
 
+import { useFormGuard } from "@/shared/hooks/use-form-guard"
 import { Button } from "@/shared/ui/button"
 import { SidebarTrigger } from "@/shared/ui/sidebar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
@@ -14,15 +15,15 @@ import { ExceptionDatesManager } from "./exception-dates-manager"
 import { OperatingHoursForm } from "./operating-hours-form"
 
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog"
 
 interface OperationalSettingsProps {
@@ -50,16 +51,8 @@ export function OperationalSettings({ initialData }: OperationalSettingsProps) {
     return JSON.stringify(settings) !== JSON.stringify(originalSettings);
   }, [settings, originalSettings]);
 
-  React.useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isDirty) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [isDirty]);
+  // Browser Guard (Reuse hook just for browser protection)
+  useFormGuard({ isDirty });
 
   const handleOperatingHoursChange = React.useCallback((hours: OperatingHour[]) => {
     setSettings(prev => {

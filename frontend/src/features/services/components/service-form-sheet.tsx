@@ -1,6 +1,6 @@
 "use client";
 
-import { DurationSelect } from "@/shared/components/duration-select";
+import { useFormGuard } from "@/shared/hooks/use-form-guard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,23 +19,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from "@/shared/ui/form";
+import { Form } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
-import { MultiSelect } from "@/shared/ui/multi-select";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
 import {
   Sheet,
   SheetContent,
@@ -43,14 +28,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/shared/ui/sheet";
-import { Switch } from "@/shared/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { Textarea } from "@/shared/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import {
   createCategoryAction,
@@ -58,6 +40,9 @@ import {
 } from "../actions";
 import { serviceCreateSchema, type ServiceCreateForm } from "../schemas";
 import type { ResourceGroup, ResourceGroupWithCount, ServiceCategory, ServiceWithDetails, Skill } from "../types";
+import { ServiceGeneralTab } from "./service-form/service-general-tab";
+import { ServicePricingTab } from "./service-form/service-pricing-tab";
+import { ServiceResourceTab } from "./service-form/service-resource-tab";
 
 interface ServiceFormSheetProps {
   open: boolean;
@@ -81,7 +66,6 @@ export function ServiceFormSheet({
   const isEdit = !!service;
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState("general");
-  const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   const [showSkillDialog, setShowSkillDialog] = useState(false);
   const [newCatName, setNewCatName] = useState("");
@@ -89,8 +73,6 @@ export function ServiceFormSheet({
   const [isCreatingSub, setIsCreatingSub] = useState(false);
 
   const router = useRouter();
-
-  const skillOptions = skills.map((s) => ({ label: s.name, value: s.id }));
 
   const form = useForm({
     resolver: zodResolver(serviceCreateSchema),
@@ -112,9 +94,39 @@ export function ServiceFormSheet({
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "resource_requirements",
+  // Reset form when service changes
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        category_id: service?.category_id || "",
+        name: service?.name || "",
+        duration: service?.duration || 60,
+        buffer_time: service?.buffer_time || 10,
+        price: Number(service?.price) || 0,
+        description: service?.description || "",
+        is_active: service?.is_active ?? true,
+        skill_ids: service?.skills.map((s) => s.id) || [],
+        resource_requirements: service?.resource_requirements.map(r => ({
+          group_id: r.group_id,
+          quantity: r.quantity,
+          start_delay: r.start_delay,
+          usage_duration: r.usage_duration ?? undefined
+        })) || [],
+      });
+      setActiveTab("general");
+    }
+  }, [open, service, form]);
+
+  const {
+    handleOpenChange,
+    showExitConfirm,
+    setShowExitConfirm,
+    handleConfirmExit,
+    contentProps
+  } = useFormGuard({
+    isDirty: form.formState.isDirty,
+    onClose: () => onOpenChange(false),
+    onReset: () => form.reset(),
   });
 
   const errors = form.formState.errors;
@@ -131,6 +143,7 @@ export function ServiceFormSheet({
   };
 
   async function handleFormSubmit(data: ServiceCreateForm) {
+    // Validate resource availability
     for (const req of data.resource_requirements || []) {
       const group = (resourceGroups as ResourceGroupWithCount[]).find(g => g.id === req.group_id);
       if (group && 'active_count' in group && req.quantity > group.active_count) {
@@ -150,7 +163,6 @@ export function ServiceFormSheet({
       }
     });
   }
-
 
   async function handleCreateCategory() {
     if (!newCatName) return;
@@ -188,52 +200,14 @@ export function ServiceFormSheet({
     }
   }
 
-  const handleOpenChange = (open: boolean) => {
-    if (!open && form.formState.isDirty) {
-      setShowExitConfirm(true);
-      return;
-    }
-    onOpenChange(open);
-  };
-
-  useEffect(() => {
-    if (open) {
-      form.reset({
-        category_id: service?.category_id || "",
-        name: service?.name || "",
-        duration: service?.duration || 60,
-        buffer_time: service?.buffer_time || 10,
-        price: Number(service?.price) || 0,
-        description: service?.description || "",
-        is_active: service?.is_active ?? true,
-        skill_ids: service?.skills.map((s) => s.id) || [],
-        resource_requirements: service?.resource_requirements.map(r => ({
-          group_id: r.group_id,
-          quantity: r.quantity,
-          start_delay: r.start_delay,
-          usage_duration: r.usage_duration ?? undefined
-        })) || [],
-      });
-      setActiveTab("general");
-    }
-  }, [open, service, form]);
-
   return (
     <>
       <Sheet open={open} onOpenChange={handleOpenChange}>
-        <SheetContent
-          className="sm:max-w-lg flex flex-col p-0 gap-0"
-          onPointerDownOutside={(e) => {
-            if (form.formState.isDirty) e.preventDefault();
-          }}
-          onEscapeKeyDown={(e) => {
-            if (form.formState.isDirty) e.preventDefault();
-          }}
-        >
-          <SheetHeader className="p-6 pb-2 border-b shrink-0">
-            <SheetTitle>{isEdit ? "Chỉnh sửa dịch vụ" : "Thêm dịch vụ mới"}</SheetTitle>
+        <SheetContent className="sm:max-w-xl w-full flex flex-col p-0 gap-0" {...contentProps}>
+          <SheetHeader className="p-6 pb-2 shrink-0">
+            <SheetTitle>{isEdit ? "Cập nhật dịch vụ" : "Thêm dịch vụ mới"}</SheetTitle>
             <SheetDescription>
-              Thiết lập thông tin dịch vụ, giá cả và định mức tài nguyên.
+              {isEdit ? "Điều chỉnh thông tin dịch vụ." : "Thiết lập thông tin dịch vụ mới."}
             </SheetDescription>
           </SheetHeader>
 
@@ -242,460 +216,58 @@ export function ServiceFormSheet({
               onSubmit={form.handleSubmit(handleFormSubmit, onInvalid)}
               className="flex-1 flex flex-col min-h-0"
             >
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-                <div className="px-6 pt-4 border-b bg-muted/5 shrink-0">
+              <div className="flex-1 overflow-y-auto overflow-x-hidden px-6">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <TabsList className="grid w-full grid-cols-3 mb-4">
-                    <TabsTrigger value="general" className="relative">
-                      Cơ bản
-                      {tabErrors.general && <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full animate-pulse" />}
+                    <TabsTrigger
+                      value="general"
+                      className="relative"
+                    >
+                      Thông tin chung
+                      {tabErrors.general && (
+                        <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-destructive" />
+                      )}
                     </TabsTrigger>
-                    <TabsTrigger value="pricing" className="relative">
-                      Giá & Giờ
-                      {tabErrors.pricing && <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full animate-pulse" />}
+                    <TabsTrigger
+                      value="pricing"
+                      className="relative"
+                    >
+                      Giá & Thời gian
+                      {tabErrors.pricing && (
+                        <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-destructive" />
+                      )}
                     </TabsTrigger>
-                    <TabsTrigger value="technical" className="relative">
+                    <TabsTrigger
+                      value="technical"
+                      className="relative"
+                    >
                       Kỹ thuật
-                      {tabErrors.technical && <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full animate-pulse" />}
+                      {tabErrors.technical && (
+                        <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-destructive" />
+                      )}
                     </TabsTrigger>
                   </TabsList>
-                </div>
 
-                <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin">
-                  <TabsContent value="general" className="mt-0 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <FormField
-                        control={form.control}
-                        name="is_active"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-2 space-y-0">
-                            <FormLabel>Trạng thái hoạt động</FormLabel>
-                            <FormControl>
-                              <Switch
-                                checked={!!field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel required>Tên dịch vụ</FormLabel>
-                            <FormControl>
-                              <Input placeholder="VD: Massage Thụy Điển 90p" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="category_id"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="flex items-center justify-between mb-2">
-                              <FormLabel className="mb-0">Danh mục</FormLabel>
-                              <Button
-                                type="button"
-                                variant="link"
-                                size="sm"
-                                className="h-auto p-0 text-[11px] text-primary hover:no-underline font-normal"
-                                onClick={() => setShowCategoryDialog(true)}
-                              >
-                                <Plus className="w-3 h-3 mr-1" /> Tạo nhanh
-                              </Button>
-                            </div>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Chọn danh mục..." />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {categories.map((cat) => (
-                                  <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Mô tả chi tiết</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Mô tả về liệu trình, tác dụng và lưu ý..."
-                                className="min-h-[150px] resize-none"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="pricing" className="mt-0 space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="price"
-                      render={({ field }) => {
-                        const currentVal = field.value || 0;
-
-                        // Smart Suggestions: Lọc mốc giá phổ biến dựa trên những gì đang gõ
-                        const commonSpaPrices = [
-                          100000, 150000, 200000, 250000, 300000, 350000, 400000, 450000,
-                          500000, 550000, 600000, 750000, 800000, 900000, 1000000, 1200000,
-                          1500000, 2000000, 2500000, 3000000, 5000000
-                        ];
-
-                        const suggestions = currentVal > 0 && currentVal < 10000
-                          ? commonSpaPrices.filter(p => p.toString().startsWith(currentVal.toString())).slice(0, 4)
-                          : [];
-
-                        return (
-                          <FormItem>
-                            <div className="leading-none flex justify-between items-center mb-1">
-                              <FormLabel required className="mb-0">Đơn giá</FormLabel>
-                              <span className="text-[10px] text-muted-foreground italic">Tips: Gõ &quot;500k&quot; hoặc &quot;1.2m&quot;</span>
-                            </div>
-                            <FormControl>
-                              <div className="space-y-2.5">
-                                <PriceInputField field={field} />
-
-                                {/* Smart Suggestions - Outline Style */}
-                                {suggestions.length > 0 ? (
-                                  <div className="flex flex-wrap gap-2 pt-1 animate-in fade-in slide-in-from-top-1">
-                                    {suggestions.map((p) => (
-                                      <Button
-                                        key={p}
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        className="font-medium text-primary border-primary/20 hover:bg-primary/5 h-8"
-                                        onClick={() => field.onChange(p)}
-                                      >
-                                        {new Intl.NumberFormat('vi-VN').format(p)} ₫
-                                      </Button>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <div className="flex flex-wrap gap-2 pt-1">
-                                    {[100000, 200000, 500000, 1000000].map((p) => (
-                                      <Button
-                                        key={p}
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        className="font-medium text-muted-foreground hover:text-primary h-8"
-                                        onClick={() => field.onChange(p)}
-                                      >
-                                        {new Intl.NumberFormat('vi-VN', { notation: 'compact' }).format(p)}
-                                      </Button>
-                                    ))}
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-8 text-orange-600 hover:text-orange-700 hover:bg-orange-50 font-normal"
-                                      onClick={() => field.onChange(0)}
-                                    >
-                                      Xóa trắng
-                                    </Button>
-                                  </div>
-                                )}
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        );
-                      }}
+                  <TabsContent value="general" className="mt-0 focus-visible:ring-0 outline-none">
+                    <ServiceGeneralTab
+                      categories={categories}
+                      onAddCategory={() => setShowCategoryDialog(true)}
                     />
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="duration"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel required>Thực hiện</FormLabel>
-                            <FormControl>
-                              <DurationSelect
-                                value={field.value}
-                                onValueChange={field.onChange}
-                                step={15}
-                                max={240}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="buffer_time"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Nghỉ / Dọn</FormLabel>
-                            <FormControl>
-                              <DurationSelect
-                                value={field.value || 0}
-                                onValueChange={field.onChange}
-                                step={5}
-                                max={60}
-                                placeholder="Không nghỉ"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
                   </TabsContent>
 
-                  <TabsContent value="technical" className="mt-0 space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="skill_ids"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="flex items-center justify-between mb-2">
-                            <FormLabel className="mb-0">Kỹ năng bắt buộc</FormLabel>
-                            <Button
-                                type="button"
-                                variant="link"
-                                size="sm"
-                                className="h-auto p-0 text-[11px] text-primary hover:no-underline font-normal"
-                                onClick={() => setShowSkillDialog(true)}
-                              >
-                                <Plus className="w-3 h-3 mr-1" /> Tạo nhanh
-                              </Button>
-                          </div>
-                          <FormControl>
-                            <MultiSelect
-                              options={skillOptions}
-                              onChange={field.onChange}
-                              selected={field.value || []}
-                              placeholder="Chọn kỹ năng..."
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="space-y-3 pt-2">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <FormLabel>Yêu cầu tài nguyên</FormLabel>
-                          <p className="text-[10px] text-muted-foreground italic">Xem timeline sử dụng bên dưới</p>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => append({ group_id: "", quantity: 1, start_delay: 0 })}
-                          className="h-8 text-primary hover:text-primary hover:bg-primary/10 -mr-2"
-                        >
-                          <Plus className="w-3.5 h-3.5 mr-1" /> Thêm tài nguyên
-                        </Button>
-                      </div>
-
-                      <div className="border rounded-md p-4 bg-muted/20 space-y-4">
-                        <div className="flex justify-between items-center text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                          <span className="bg-muted px-1.5 py-0.5 rounded">0p</span>
-                          <span className="text-primary/80 font-semibold">Tổng thời gian: {form.watch("duration") + (form.watch("buffer_time") || 0)} phút</span>
-                        </div>
-
-                        <div className="relative h-12 bg-background/50 rounded-lg border border-muted-foreground/10 overflow-hidden flex items-center shadow-inner">
-                          {/* Main Service Area (Duration) */}
-                          <div
-                            className="absolute inset-y-0 left-0 bg-primary/10 border-r border-primary/30 z-0"
-                            style={{
-                              width: `${(form.watch("duration") / (form.watch("duration") + (form.watch("buffer_time") || 0))) * 100}%`
-                            }}
-                          />
-
-                          {/* Buffer Area */}
-                          <div
-                            className="absolute inset-y-0 right-0 bg-orange-500/[0.08] h-full flex items-center justify-center z-0"
-                            style={{
-                              width: `${((form.watch("buffer_time") || 0) / (form.watch("duration") + (form.watch("buffer_time") || 0))) * 100}%`
-                            }}
-                          >
-                            <div className="w-full h-full opacity-20" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #f97316 0, #f97316 1px, transparent 0, transparent 4px)', backgroundSize: '6px 6px' }} />
-                          </div>
-
-                          {fields.map((item, index) => {
-                            const req = form.watch(`resource_requirements.${index}`);
-                            const duration = form.watch("duration") || 60;
-                            const buffer = form.watch("buffer_time") || 0;
-                            const total = duration + buffer;
-                            const start = req?.start_delay || 0;
-                            const usage = req?.usage_duration || (duration - start);
-                            if (!req?.group_id) return null;
-
-                            const left = (start / total) * 100;
-                            const width = (usage / total) * 100;
-
-                            // Calculate y-position carefully
-                            const rowCount = Math.min(fields.length, 3);
-                            const barHeight = 8;
-                            const gap = 4;
-                            const startY = (48 - (fields.length * barHeight + (fields.length - 1) * gap)) / 2;
-
-                            return (
-                              <div
-                                key={item.id}
-                                className="absolute h-2 bg-primary/70 rounded-full border border-primary/40 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.1)] z-10"
-                                style={{
-                                  left: `${Math.max(0, Math.min(100, left))}%`,
-                                  width: `${Math.max(1, Math.min(100 - left, width))}%`,
-                                  top: `${Math.max(4, 4 + index * 10)}px`
-                                }}
-                                title={`Tài nguyên ${index + 1}`}
-                              />
-                            );
-                          })}
-                        </div>
-
-                        <div className="flex items-center justify-center gap-6 text-[10px] font-medium text-muted-foreground pt-1">
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-3 h-3 bg-primary/70 border border-primary/40 rounded-sm shadow-sm" /> Tài nguyên
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-3 h-3 bg-primary/15 border border-primary/30 rounded-sm" /> Trong liệu trình
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-3 h-3 bg-orange-500/10 border border-orange-500/20 rounded-sm overflow-hidden relative">
-                                <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #f97316 0, #f97316 1px, transparent 0, transparent 3px)', backgroundSize: '4px 4px' }} />
-                            </div> Thời gian nghỉ
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        {fields.map((item, index) => (
-                          <div key={item.id} className="p-3 rounded-lg border bg-background space-y-3 relative group">
-                            <div className="flex items-center justify-between gap-2">
-                              <FormField
-                                control={form.control}
-                                name={`resource_requirements.${index}.group_id`}
-                                render={({ field }) => (
-                                  <FormItem className="flex-1 space-y-0 mb-0">
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                      <FormControl>
-                                        <SelectTrigger className="h-9">
-                                          <SelectValue placeholder="Chọn nhóm..." />
-                                        </SelectTrigger>
-                                      </FormControl>
-                                      <SelectContent>
-                                        {resourceGroups.map((group) => (
-                                          <SelectItem key={group.id} value={group.id}>
-                                            <div className="flex items-center gap-2">
-                                                                                          <span>{group.name}</span>
-                                                                                          {"active_count" in group && (
-                                                                                            <span className="text-[10px] text-muted-foreground">({group.active_count})</span>
-                                                                                          )}                                            </div>
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                  </FormItem>
-                                )}
-                              />
-
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
-                                onClick={() => remove(index)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-
-                            <div className="grid grid-cols-3 gap-3">
-                              <FormField
-                                control={form.control}
-                                name={`resource_requirements.${index}.quantity`}
-                                render={({ field }) => (
-                                  <FormItem className="space-y-1 mb-0">
-                                    <FormLabel className="text-[10px] text-muted-foreground uppercase font-semibold">Số lượng</FormLabel>
-                                    <FormControl>
-                                      <Input type="number" min={1} className="h-8 text-xs px-2" {...field} onChange={e => field.onChange(Number(e.target.value))} />
-                                    </FormControl>
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={form.control}
-                                name={`resource_requirements.${index}.start_delay`}
-                                render={({ field }) => (
-                                  <FormItem className="space-y-1 mb-0">
-                                    <FormLabel className="text-[10px] text-muted-foreground uppercase font-semibold">Bắt đầu sau</FormLabel>
-                                    <FormControl>
-                                      <DurationSelect
-                                        value={field.value || 0}
-                                        onValueChange={field.onChange}
-                                        step={5}
-                                        max={120}
-                                        placeholder="0p"
-                                        className="h-8 min-h-0 text-xs"
-                                      />
-                                    </FormControl>
-                                  </FormItem>
-                                )}
-                              />
-                               <FormField
-                                control={form.control}
-                                name={`resource_requirements.${index}.usage_duration`}
-                                render={({ field }) => (
-                                  <FormItem className="space-y-1 mb-0">
-                                    <FormLabel className="text-[10px] text-muted-foreground uppercase font-semibold">Thời lượng dùng</FormLabel>
-                                    <FormControl>
-                                      <DurationSelect
-                                        value={field.value || 0}
-                                        onValueChange={(val) => field.onChange(val || undefined)}
-                                        step={5}
-                                        max={240}
-                                        placeholder="Hết tour"
-                                        className="h-8 min-h-0 text-xs font-medium text-primary"
-                                      />
-                                    </FormControl>
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-                          </div>
-                        ))}
-
-                        {fields.length === 0 && (
-                          <div className="py-8 text-center border border-dashed rounded-lg text-sm text-muted-foreground bg-muted/5">
-                            Chưa có yêu cầu tài nguyên nào.
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                  <TabsContent value="pricing" className="mt-0 focus-visible:ring-0 outline-none">
+                    <ServicePricingTab />
                   </TabsContent>
-                </div>
-              </Tabs>
+
+                  <TabsContent value="technical" className="mt-0 focus-visible:ring-0 outline-none">
+                     <ServiceResourceTab
+                        skills={skills}
+                        resourceGroups={resourceGroups}
+                        onAddSkill={() => setShowSkillDialog(true)}
+                     />
+                  </TabsContent>
+                </Tabs>
+              </div>
 
               <div className="p-6 border-t bg-background shrink-0 flex justify-end gap-3">
                 <Button
@@ -724,11 +296,7 @@ export function ServiceFormSheet({
             <AlertDialogFooter>
               <AlertDialogCancel>Tiếp tục chỉnh sửa</AlertDialogCancel>
               <AlertDialogAction
-                onClick={() => {
-                  setShowExitConfirm(false);
-                  onOpenChange(false);
-                  form.reset();
-                }}
+                onClick={handleConfirmExit}
                 className="bg-destructive hover:bg-destructive/90"
               >
                 Thoát và bỏ qua
@@ -761,8 +329,8 @@ export function ServiceFormSheet({
           </DialogContent>
         </Dialog>
 
-        {/* Quick Create Skill Dialog */}
-        <Dialog open={showSkillDialog} onOpenChange={setShowSkillDialog}>
+         {/* Quick Create Skill Dialog */}
+         <Dialog open={showSkillDialog} onOpenChange={setShowSkillDialog}>
           <DialogContent className="sm:max-w-[400px]">
             <DialogHeader>
               <DialogTitle>Tạo kỹ năng mới</DialogTitle>
@@ -787,75 +355,4 @@ export function ServiceFormSheet({
       </Sheet>
     </>
   );
-}
-
-/**
- * Internal sub-component to handle Price Input with local state
- * This ensures shorthand like "1.2m" works without jumpy Intl formatting.
- */
-function PriceInputField({ field }: { field: any }) {
-  const [displayValue, setDisplayValue] = useState("");
-
-  // Sync with form state (e.g. when suggestions are clicked or form resets)
-  useEffect(() => {
-    if (field.value === 0) {
-      setDisplayValue("");
-      return;
-    }
-    const formatted = field.value ? new Intl.NumberFormat("vi-VN").format(field.value) : "";
-
-    // Only update if not currently typing shorthand to avoid cursor jumps
-    const isShorthand = displayValue.toLowerCase().includes('k') || displayValue.toLowerCase().includes('m');
-    const hasDot = displayValue.includes('.');
-
-    if (!isShorthand && !hasDot) {
-      setDisplayValue(formatted);
-    }
-  }, [field.value]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value.toLowerCase();
-    const clean = val.replace(/[^0-9km.]/g, "");
-
-    setDisplayValue(clean);
-
-    // Business Logic: Only convert when ending with K or M
-    if (clean.endsWith("k")) {
-      const num = parseFloat(clean) || 0;
-      field.onChange(Math.round(num * 1000));
-    } else if (clean.endsWith("m")) {
-      const num = parseFloat(clean) || 0;
-      field.onChange(Math.round(num * 1000000));
-    } else if (!clean.includes(".")) {
-      // Normal numeric entry (no dot, no shorthand)
-      const numeric = parseInt(clean.replace(/[^0-9]/g, ""), 10) || 0;
-      field.onChange(numeric);
-    }
-    // If it has a dot but NO shorthand yet (e.g. "1.2"), we wait until they type 'k/m'
-  };
-
-  const handleBlur = () => {
-    // On blur, force standard format
-    setDisplayValue(field.value ? new Intl.NumberFormat("vi-VN").format(field.value) : "");
-  };
-
-  return (
-    <div className="relative">
-      <Input
-        type="text"
-        value={displayValue}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        className="text-right font-mono pr-12 h-11 text-base bg-muted/5 focus:bg-background transition-colors"
-        placeholder="0"
-      />
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none font-medium opacity-70">
-        VNĐ
-      </div>
-    </div>
-  );
-}
-
-function PriceInputSync({ form }: { form: any }) {
-  return null;
 }

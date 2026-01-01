@@ -1,35 +1,36 @@
 "use client";
 
+import { useFormGuard } from "@/shared/hooks/use-form-guard";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
 } from "@/shared/ui/sheet";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/shared/ui/alert-dialog";
 import { Textarea } from "@/shared/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { createResourceAction } from "../actions";
@@ -53,7 +54,6 @@ export function ResourceFormSheet({
 }: ResourceFormSheetProps) {
   const isEdit = !!resource;
   const [isPending, startTransition] = useTransition();
-  const [showExitConfirm, setShowExitConfirm] = useState(false);
 
   const form = useForm<ResourceCreateForm>({
     resolver: zodResolver(resourceCreateSchema),
@@ -81,6 +81,18 @@ export function ResourceFormSheet({
     }
   }, [open, groupId, resource, form]);
 
+  const {
+    handleOpenChange,
+    showExitConfirm,
+    setShowExitConfirm,
+    handleConfirmExit,
+    contentProps
+  } = useFormGuard({
+    isDirty: form.formState.isDirty,
+    onClose: () => onOpenChange(false),
+    onReset: () => form.reset(),
+  });
+
   async function onSubmit(data: ResourceCreateForm) {
     if (isEdit) {
       toast.error("Tính năng cập nhật tài nguyên đang được phát triển");
@@ -98,25 +110,12 @@ export function ResourceFormSheet({
     });
   }
 
-  const handleOpenChange = (open: boolean) => {
-    if (!open && form.formState.isDirty) {
-      setShowExitConfirm(true);
-      return;
-    }
-    onOpenChange(open);
-  };
-
   return (
     <>
       <Sheet open={open} onOpenChange={handleOpenChange}>
-        <SheetContent 
+        <SheetContent
           className="sm:max-w-md flex flex-col"
-          onPointerDownOutside={(e) => {
-            if (form.formState.isDirty) e.preventDefault();
-          }}
-          onEscapeKeyDown={(e) => {
-            if (form.formState.isDirty) e.preventDefault();
-          }}
+          {...contentProps}
         >
           <SheetHeader>
             <SheetTitle>{isEdit ? "Chỉnh sửa tài nguyên" : "Thêm tài nguyên"}</SheetTitle>
@@ -224,15 +223,11 @@ export function ResourceFormSheet({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Tiếp tục</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={() => {
-                setShowExitConfirm(false);
-                onOpenChange(false);
-                form.reset();
-              }}
+            <AlertDialogAction
+              onClick={handleConfirmExit}
               className="bg-destructive hover:bg-destructive/90"
             >
-              Thoát
+              Thoát và bỏ qua
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
