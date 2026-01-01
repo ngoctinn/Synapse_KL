@@ -1,7 +1,24 @@
 "use client";
 
 import { DurationSelect } from "@/shared/components/duration-select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/ui/dialog";
 import {
   Form,
   FormControl,
@@ -31,21 +48,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Textarea } from "@/shared/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import {
+  createCategoryAction,
+  createSkillAction
+} from "../actions";
 import { serviceCreateSchema, type ServiceCreateForm } from "../schemas";
 import type { ResourceGroup, ResourceGroupWithCount, ServiceCategory, ServiceWithDetails, Skill } from "../types";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/shared/ui/alert-dialog";
 
 interface ServiceFormSheetProps {
   open: boolean;
@@ -70,6 +82,13 @@ export function ServiceFormSheet({
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState("general");
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
+  const [showSkillDialog, setShowSkillDialog] = useState(false);
+  const [newCatName, setNewCatName] = useState("");
+  const [newSkillName, setNewSkillName] = useState("");
+  const [isCreatingSub, setIsCreatingSub] = useState(false);
+
+  const router = useRouter();
 
   const skillOptions = skills.map((s) => ({ label: s.name, value: s.id }));
 
@@ -132,6 +151,43 @@ export function ServiceFormSheet({
     });
   }
 
+
+  async function handleCreateCategory() {
+    if (!newCatName) return;
+    setIsCreatingSub(true);
+    try {
+      const res = await createCategoryAction({ name: newCatName });
+      if (res.success) {
+        toast.success("Đã tạo danh mục mới");
+        setShowCategoryDialog(false);
+        setNewCatName("");
+        router.refresh();
+      } else {
+        toast.error(res.message);
+      }
+    } finally {
+      setIsCreatingSub(false);
+    }
+  }
+
+  async function handleCreateSkill() {
+    if (!newSkillName) return;
+    setIsCreatingSub(true);
+    try {
+      const res = await createSkillAction({ name: newSkillName });
+      if (res.success) {
+        toast.success("Đã tạo kỹ năng mới");
+        setShowSkillDialog(false);
+        setNewSkillName("");
+        router.refresh();
+      } else {
+        toast.error(res.message);
+      }
+    } finally {
+      setIsCreatingSub(false);
+    }
+  }
+
   const handleOpenChange = (open: boolean) => {
     if (!open && form.formState.isDirty) {
       setShowExitConfirm(true);
@@ -165,7 +221,7 @@ export function ServiceFormSheet({
   return (
     <>
       <Sheet open={open} onOpenChange={handleOpenChange}>
-        <SheetContent 
+        <SheetContent
           className="sm:max-w-lg flex flex-col p-0 gap-0"
           onPointerDownOutside={(e) => {
             if (form.formState.isDirty) e.preventDefault();
@@ -244,7 +300,18 @@ export function ServiceFormSheet({
                         name="category_id"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Danh mục</FormLabel>
+                            <div className="flex items-center justify-between mb-2">
+                              <FormLabel className="mb-0">Danh mục</FormLabel>
+                              <Button
+                                type="button"
+                                variant="link"
+                                size="sm"
+                                className="h-auto p-0 text-[11px] text-primary hover:no-underline font-normal"
+                                onClick={() => setShowCategoryDialog(true)}
+                              >
+                                <Plus className="w-3 h-3 mr-1" /> Tạo nhanh
+                              </Button>
+                            </div>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
@@ -288,49 +355,28 @@ export function ServiceFormSheet({
                       name="price"
                       render={({ field }) => {
                         const currentVal = field.value || 0;
-                        
+
                         // Smart Suggestions: Lọc mốc giá phổ biến dựa trên những gì đang gõ
                         const commonSpaPrices = [
-                          100000, 150000, 200000, 250000, 300000, 350000, 400000, 450000, 
-                          500000, 550000, 600000, 750000, 800000, 900000, 1000000, 1200000, 
+                          100000, 150000, 200000, 250000, 300000, 350000, 400000, 450000,
+                          500000, 550000, 600000, 750000, 800000, 900000, 1000000, 1200000,
                           1500000, 2000000, 2500000, 3000000, 5000000
                         ];
-                        
-                        const suggestions = currentVal > 0 && currentVal < 10000 
+
+                        const suggestions = currentVal > 0 && currentVal < 10000
                           ? commonSpaPrices.filter(p => p.toString().startsWith(currentVal.toString())).slice(0, 4)
                           : [];
 
                         return (
                           <FormItem>
-                            <FormLabel required>Đơn giá</FormLabel>
+                            <div className="leading-none flex justify-between items-center mb-1">
+                              <FormLabel required className="mb-0">Đơn giá</FormLabel>
+                              <span className="text-[10px] text-muted-foreground italic">Tips: Gõ &quot;500k&quot; hoặc &quot;1.2m&quot;</span>
+                            </div>
                             <FormControl>
                               <div className="space-y-2.5">
-                                <div className="relative">
-                                  <Input
-                                    type="text"
-                                    value={field.value ? new Intl.NumberFormat("vi-VN").format(field.value) : ""}
-                                    onChange={(e) => {
-                                      let raw = e.target.value.toLowerCase().replace(/[^0-9km.]/g, "");
-                                      
-                                      // Logic Shorthand: 500k -> 500.000, 1.2m -> 1.200.000, 500. -> 500.000
-                                      if (raw.endsWith("k") || (raw.endsWith(".") && !raw.includes("m"))) {
-                                        const num = parseFloat(raw.slice(0, -1)) || 0;
-                                        field.onChange(num * 1000);
-                                      } else if (raw.endsWith("m")) {
-                                        const num = parseFloat(raw.slice(0, -1)) || 0;
-                                        field.onChange(num * 1000000);
-                                      } else {
-                                        field.onChange(Number(raw.replace(/[^0-9]/g, "")));
-                                      }
-                                    }}
-                                    className="text-right font-mono pr-12 h-11 text-base bg-muted/5 focus:bg-background transition-colors"
-                                    placeholder="0"
-                                  />
-                                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none font-medium opacity-70">
-                                    VNĐ
-                                  </div>
-                                </div>
-                                
+                                <PriceInputField field={field} />
+
                                 {/* Smart Suggestions - Outline Style */}
                                 {suggestions.length > 0 ? (
                                   <div className="flex flex-wrap gap-2 pt-1 animate-in fade-in slide-in-from-top-1">
@@ -428,7 +474,18 @@ export function ServiceFormSheet({
                       name="skill_ids"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Kỹ năng bắt buộc</FormLabel>
+                          <div className="flex items-center justify-between mb-2">
+                            <FormLabel className="mb-0">Kỹ năng bắt buộc</FormLabel>
+                            <Button
+                                type="button"
+                                variant="link"
+                                size="sm"
+                                className="h-auto p-0 text-[11px] text-primary hover:no-underline font-normal"
+                                onClick={() => setShowSkillDialog(true)}
+                              >
+                                <Plus className="w-3 h-3 mr-1" /> Tạo nhanh
+                              </Button>
+                          </div>
                           <FormControl>
                             <MultiSelect
                               options={skillOptions}
@@ -459,38 +516,77 @@ export function ServiceFormSheet({
                         </Button>
                       </div>
 
-                      <div className="border rounded-md p-3 bg-muted/10 space-y-2">
-                                              <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
-                                                <span>0p</span>
-                                                <span>{form.watch("duration")}p</span>
-                                              </div>
-                                              <div className="relative h-6 bg-muted/30 rounded overflow-hidden flex items-center">
-                                                <div className="absolute inset-0 bg-primary/5 border-x border-primary/20" />
-                                                {fields.map((item, index) => {
-                                                  const req = form.watch(`resource_requirements.${index}`);
-                                                  const duration = form.watch("duration") || 60;
-                                                  const start = req?.start_delay || 0;
-                                                  const usage = req?.usage_duration || (duration - start);                            
+                      <div className="border rounded-md p-4 bg-muted/20 space-y-4">
+                        <div className="flex justify-between items-center text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                          <span className="bg-muted px-1.5 py-0.5 rounded">0p</span>
+                          <span className="text-primary/80 font-semibold">Tổng thời gian: {form.watch("duration") + (form.watch("buffer_time") || 0)} phút</span>
+                        </div>
+
+                        <div className="relative h-12 bg-background/50 rounded-lg border border-muted-foreground/10 overflow-hidden flex items-center shadow-inner">
+                          {/* Main Service Area (Duration) */}
+                          <div
+                            className="absolute inset-y-0 left-0 bg-primary/10 border-r border-primary/30 z-0"
+                            style={{
+                              width: `${(form.watch("duration") / (form.watch("duration") + (form.watch("buffer_time") || 0))) * 100}%`
+                            }}
+                          />
+
+                          {/* Buffer Area */}
+                          <div
+                            className="absolute inset-y-0 right-0 bg-orange-500/[0.08] h-full flex items-center justify-center z-0"
+                            style={{
+                              width: `${((form.watch("buffer_time") || 0) / (form.watch("duration") + (form.watch("buffer_time") || 0))) * 100}%`
+                            }}
+                          >
+                            <div className="w-full h-full opacity-20" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #f97316 0, #f97316 1px, transparent 0, transparent 4px)', backgroundSize: '6px 6px' }} />
+                          </div>
+
+                          {fields.map((item, index) => {
+                            const req = form.watch(`resource_requirements.${index}`);
+                            const duration = form.watch("duration") || 60;
+                            const buffer = form.watch("buffer_time") || 0;
+                            const total = duration + buffer;
+                            const start = req?.start_delay || 0;
+                            const usage = req?.usage_duration || (duration - start);
                             if (!req?.group_id) return null;
 
-                            const left = (start / duration) * 100;
-                            const width = (usage / duration) * 100;
+                            const left = (start / total) * 100;
+                            const width = (usage / total) * 100;
+
+                            // Calculate y-position carefully
+                            const rowCount = Math.min(fields.length, 3);
+                            const barHeight = 8;
+                            const gap = 4;
+                            const startY = (48 - (fields.length * barHeight + (fields.length - 1) * gap)) / 2;
 
                             return (
-                              <div 
+                              <div
                                 key={item.id}
-                                className="absolute h-3 bg-primary/40 rounded-sm border border-primary/60 transition-all shadow-sm"
-                                style={{ 
-                                  left: `${Math.max(0, Math.min(100, left))}%`, 
+                                className="absolute h-2 bg-primary/70 rounded-full border border-primary/40 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.1)] z-10"
+                                style={{
+                                  left: `${Math.max(0, Math.min(100, left))}%`,
                                   width: `${Math.max(1, Math.min(100 - left, width))}%`,
-                                  top: `${4 + (index % 3) * 4}px`
+                                  top: `${Math.max(4, 4 + index * 10)}px`
                                 }}
                                 title={`Tài nguyên ${index + 1}`}
                               />
                             );
                           })}
                         </div>
-                        <p className="text-[9px] text-center text-muted-foreground">Biểu đồ thời điểm chiếm dụng tài nguyên</p>
+
+                        <div className="flex items-center justify-center gap-6 text-[10px] font-medium text-muted-foreground pt-1">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-3 h-3 bg-primary/70 border border-primary/40 rounded-sm shadow-sm" /> Tài nguyên
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-3 h-3 bg-primary/15 border border-primary/30 rounded-sm" /> Trong liệu trình
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-3 h-3 bg-orange-500/10 border border-orange-500/20 rounded-sm overflow-hidden relative">
+                                <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #f97316 0, #f97316 1px, transparent 0, transparent 3px)', backgroundSize: '4px 4px' }} />
+                            </div> Thời gian nghỉ
+                          </div>
+                        </div>
                       </div>
 
                       <div className="space-y-3">
@@ -535,17 +631,15 @@ export function ServiceFormSheet({
                               </Button>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-3 gap-3">
                               <FormField
                                 control={form.control}
                                 name={`resource_requirements.${index}.quantity`}
                                 render={({ field }) => (
                                   <FormItem className="space-y-1 mb-0">
-                                    <div className="flex items-center justify-between">
-                                      <FormLabel className="text-xs text-muted-foreground font-normal">Số lượng</FormLabel>
-                                    </div>
+                                    <FormLabel className="text-[10px] text-muted-foreground uppercase font-semibold">Số lượng</FormLabel>
                                     <FormControl>
-                                      <Input type="number" min={1} className="h-8" {...field} onChange={e => field.onChange(Number(e.target.value))} />
+                                      <Input type="number" min={1} className="h-8 text-xs px-2" {...field} onChange={e => field.onChange(Number(e.target.value))} />
                                     </FormControl>
                                   </FormItem>
                                 )}
@@ -555,17 +649,34 @@ export function ServiceFormSheet({
                                 name={`resource_requirements.${index}.start_delay`}
                                 render={({ field }) => (
                                   <FormItem className="space-y-1 mb-0">
-                                    <div className="flex items-center justify-between">
-                                      <FormLabel className="text-xs text-muted-foreground font-normal">Bắt đầu sau</FormLabel>
-                                    </div>
+                                    <FormLabel className="text-[10px] text-muted-foreground uppercase font-semibold">Bắt đầu sau</FormLabel>
                                     <FormControl>
                                       <DurationSelect
                                         value={field.value || 0}
                                         onValueChange={field.onChange}
                                         step={5}
                                         max={120}
-                                        placeholder="Ngay lập tức"
-                                        className="h-8 min-h-0"
+                                        placeholder="0p"
+                                        className="h-8 min-h-0 text-xs"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                               <FormField
+                                control={form.control}
+                                name={`resource_requirements.${index}.usage_duration`}
+                                render={({ field }) => (
+                                  <FormItem className="space-y-1 mb-0">
+                                    <FormLabel className="text-[10px] text-muted-foreground uppercase font-semibold">Thời lượng dùng</FormLabel>
+                                    <FormControl>
+                                      <DurationSelect
+                                        value={field.value || 0}
+                                        onValueChange={(val) => field.onChange(val || undefined)}
+                                        step={5}
+                                        max={240}
+                                        placeholder="Hết tour"
+                                        className="h-8 min-h-0 text-xs font-medium text-primary"
                                       />
                                     </FormControl>
                                   </FormItem>
@@ -612,7 +723,7 @@ export function ServiceFormSheet({
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Tiếp tục chỉnh sửa</AlertDialogCancel>
-              <AlertDialogAction 
+              <AlertDialogAction
                 onClick={() => {
                   setShowExitConfirm(false);
                   onOpenChange(false);
@@ -625,7 +736,126 @@ export function ServiceFormSheet({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Quick Create Category Dialog */}
+        <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
+          <DialogContent className="sm:max-w-[400px]">
+            <DialogHeader>
+              <DialogTitle>Tạo danh mục mới</DialogTitle>
+              <DialogDescription>Nhập nhanh tên danh mục bạn muốn bổ sung.</DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <Input
+                placeholder="Tên danh mục..."
+                value={newCatName}
+                onChange={(e) => setNewCatName(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button variant="ghost" onClick={() => setShowCategoryDialog(false)}>Hủy</Button>
+              <Button onClick={handleCreateCategory} disabled={isCreatingSub || !newCatName}>
+                {isCreatingSub ? "Đang tạo..." : "Xác nhận"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Quick Create Skill Dialog */}
+        <Dialog open={showSkillDialog} onOpenChange={setShowSkillDialog}>
+          <DialogContent className="sm:max-w-[400px]">
+            <DialogHeader>
+              <DialogTitle>Tạo kỹ năng mới</DialogTitle>
+              <DialogDescription>Nhập nhanh tên kỹ năng cần bổ sung cho dịch vụ này.</DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <Input
+                placeholder="Tên kỹ năng..."
+                value={newSkillName}
+                onChange={(e) => setNewSkillName(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button variant="ghost" onClick={() => setShowSkillDialog(false)}>Hủy</Button>
+              <Button onClick={handleCreateSkill} disabled={isCreatingSub || !newSkillName}>
+                {isCreatingSub ? "Đang tạo..." : "Xác nhận"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </Sheet>
     </>
   );
+}
+
+/**
+ * Internal sub-component to handle Price Input with local state
+ * This ensures shorthand like "1.2m" works without jumpy Intl formatting.
+ */
+function PriceInputField({ field }: { field: any }) {
+  const [displayValue, setDisplayValue] = useState("");
+
+  // Sync with form state (e.g. when suggestions are clicked or form resets)
+  useEffect(() => {
+    if (field.value === 0) {
+      setDisplayValue("");
+      return;
+    }
+    const formatted = field.value ? new Intl.NumberFormat("vi-VN").format(field.value) : "";
+
+    // Only update if not currently typing shorthand to avoid cursor jumps
+    const isShorthand = displayValue.toLowerCase().includes('k') || displayValue.toLowerCase().includes('m');
+    const hasDot = displayValue.includes('.');
+
+    if (!isShorthand && !hasDot) {
+      setDisplayValue(formatted);
+    }
+  }, [field.value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.toLowerCase();
+    const clean = val.replace(/[^0-9km.]/g, "");
+
+    setDisplayValue(clean);
+
+    // Business Logic: Only convert when ending with K or M
+    if (clean.endsWith("k")) {
+      const num = parseFloat(clean) || 0;
+      field.onChange(Math.round(num * 1000));
+    } else if (clean.endsWith("m")) {
+      const num = parseFloat(clean) || 0;
+      field.onChange(Math.round(num * 1000000));
+    } else if (!clean.includes(".")) {
+      // Normal numeric entry (no dot, no shorthand)
+      const numeric = parseInt(clean.replace(/[^0-9]/g, ""), 10) || 0;
+      field.onChange(numeric);
+    }
+    // If it has a dot but NO shorthand yet (e.g. "1.2"), we wait until they type 'k/m'
+  };
+
+  const handleBlur = () => {
+    // On blur, force standard format
+    setDisplayValue(field.value ? new Intl.NumberFormat("vi-VN").format(field.value) : "");
+  };
+
+  return (
+    <div className="relative">
+      <Input
+        type="text"
+        value={displayValue}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        className="text-right font-mono pr-12 h-11 text-base bg-muted/5 focus:bg-background transition-colors"
+        placeholder="0"
+      />
+      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none font-medium opacity-70">
+        VNĐ
+      </div>
+    </div>
+  );
+}
+
+function PriceInputSync({ form }: { form: any }) {
+  return null;
 }

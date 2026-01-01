@@ -84,6 +84,17 @@ export const serviceCreateSchema = z.object({
   skill_ids: z.array(z.string().uuid()),
   resource_requirements: z.array(resourceRequirementSchema),
   is_active: z.boolean(),
-});
+}).refine(
+  (data) => {
+    return data.resource_requirements.every(req => {
+      const usage = req.usage_duration || (data.duration - req.start_delay);
+      return (req.start_delay + usage) <= data.duration;
+    });
+  },
+  {
+    message: "Thời gian sử dụng tài nguyên vượt quá tổng thời lượng dịch vụ",
+    path: ["resource_requirements"]
+  }
+);
 
 export type ServiceCreateForm = z.infer<typeof serviceCreateSchema>;

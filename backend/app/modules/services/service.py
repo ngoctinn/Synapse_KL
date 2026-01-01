@@ -74,9 +74,21 @@ async def create_service(session: AsyncSession, data: ServiceCreate) -> Service:
     # Assign relationships directly
     service.skills = skills
 
-    # Map resource requirements
+    # Map and validate resource requirements
     reqs = []
     for req in data.resource_requirements:
+        usage = req.usage_duration if req.usage_duration is not None else (service.duration - req.start_delay)
+
+        if req.start_delay < 0:
+             raise HTTPException(status_code=400, detail="Start delay không được âm")
+        if usage <= 0:
+             raise HTTPException(status_code=400, detail="Thời gian sử dụng tài nguyên phải lớn hơn 0")
+        if req.start_delay + usage > service.duration:
+             raise HTTPException(
+                 status_code=400,
+                 detail=f"Tài nguyên vượt quá thời gian dịch vụ ({service.duration}p)"
+             )
+
         req_obj = ServiceResourceRequirement(**req.model_dump())
         reqs.append(req_obj)
     service.resource_requirements = reqs
@@ -115,7 +127,20 @@ async def update_service(session: AsyncSession, service_id: UUID, data: ServiceU
     # Update resource requirements if provided
     if data.resource_requirements is not None:
         new_reqs = []
+        current_duration = service.duration # Dùng duration mới hoặc cũ
         for req in data.resource_requirements:
+            usage = req.usage_duration if req.usage_duration is not None else (current_duration - req.start_delay)
+
+            if req.start_delay < 0:
+                 raise HTTPException(status_code=400, detail="Start delay không được âm")
+            if usage <= 0:
+                 raise HTTPException(status_code=400, detail="Thời gian sử dụng tài nguyên phải lớn hơn 0")
+            if req.start_delay + usage > current_duration:
+                 raise HTTPException(
+                     status_code=400,
+                     detail=f"Tài nguyên vượt quá thời gian dịch vụ ({current_duration}p)"
+                 )
+
             req_obj = ServiceResourceRequirement(**req.model_dump(), service_id=service_id)
             new_reqs.append(req_obj)
         service.resource_requirements = new_reqs

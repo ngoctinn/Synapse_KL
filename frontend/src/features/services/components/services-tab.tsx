@@ -4,41 +4,41 @@ import { PageHeader } from "@/shared/components/page-header";
 import { DataTable, type Column } from "@/shared/components/smart-data-table";
 import { cn } from "@/shared/lib/utils";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
 } from "@/shared/ui/tooltip";
 import { Edit2, Plus, Power, PowerOff, Trash2 } from "lucide-react";
 import { useMemo, useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
-  createServiceAction,
-  deleteServiceAction,
-  getServiceByIdAction,
-  toggleServiceStatusAction,
-  updateServiceAction
+    createServiceAction,
+    deleteServiceAction,
+    getServiceByIdAction,
+    toggleServiceStatusAction,
+    updateServiceAction
 } from "../actions";
 import type { ServiceCreateForm } from "../schemas";
 import type { ResourceGroup, Service, ServiceCategory, ServiceWithDetails, Skill } from "../types";
@@ -155,12 +155,12 @@ export function ServicesTab({
     startTransition(async () => {
       addOptimisticService({ type: "TOGGLE", payload: id });
       try {
-        await toggleServiceStatusAction(id);
-        toast.success("Đã thay đổi trạng thái dịch vụ");
-      } catch (error) {
-        // Revert is complex with useOptimistic unless we have a specific revert action,
-        // usually strict optimistic assumes success. Server will revalidatePath on success.
-        toast.error("Không thể thay đổi trạng thái");
+        const result = await toggleServiceStatusAction(id);
+        if (result) {
+          toast.success("Đã thay đổi trạng thái dịch vụ");
+        }
+      } catch (error: any) {
+        toast.error(error.message || "Không thể thay đổi trạng thái");
       }
     });
   };
@@ -171,8 +171,8 @@ export function ServicesTab({
       try {
         await deleteServiceAction(id);
         toast.success("Xóa dịch vụ thành công");
-      } catch (error) {
-        toast.error("Không thể xóa dịch vụ");
+      } catch (error: any) {
+        toast.error(error.message || "Không thể xóa dịch vụ");
       }
     });
   };

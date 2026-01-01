@@ -103,3 +103,37 @@ async def test_service_delete_integrity(client: AsyncClient):
     assert response.status_code == 409
     assert "Nhóm đang được dịch vụ sử dụng" in response.json()["detail"]
 
+@pytest.mark.anyio
+async def test_service_usage_duration_update(client: AsyncClient):
+    # 1. Setup
+    cat_resp = await client.post("/api/v1/categories", json={"name": "Usage Test"})
+    cat_id = cat_resp.json()["id"]
+
+    group_resp = await client.post("/api/v1/resources/groups", json={"name": "Usage Group", "type": "BED"})
+    group_id = group_resp.json()["id"]
+
+    service_data = {
+        "name": "Usage Service",
+        "category_id": cat_id,
+        "duration": 60,
+        "price": 100000,
+        "resource_requirements": [{"group_id": group_id, "quantity": 1, "usage_duration": 30}]
+    }
+    resp = await client.post("/api/v1/services", json=service_data)
+    svc_id = resp.json()["id"]
+
+    # 2. Update usage_duration (Valid)
+    update_data = {
+        "resource_requirements": [{"group_id": group_id, "quantity": 1, "usage_duration": 45}]
+    }
+    resp = await client.put(f"/api/v1/services/{svc_id}", json=update_data)
+    assert resp.status_code == 200
+    assert resp.json()["resource_requirements"][0]["usage_duration"] == 45
+
+    # 3. Update usage_duration (Invalid - exceeds duration 60)
+    invalid_update = {
+        "resource_requirements": [{"group_id": group_id, "quantity": 1, "usage_duration": 70}]
+    }
+    resp = await client.put(f"/api/v1/services/{svc_id}", json=invalid_update)
+    assert resp.status_code == 400 # Service Layer validation error (HTTPException)
+    assert "vượt quá thời gian dịch vụ" in resp.json()["detail"]

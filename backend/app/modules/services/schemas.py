@@ -48,19 +48,6 @@ class ServiceCreate(SQLModel):
             raise ValueError("Thời gian dịch vụ phải lớn hơn 0")
         if self.buffer_time < 0:
             raise ValueError("Thời gian nghỉ không được âm")
-
-        # Validate resource requirements
-        for req in self.resource_requirements:
-            usage = req.usage_duration if req.usage_duration is not None else (self.duration - req.start_delay)
-            if req.start_delay < 0:
-                raise ValueError("Start delay không được âm")
-            if usage <= 0:
-                raise ValueError("Thời gian sử dụng tài nguyên phải lớn hơn 0")
-            if req.start_delay + usage > self.duration:
-                raise ValueError(
-                    f"Tài nguyên với group_id {req.group_id} có tổng thời gian sử dụng "
-                    f"({req.start_delay} + {usage}) vượt quá thời gian dịch vụ ({self.duration})"
-                )
         return self
 
 
@@ -82,16 +69,6 @@ class ServiceUpdate(SQLModel):
             raise ValueError("Thời gian dịch vụ phải lớn hơn 0")
         if self.buffer_time is not None and self.buffer_time < 0:
             raise ValueError("Thời gian nghỉ không được âm")
-
-        # Lưu ý: Việc validate resource_requirements so với duration trong Update
-        # phức tạp hơn vì duration có thể không được truyền lên (giữ nguyên cũ).
-        # Tạm thời validate logic nội bộ của resource_requirements.
-        if self.resource_requirements:
-            for req in self.resource_requirements:
-                if req.start_delay < 0:
-                    raise ValueError("Start delay không được âm")
-                if req.usage_duration is not None and req.usage_duration <= 0:
-                    raise ValueError("Thời gian sử dụng tài nguyên phải lớn hơn 0")
         return self
 
 
