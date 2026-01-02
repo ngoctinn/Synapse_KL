@@ -1,29 +1,30 @@
 "use client";
 
-import { DataTable, DataTableColumnHeader } from "@/shared/components/data-table";
+import { DataTable } from "@/shared/components/data-table";
+import { DataTableColumnHeader } from "@/shared/components/data-table/data-table-column-header";
 import { TabToolbar } from "@/shared/components/tab-toolbar";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Edit2, MoreHorizontal, Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -40,14 +41,6 @@ export function SkillsTab({ skills, variant = "default" }: SkillsTabProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [isDeleting, startDeleteTransition] = useTransition();
-
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const filteredSkills = skills.filter(skill =>
-    !searchTerm || skill.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-
 
   const handleAdd = () => {
     setSelectedSkill(null);
@@ -70,9 +63,6 @@ export function SkillsTab({ skills, variant = "default" }: SkillsTabProps) {
     });
   };
 
-
-
-  // --- Columns ---
   const columns: ColumnDef<Skill>[] = [
     {
       id: "select",
@@ -176,6 +166,8 @@ export function SkillsTab({ skills, variant = "default" }: SkillsTabProps) {
     },
   ];
 
+  // Logic nghiệp vụ: Quản lý danh sách kỹ năng chuyên môn của Kỹ thuật viên
+
   return (
     <div className="space-y-4">
 
@@ -184,14 +176,12 @@ export function SkillsTab({ skills, variant = "default" }: SkillsTabProps) {
          description="Quản lý các kỹ năng tay nghề và chuyên môn."
          actionLabel="Thêm kỹ năng"
          onActionClick={handleAdd}
-         onSearch={setSearchTerm}
-         searchValue={searchTerm}
          searchPlaceholder="Tìm kiếm kỹ năng..."
       />
 
       <DataTable
         columns={columns}
-        data={filteredSkills}
+        data={skills}
         variant={variant}
       />
 

@@ -4,27 +4,27 @@ import { DataTable, DataTableColumnHeader } from "@/shared/components/data-table
 import { TabToolbar } from "@/shared/components/tab-toolbar";
 import { cn } from "@/shared/lib/utils";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/ui/card";
 import { Checkbox } from "@/shared/ui/checkbox";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { Bed, CalendarClock, MoreHorizontal, Plus, Trash2, Wrench } from "lucide-react";
@@ -111,22 +111,18 @@ export function ResourcesTab({ groups, variant = "default" }: ResourcesTabProps)
 
 
 
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const filteredGroups = groups.filter(g =>
-    !searchTerm || g.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <TabToolbar
-        title="Danh sách nhóm tài nguyên"
-        description="Quản lý phòng, giường và thiết bị."
+        title="Tài nguyên Spa"
+        description="Quản lý Giường, Máy móc và các thiết bị hỗ trợ trị liệu."
         actionLabel="Thêm nhóm"
-        onActionClick={handleAddGroup}
-        onSearch={setSearchTerm}
-        searchValue={searchTerm}
-        searchPlaceholder="Tìm kiếm nhóm..."
+        onActionClick={() => {
+          setSelectedGroup(null);
+          setIsGroupSheetOpen(true);
+        }}
+        searchPlaceholder="Tìm kiếm nhóm tài nguyên..."
       />
 
 
@@ -154,12 +150,7 @@ export function ResourcesTab({ groups, variant = "default" }: ResourcesTabProps)
         </div>
       ) : (
         <div className="grid gap-4">
-          {filteredGroups.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-               Không tìm thấy nhóm nào phù hợp với &quot;{searchTerm}&quot;
-            </div>
-          )}
-          {filteredGroups.map((group) => (
+          {groups.map((group) => (
             <Card key={group.id} className={cn(
               "overflow-hidden transition-all hover:bg-neutral-5/5",
               variant === "flat"
@@ -306,16 +297,19 @@ function ResourcesDataTable({
       enableSorting: false,
       enableHiding: false,
     },
-    { accessorKey: "name", header: ({ column }) => <DataTableColumnHeader column={column} title="Tên tài nguyên" />, cell: (row) => <span className="font-medium">{row.getValue() as string}</span> },
-    { accessorKey: "code", header: ({ column }) => <DataTableColumnHeader column={column} title="Mã" />, cell: (row) => <code className="text-xs bg-muted px-1 rounded">{row.getValue() ? row.getValue() as string : "-"}</code> },
+    { accessorKey: "name", header: ({ column }) => <DataTableColumnHeader column={column} title="Tên tài nguyên" />, cell: ({ row }) => <span className="font-medium">{row.getValue("name") as string}</span> },
+    { accessorKey: "code", header: ({ column }) => <DataTableColumnHeader column={column} title="Mã" />, cell: ({ row }) => <code className="text-xs bg-muted px-1 rounded">{row.getValue("code") ? row.getValue("code") as string : "-"}</code> },
     {
       accessorKey: "status",
       header: ({ column }) => <DataTableColumnHeader column={column} title="Trạng thái" />,
-      cell: (row) => (
-        <Badge variant={row.getValue() === "ACTIVE" ? "default" : "secondary"}>
-          {row.getValue() as string}
-        </Badge>
-      )
+      cell: ({ row }) => {
+        const status = row.getValue("status") as string;
+        return (
+          <Badge variant={status === "ACTIVE" ? "default" : "secondary"}>
+            {status}
+          </Badge>
+        );
+      }
     },
     {
       id: "actions",

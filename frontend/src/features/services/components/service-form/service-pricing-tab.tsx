@@ -3,11 +3,11 @@
 import { DurationSelect } from "@/shared/components/duration-select";
 import { Button } from "@/shared/ui/button";
 import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/shared/ui/form";
 import { useFormContext } from "react-hook-form";
 import { type ServiceCreateForm } from "../../schemas";
@@ -43,7 +43,7 @@ export function ServicePricingTab() {
                     <Button
                       type="button"
                       variant="ghost"
-                      className="h-11 text-orange-600 hover:text-orange-700 hover:bg-orange-50 font-normal px-4"
+                      className="h-11 text-alert-warning-foreground hover:bg-alert-warning/10 font-normal px-4"
                       onClick={() => field.onChange(0)}
                     >
                       Xóa trắng

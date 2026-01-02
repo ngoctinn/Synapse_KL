@@ -142,17 +142,7 @@ export function CategoriesTab({ categories, variant = "default" }: CategoriesTab
     });
   };
 
-  // Logic handleFormSubmit cho CategoryFormSheet (nếu cần xử lý tập trung)
-  // Hiện tại Sheet tự gọi action bên trong, nên ta chỉ cần sync toast.
-
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const filteredItems = useMemo(() => {
-    if (!searchTerm) return items;
-    return items.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  }, [items, searchTerm]);
-
-  const isSearching = searchTerm.length > 0;
+  // Tại sao
 
   return (
     <div data-slot="data-table" className="space-y-4 font-sans w-full max-w-full overflow-hidden">
@@ -162,8 +152,6 @@ export function CategoriesTab({ categories, variant = "default" }: CategoriesTab
         description="Phân loại và quản lý các nhóm dịch vụ."
         actionLabel="Thêm danh mục"
         onActionClick={handleAdd}
-        onSearch={setSearchTerm}
-        searchValue={searchTerm}
         searchPlaceholder="Tìm kiếm danh mục..."
       />
 
@@ -190,15 +178,15 @@ export function CategoriesTab({ categories, variant = "default" }: CategoriesTab
               </TableRow>
             </TableHeader>
             <TableBody>
-              <SortableContext items={filteredItems} strategy={verticalListSortingStrategy}>
-                {filteredItems.length === 0 ? (
+              <SortableContext items={items} strategy={verticalListSortingStrategy}>
+                {items.length === 0 ? (
                     <TableRow>
                         <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                             Chưa có danh mục nào.
                         </TableCell>
                     </TableRow>
                 ) : (
-                    filteredItems.map((category: ServiceCategory, idx: number) => (
+                    items.map((category: ServiceCategory, idx: number) => (
                     <SortableCategoryRow
                         key={category.id}
                         category={category}
@@ -206,7 +194,6 @@ export function CategoriesTab({ categories, variant = "default" }: CategoriesTab
                         isDeleting={isDeleting}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
-                        isDragDisabled={isSearching}
                     />
                     ))
                 )}

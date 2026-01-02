@@ -30,14 +30,13 @@ export function PriceInputField({ field }: PriceInputFieldProps) {
 
     const currentNumeric = parseDisplay(displayValue);
 
-    // If the field value is significantly different from what we are displaying,
-    // it means the update came from outside (e.g. Quick Button), so we MUST sync.
+    // Đồng bộ giá trị hiển thị với form state khi có sự thay đổi từ bên ngoài (reset form hoặc bấm nút gợi ý)
     if (currentNumeric !== field.value) {
       setDisplayValue(formatted);
       return;
     }
 
-    // Only update if not currently typing shorthand to avoid cursor jumps
+    // Tránh việc cập nhật lại khi người dùng đang gõ phím viết tắt (k, m) để không làm nhảy con trỏ chuột
     const isShorthand = displayValue.toLowerCase().includes('k') || displayValue.toLowerCase().includes('m');
     const hasDot = displayValue.includes('.');
 
@@ -52,7 +51,7 @@ export function PriceInputField({ field }: PriceInputFieldProps) {
 
     setDisplayValue(clean);
 
-    // Business Logic: Only convert when ending with K or M
+    // Logic nghiệp vụ: Cho phép nhập nhanh các đơn vị nghìn (k) và triệu (m)
     if (clean.endsWith("k")) {
       const num = parseFloat(clean) || 0;
       field.onChange(Math.round(num * 1000));
@@ -60,7 +59,7 @@ export function PriceInputField({ field }: PriceInputFieldProps) {
       const num = parseFloat(clean) || 0;
       field.onChange(Math.round(num * 1000000));
     } else if (!clean.includes(".")) {
-      // Normal numeric entry (no dot, no shorthand)
+      // Trường hợp nhập số bình thường
       const numeric = parseInt(clean.replace(/[^0-9]/g, ""), 10) || 0;
       field.onChange(numeric);
     }

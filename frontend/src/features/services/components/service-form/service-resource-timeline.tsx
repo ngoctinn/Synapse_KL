@@ -93,12 +93,12 @@ export function ServiceResourceTimeline({ resourceGroups }: ServiceResourceTimel
                   {groupName} ({usage}p)
                 </div>
 
-                {/* Resource Bar */}
+                {/* Thanh biểu thị thời gian sử dụng tài nguyên cụ thể */}
                 <div
                   className={cn(
                     "absolute h-5 rounded-md border transition-all duration-300 z-20",
-                    "bg-primary/80 border-primary/30 shadow-[0_1px_3px_rgba(0,0,0,0.2)]",
-                    "hover:scale-[1.02] hover:bg-primary",
+                    "bg-primary border-primary/30 shadow-[0_1px_3px_rgba(0,0,0,0.2)]",
+                    "hover:scale-[1.02] hover:bg-primary-dark",
                     "flex items-center px-2 cursor-help"
                   )}
                   style={{
@@ -121,16 +121,16 @@ export function ServiceResourceTimeline({ resourceGroups }: ServiceResourceTimel
         )}
       </div>
 
-      {/* Legend */}
+      {/* Chú thích các thành phần trên Timeline */}
       <div className="flex items-center justify-center gap-6 text-[10px] font-semibold text-muted-foreground/70 pt-2 border-t border-border/40">
         <div className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors">
-          <div className="w-3 h-3 bg-primary/80 border border-primary/30 rounded-full shadow-sm" /> Tài nguyên sử dụng
+          <div className="w-3 h-3 bg-primary border border-primary/30 rounded-full shadow-sm" /> Tài nguyên sử dụng
         </div>
         <div className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors">
           <div className="w-3 h-3 bg-primary/10 border border-primary/20 rounded-sm" /> Thời gian liệu trình
         </div>
         <div className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors">
-          <div className="w-3 h-3 bg-alert-warning/20 border border-alert-warning-foreground/20 rounded-sm overflow-hidden relative">
+          <div className="w-3 h-3 bg-alert-warning/20 border border-alert-warning-border/40 rounded-sm overflow-hidden relative">
               <div className="absolute inset-0 opacity-20 bg-[image:repeating-linear-gradient(45deg,var(--color-alert-warning-foreground)_0,var(--color-alert-warning-foreground)_1px,transparent_0,transparent_3px)] [background-size:4px_4px]" />
           </div> Nghỉ/Chuẩn bị
         </div>

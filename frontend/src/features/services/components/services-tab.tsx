@@ -65,7 +65,7 @@ export function ServicesTab({
   const [selectedService, setSelectedService] = useState<ServiceWithDetails | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  // Optimistic UI State
+  // Quản lý trạng thái Optimistic để phản hồi UI tức thì mà không chờ Server Action hoàn tất
   const [optimisticServices, addOptimisticService] = useOptimistic(
     services,
     (state, action: { type: "ADD" | "UPDATE" | "DELETE" | "TOGGLE"; payload: Service | string }) => {
@@ -183,7 +183,7 @@ export function ServicesTab({
 
 
 
-  // --- Column Definitions ---
+  // Định nghĩa các cột cho DataTable, bao gồm logic hiển thị và filter đặc thù
   const columns: ColumnDef<Service>[] = [
     {
       id: "select",
@@ -356,17 +356,6 @@ export function ServicesTab({
   ];
 
 
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const filteredServices = optimisticServices.filter(visitedService => {
-    if (!searchTerm) return true;
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      visitedService.name.toLowerCase().includes(searchLower) ||
-      (visitedService.description && visitedService.description.toLowerCase().includes(searchLower)) ||
-      (getCategoryName(visitedService.category_id).toLowerCase().includes(searchLower))
-    );
-  });
 
   return (
     <div className="space-y-4">
@@ -375,14 +364,12 @@ export function ServicesTab({
         description="Quản lý danh sách dịch vụ spa và trị liệu."
         actionLabel="Thêm dịch vụ"
         onActionClick={handleAdd}
-        onSearch={setSearchTerm}
-        searchValue={searchTerm}
         searchPlaceholder="Tìm kiếm dịch vụ..."
       />
 
       <DataTable
         columns={columns}
-        data={filteredServices}
+        data={optimisticServices}
         variant={variant}
       />
 
