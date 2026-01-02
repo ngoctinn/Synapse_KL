@@ -81,7 +81,7 @@ export const serviceCreateSchema = z.object({
   price: z.number().min(0, "Giá không được âm"),
   description: z.string().max(2000).optional(),
   image_url: z.string().url().optional().or(z.literal("")),
-  skill_ids: z.array(z.string().uuid()),
+  skill_ids: z.array(z.string().uuid()).min(1, "Phải chọn ít nhất 1 kỹ năng thực hiện"),
   resource_requirements: z.array(resourceRequirementSchema),
   is_active: z.boolean(),
 }).refine(

@@ -3,17 +3,6 @@
 import { DataTable } from "@/shared/components/data-table";
 import { DataTableColumnHeader } from "@/shared/components/data-table/data-table-column-header";
 import { TabToolbar } from "@/shared/components/tab-toolbar";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import {
@@ -30,6 +19,7 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { deleteSkillAction } from "../actions";
 import type { Skill } from "../types";
+import { DeleteDialog } from "./delete-dialog";
 import { SkillFormSheet } from "./skill-form-sheet";
 
 interface SkillsTabProps {
@@ -132,8 +122,11 @@ export function SkillsTab({ skills, variant = "default" }: SkillsTabProps) {
               Chỉnh sửa
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
+            <DeleteDialog
+              title="Xác nhận xóa?"
+              description={`Hành động này không thể hoàn tác. Kỹ năng "${row.original.name}" sẽ bị xóa vĩnh viễn khỏi hệ thống.`}
+              onConfirm={() => handleDelete(row.original.id)}
+              trigger={
                 <div
                   className="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none transition-colors hover:bg-destructive/10 text-destructive gap-2"
                   onClick={(e) => e.stopPropagation()}
@@ -141,25 +134,8 @@ export function SkillsTab({ skills, variant = "default" }: SkillsTabProps) {
                   <Trash2 className="h-4 w-4" />
                   <span>Xóa kỹ năng</span>
                 </div>
-              </AlertDialogTrigger>
-              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Hành động này không thể hoàn tác. Kỹ năng &quot;{row.original.name}&quot; sẽ bị xóa vĩnh viễn khỏi hệ thống.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Hủy</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => handleDelete(row.original.id)}
-                    className="bg-destructive"
-                  >
-                    Xóa
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+              }
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       ),

@@ -89,7 +89,14 @@ export function MaintenanceSheet({
 
     startTransition(async () => {
       try {
-        await createMaintenanceAction(resource.id, data);
+        // Convert local datetime-local string to UTC ISO string
+        const payload = {
+          ...data,
+          start_time: new Date(data.start_time).toISOString(),
+          end_time: new Date(data.end_time).toISOString(),
+        };
+
+        await createMaintenanceAction(resource.id, payload);
         toast.success("Đã lên lịch bảo trì thành công");
         onOpenChange(false);
         form.reset();

@@ -2,17 +2,6 @@
 
 import { TabToolbar } from "@/shared/components/tab-toolbar";
 import { cn } from "@/shared/lib/utils";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
 import {
   DropdownMenu,
@@ -56,6 +45,7 @@ import { toast } from "sonner";
 import { deleteCategoryAction, reorderCategoriesAction } from "../actions";
 import type { ServiceCategory } from "../types";
 import { CategoryFormSheet } from "./category-form-sheet";
+import { DeleteDialog } from "./delete-dialog";
 
 interface CategoriesTabProps {
   categories: ServiceCategory[];
@@ -303,8 +293,11 @@ const SortableCategoryRow = React.memo(({ category, index, isDeleting, onEdit, o
               Chỉnh sửa
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
+            <DeleteDialog
+               title="Xác nhận xóa?"
+               description={`Danh mục "${category.name}" sẽ bị xóa. Bạn không thể xóa nếu danh mục này đang chứa dịch vụ.`}
+               onConfirm={() => onDelete(category.id)}
+               trigger={
                 <div
                   className="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none transition-colors hover:bg-destructive/10  text-destructive gap-2"
                   onClick={(e) => e.stopPropagation()}
@@ -312,25 +305,8 @@ const SortableCategoryRow = React.memo(({ category, index, isDeleting, onEdit, o
                   <Trash2 className="h-4 w-4" />
                   <span>Xóa danh mục</span>
                 </div>
-              </AlertDialogTrigger>
-              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Danh mục &quot;{category.name}&quot; sẽ bị xóa. Bạn không thể xóa nếu danh mục này đang chứa dịch vụ.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Hủy</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => onDelete(category.id)}
-                    className="bg-destructive"
-                  >
-                    Xóa
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+               }
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       </TableCell>

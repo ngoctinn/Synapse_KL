@@ -1,19 +1,6 @@
-"use client";
-
 import { DataTable, DataTableColumnHeader } from "@/shared/components/data-table";
 import { TabToolbar } from "@/shared/components/tab-toolbar";
 import { cn } from "@/shared/lib/utils";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/shared/ui/alert-dialog";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/ui/card";
@@ -32,6 +19,7 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { deleteResourceAction, deleteResourceGroupAction, getResourcesAction } from "../actions";
 import type { Resource, ResourceGroup, ResourceGroupWithCount } from "../types";
+import { DeleteDialog } from "./delete-dialog";
 import { MaintenanceSheet } from "./maintenance-sheet";
 import { ResourceFormSheet } from "./resource-form-sheet";
 import { ResourceGroupFormSheet } from "./resource-group-form-sheet";
@@ -86,6 +74,17 @@ export function ResourcesTab({ groups, variant = "default" }: ResourcesTabProps)
     startDeleteTransition(async () => {
       try {
         await deleteResourceAction(id);
+        
+        // Optimistic UI Update: Xóa khỏi local state ngay lập tức
+        setResourcesByGroup(prev => {
+          const next = { ...prev };
+          // Duyệt qua tất cả các nhóm để tìm và xóa resource
+          Object.keys(next).forEach(groupId => {
+            next[groupId] = next[groupId].filter(r => r.id !== id);
+          });
+          return next;
+        });
+
         toast.success("Xóa tài nguyên thành công");
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Không thể xóa tài nguyên");
@@ -199,31 +198,22 @@ export function ResourcesTab({ groups, variant = "default" }: ResourcesTabProps)
                     >
                       <Plus className="h-5 w-5 stroke-2" />
                     </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-9 w-9 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/5"
-                            disabled={group.resource_count > 0}
-                            title={group.resource_count > 0 ? "Không thể xóa nhóm đang có tài nguyên" : "Xóa nhóm"}
-                          >
-                            <Trash2 className="h-5 w-5 stroke-2" />
-                          </Button>
-                        </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Hành động này sẽ xóa nhóm &quot;{group.name}&quot;. Bạn không thể xóa nếu nhóm còn tài nguyên.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Hủy</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDeleteGroup(group.id)} className="bg-destructive">Xóa</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <DeleteDialog
+                      title="Xác nhận xóa?"
+                      description={`Hành động này sẽ xóa nhóm "${group.name}". Bạn không thể xóa nếu nhóm còn tài nguyên.`}
+                      onConfirm={() => handleDeleteGroup(group.id)}
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-9 w-9 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/5"
+                          disabled={group.resource_count > 0}
+                          title={group.resource_count > 0 ? "Không thể xóa nhóm đang có tài nguyên" : "Xóa nhóm"}
+                        >
+                          <Trash2 className="h-5 w-5 stroke-2" />
+                        </Button>
+                      }
+                    />
                   </div>
                 </div>
               </CardHeader>
@@ -335,8 +325,11 @@ function ResourcesDataTable({
               Lên lịch bảo trì
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
+            <DeleteDialog
+              title="Xác nhận xóa?"
+              description={`Xóa tài nguyên "${row.original.name}"? Hành động này không thể hoàn tác.`}
+              onConfirm={() => onDelete(row.original.id)}
+              trigger={
                 <div
                   className="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none transition-colors hover:bg-destructive/10 text-destructive gap-2"
                   onClick={(e) => e.stopPropagation()}
@@ -344,25 +337,8 @@ function ResourcesDataTable({
                   <Trash2 className="h-4 w-4" />
                   <span>Xóa tài nguyên</span>
                 </div>
-              </AlertDialogTrigger>
-              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Xóa tài nguyên &quot;{row.original.name}&quot;? Hành động này không thể hoàn tác.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Hủy</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => onDelete(row.original.id)}
-                    className="bg-destructive"
-                  >
-                    Xóa
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+              }
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       )

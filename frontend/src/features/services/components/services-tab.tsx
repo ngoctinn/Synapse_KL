@@ -3,17 +3,6 @@
 import { DataTable, DataTableColumnHeader } from "@/shared/components/data-table";
 import { TabToolbar } from "@/shared/components/tab-toolbar";
 import { cn } from "@/shared/lib/utils";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/shared/ui/alert-dialog";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
@@ -46,6 +35,7 @@ import {
 } from "../actions";
 import type { ServiceCreateForm } from "../schemas";
 import type { ResourceGroup, Service, ServiceCategory, ServiceWithDetails, Skill } from "../types";
+import { DeleteDialog } from "./delete-dialog";
 import { ServiceFormSheet } from "./service-form-sheet";
 
 interface ServicesTabProps {
@@ -136,6 +126,7 @@ export function ServicesTab({
         addOptimisticService({ type: "UPDATE", payload: updatedService });
         const res = await updateServiceAction(selectedService.id, data);
         if (res.success) {
+           setIsSheetOpen(false); // Close modal on success
            router.refresh();
         }
       });
@@ -158,6 +149,8 @@ export function ServicesTab({
         addOptimisticService({ type: "ADD", payload: tempService });
         const res = await createServiceAction(data);
         if (res.success) {
+           toast.success(`Đã tạo dịch vụ "${data.name}" thành công`);
+           setIsSheetOpen(false);
            router.refresh();
         }
       });
@@ -362,8 +355,11 @@ export function ServicesTab({
               )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
+            <DeleteDialog
+              title="Xác nhận xóa?"
+              description={`Xóa dịch vụ "${row.original.name}"? Hành động này không thể hoàn tác.`}
+              onConfirm={() => handleDelete(row.original.id)}
+              trigger={
                 <div
                   className="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none transition-colors hover:bg-destructive/10 text-destructive gap-2"
                   onClick={(e) => e.stopPropagation()}
@@ -371,25 +367,8 @@ export function ServicesTab({
                   <Trash2 className="h-4 w-4" />
                   <span>Xóa dịch vụ</span>
                 </div>
-              </AlertDialogTrigger>
-              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Xóa dịch vụ &quot;{row.original.name}&quot;? Hành động này không thể hoàn tác.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Hủy</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(row.original.id)}
-                              className="bg-destructive hover:bg-destructive/90"
-                            >
-                              Xóa vĩnh viễn
-                            </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+              }
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       ),

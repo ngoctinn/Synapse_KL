@@ -36,7 +36,7 @@ async def get_all_services(
     total = (await session.exec(count_stmt)).one()
 
     # Pagination
-    stmt = stmt.order_by(Service.name).offset((page - 1) * limit).limit(limit)
+    stmt = stmt.order_by(Service.created_at.desc()).offset((page - 1) * limit).limit(limit)
 
     result = await session.exec(stmt)
     return list(result.all()), total
@@ -55,6 +55,35 @@ async def get_service_by_id(session: AsyncSession, service_id: UUID) -> Service 
     )
     result = await session.exec(stmt)
     return result.first()
+
+
+def validate_and_create_requirements(
+    requirements_data: list,
+    service_duration: int,
+    service_id: UUID | None = None
+) -> list[ServiceResourceRequirement]:
+    """Helper để validate và tạo list ServiceResourceRequirement."""
+    reqs = []
+    for req in requirements_data:
+        usage = req.usage_duration if req.usage_duration is not None else (service_duration - req.start_delay)
+
+        if req.start_delay < 0:
+             raise HTTPException(status_code=400, detail="Start delay không được âm")
+        if usage <= 0:
+             raise HTTPException(status_code=400, detail="Thời gian sử dụng tài nguyên phải lớn hơn 0")
+        if req.start_delay + usage > service_duration:
+             raise HTTPException(
+                 status_code=400,
+                 detail=f"Tài nguyên vượt quá thời gian dịch vụ ({service_duration}p)"
+             )
+
+        req_dict = req.model_dump()
+        if service_id:
+            req_dict["service_id"] = service_id
+            
+        req_obj = ServiceResourceRequirement(**req_dict)
+        reqs.append(req_obj)
+    return reqs
 
 
 async def create_service(session: AsyncSession, data: ServiceCreate) -> Service:
@@ -82,23 +111,11 @@ async def create_service(session: AsyncSession, data: ServiceCreate) -> Service:
     service.skills = skills
 
     # Map and validate resource requirements
-    reqs = []
-    for req in data.resource_requirements:
-        usage = req.usage_duration if req.usage_duration is not None else (service.duration - req.start_delay)
-
-        if req.start_delay < 0:
-             raise HTTPException(status_code=400, detail="Start delay không được âm")
-        if usage <= 0:
-             raise HTTPException(status_code=400, detail="Thời gian sử dụng tài nguyên phải lớn hơn 0")
-        if req.start_delay + usage > service.duration:
-             raise HTTPException(
-                 status_code=400,
-                 detail=f"Tài nguyên vượt quá thời gian dịch vụ ({service.duration}p)"
-             )
-
-        req_obj = ServiceResourceRequirement(**req.model_dump())
-        reqs.append(req_obj)
-    service.resource_requirements = reqs
+    if data.resource_requirements:
+        service.resource_requirements = validate_and_create_requirements(
+            data.resource_requirements,
+            service.duration
+        )
 
     session.add(service)
     await session.commit()
@@ -133,24 +150,11 @@ async def update_service(session: AsyncSession, service_id: UUID, data: ServiceU
 
     # Update resource requirements if provided
     if data.resource_requirements is not None:
-        new_reqs = []
-        current_duration = service.duration # Dùng duration mới hoặc cũ
-        for req in data.resource_requirements:
-            usage = req.usage_duration if req.usage_duration is not None else (current_duration - req.start_delay)
-
-            if req.start_delay < 0:
-                 raise HTTPException(status_code=400, detail="Start delay không được âm")
-            if usage <= 0:
-                 raise HTTPException(status_code=400, detail="Thời gian sử dụng tài nguyên phải lớn hơn 0")
-            if req.start_delay + usage > current_duration:
-                 raise HTTPException(
-                     status_code=400,
-                     detail=f"Tài nguyên vượt quá thời gian dịch vụ ({current_duration}p)"
-                 )
-
-            req_obj = ServiceResourceRequirement(**req.model_dump(), service_id=service_id)
-            new_reqs.append(req_obj)
-        service.resource_requirements = new_reqs
+        service.resource_requirements = validate_and_create_requirements(
+            data.resource_requirements,
+            service.duration, # Dùng duration mới (đã update ở setattr trên)
+            service_id
+        )
 
     session.add(service)
     await session.commit()

@@ -5,7 +5,7 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from pydantic import ConfigDict, model_validator
+from pydantic import ConfigDict, field_validator, model_validator
 from sqlmodel import SQLModel
 from typing_extensions import Self
 
@@ -40,7 +40,15 @@ class ServiceCreate(SQLModel):
     description: str | None = None
     image_url: str | None = None
     is_active: bool = True
-    skill_ids: list[UUID] = []
+    skill_ids: list[UUID]
+
+    @field_validator("skill_ids")
+    @classmethod
+    def validate_skills_not_empty(cls, v: list[UUID]) -> list[UUID]:
+        if not v:
+            raise ValueError("Phải chọn ít nhất 1 kỹ năng thực hiện")
+        return v
+
     resource_requirements: list[ServiceResourceRequirementCreate] = []
 
     @model_validator(mode="after")
@@ -63,6 +71,13 @@ class ServiceUpdate(SQLModel):
     is_active: bool | None = None
     skill_ids: list[UUID] | None = None
     resource_requirements: list[ServiceResourceRequirementCreate] | None = None
+
+    @field_validator("skill_ids")
+    @classmethod
+    def validate_skills_not_empty_update(cls, v: list[UUID] | None) -> list[UUID] | None:
+        if v is not None and len(v) == 0:
+            raise ValueError("Không thể xóa hết kỹ năng của dịch vụ")
+        return v
 
     @model_validator(mode="after")
     def validate_update_durations(self) -> Self:

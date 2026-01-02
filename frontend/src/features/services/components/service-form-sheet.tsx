@@ -177,11 +177,11 @@ export function ServiceFormSheet({
     setIsCreatingSub(true);
     try {
       const res = await createCategoryAction({ name: newCatName });
-      if (res.success) {
+      if (res.success && res.data) {
         toast.success("Đã tạo danh mục mới");
+        form.setValue("category_id", res.data.id, { shouldDirty: true });
         setShowCategoryDialog(false);
         setNewCatName("");
-        router.refresh();
       } else {
         toast.error(res.message);
       }
@@ -195,11 +195,12 @@ export function ServiceFormSheet({
     setIsCreatingSub(true);
     try {
       const res = await createSkillAction({ name: newSkillName });
-      if (res.success) {
+      if (res.success && res.data) {
         toast.success("Đã tạo kỹ năng mới");
+        const currentSkills = form.getValues("skill_ids") || [];
+        form.setValue("skill_ids", [...currentSkills, res.data.id], { shouldDirty: true });
         setShowSkillDialog(false);
         setNewSkillName("");
-        router.refresh();
       } else {
         toast.error(res.message);
       }
