@@ -2,19 +2,19 @@
 
 import { Table } from "@tanstack/react-table"
 import {
-    ChevronLeft,
-    ChevronRight
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react"
 import * as React from "react"
 
 import { cn } from "@/shared/lib/utils"
 import { Button } from "@/shared/ui/button"
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/shared/ui/select"
 
 interface DataTablePaginationProps<TData> {
@@ -91,7 +91,7 @@ export function DataTablePagination<TData>({
             disabled={!table.getCanPreviousPage()}
           >
             <span className="sr-only">Trang trước</span>
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4 stroke-2" />
           </Button>
 
           {/* Page Numbers */}
@@ -125,7 +125,7 @@ export function DataTablePagination<TData>({
             disabled={!table.getCanNextPage()}
           >
             <span className="sr-only">Trang sau</span>
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4 stroke-2" />
           </Button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 "use client";
+import { cn } from "@/shared/lib/utils";
 
 import { StaffFormSheet } from "@/features/staff/components/staff-form-sheet";
 import type { StaffProfileWithSkills } from "@/features/staff/types";
@@ -19,9 +20,10 @@ import { useState } from "react";
 
 interface StaffTableProps {
   data: StaffProfileWithSkills[];
+  variant?: "default" | "flat";
 }
 
-export function StaffTable({ data }: StaffTableProps) {
+export function StaffTable({ data, variant = "default" }: StaffTableProps) {
   const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<StaffProfileWithSkills | undefined>(undefined);
@@ -158,7 +160,10 @@ export function StaffTable({ data }: StaffTableProps) {
       </div>
 
       {data.length === 0 ? (
-        <div className="rounded-xl border border-dashed bg-muted/5 overflow-hidden">
+        <div className={cn(
+          "rounded-xl border border-dashed bg-muted/5 overflow-hidden",
+          variant === "flat" && "border-none"
+        )}>
           <div className="flex flex-col items-center justify-center py-16 px-4 gap-4">
             <div className="rounded-full bg-muted/50 p-4">
               <Plus className="h-8 w-8 text-muted-foreground/50" />
@@ -176,6 +181,7 @@ export function StaffTable({ data }: StaffTableProps) {
           <DataTable
             columns={columns}
             data={tableData}
+            variant={variant}
           />
       )}
 

@@ -78,10 +78,10 @@ export function DataTable<TData, TValue>({
   })
 
   return (
-    <div data-slot="data-table" className="space-y-4 font-sans">
+    <div data-slot="data-table" className="space-y-4 font-sans w-full max-w-full overflow-hidden">
       <div className={cn(
-        "relative",
-        variant === "default" && "overflow-hidden rounded-xl border border-border bg-background"
+        "relative w-full overflow-x-auto border-border",
+        variant === "default" && "rounded-xl border bg-background shadow-sm"
       )}>
         <Table>
           <TableHeader className={cn("bg-neutral-5/20 dark:bg-neutral-90/10 border-b-0 sticky top-0 z-30 shadow-none hover:bg-transparent", stickyHeader && "backdrop-blur-md")}>

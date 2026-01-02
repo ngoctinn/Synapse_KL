@@ -11,17 +11,17 @@ import { cn } from "@/shared/lib/utils"
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
 } from "@/shared/ui/form"
 import { Switch } from "@/shared/ui/switch"
 import { DayOfWeek, DAYS_OF_WEEK, OperatingHour } from "../types"
 
 const operatingHourSchema = z.object({
-  day_of_week: z.number(),
+  day_of_week: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6)]),
   open_time: z.string(),
   close_time: z.string(),
   is_closed: z.boolean(),
@@ -36,6 +36,7 @@ type FormValues = z.infer<typeof formSchema>;
 interface OperatingHoursFormProps {
   data?: OperatingHour[]
   onChange: (data: OperatingHour[]) => void
+  variant?: "default" | "flat"
 }
 
 const DEFAULT_HOURS: OperatingHour[] = ([1, 2, 3, 4, 5, 6, 0] as DayOfWeek[]).map((day) => ({
@@ -48,6 +49,7 @@ const DEFAULT_HOURS: OperatingHour[] = ([1, 2, 3, 4, 5, 6, 0] as DayOfWeek[]).ma
 export function OperatingHoursForm({
   data,
   onChange,
+  variant = "default",
 }: OperatingHoursFormProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -59,15 +61,28 @@ export function OperatingHoursForm({
   // Theo dõi thay đổi và báo cáo lên cha
   const watchedValues = form.watch("regular_operating_hours");
 
+  const isSameHours = (a: OperatingHour[], b: OperatingHour[]) => {
+    if (!a || !b || a.length !== b.length) return false;
+    return a.every((h, i) =>
+      h.day_of_week === b[i].day_of_week &&
+      h.open_time === b[i].open_time &&
+      h.close_time === b[i].close_time &&
+      h.is_closed === b[i].is_closed
+    );
+  };
+
   const isResetting = React.useRef(false);
 
   React.useEffect(() => {
-    const subscription = form.watch((value) => {
-      // Nếu đang trong quá trình reset, không đẩy ngược lên cha để tránh vòng lặp re-render
+    const subscription = form.watch((value, { name, type }) => {
+      // Nếu đang trong quá trình reset, không đẩy ngược lên cha
       if (isResetting.current) return;
 
+      // Chỉ gửi update lên cha nếu thực sự có thay đổi từ user interaction (change/blur)
+      // hoặc khi giá trị mảng thay đổi
       if (value.regular_operating_hours) {
-        onChange(value.regular_operating_hours as OperatingHour[]);
+        // Clone mảng để break reference mutation, đảm bảo component cha nhận diện thay đổi state
+        onChange([...value.regular_operating_hours] as OperatingHour[]);
       }
     });
     return () => subscription.unsubscribe();
@@ -78,7 +93,7 @@ export function OperatingHoursForm({
     if (data) {
       const currentValues = form.getValues("regular_operating_hours");
       // Chỉ reset nếu có sự khác biệt thực sự để tránh vòng lặp render
-      const hasChanged = JSON.stringify(data) !== JSON.stringify(currentValues);
+      const hasChanged = !isSameHours(data, currentValues);
 
       if (hasChanged) {
         isResetting.current = true;
@@ -135,7 +150,8 @@ export function OperatingHoursForm({
     setPastedIndices((prev) => new Set(prev).add(index));
 
     // Notify parent
-    onChange(form.getValues("regular_operating_hours") as OperatingHour[]);
+    // Notify parent with clones
+    onChange([...(form.getValues("regular_operating_hours") as OperatingHour[])]);
   };
 
   const copyToAll = (index: number) => {
@@ -146,13 +162,23 @@ export function OperatingHoursForm({
     }));
     form.setValue("regular_operating_hours", updatedHours);
     setPastedIndices(new Set(fields.map((_, i) => i)));
-    onChange(updatedHours);
+    onChange([...updatedHours]);
   };
 
   return (
     <Form {...form}>
       <form className="space-y-6">
-        <div className="rounded-md border p-4">
+        <div className="flex justify-between items-center">
+           <div>
+             <h3>Giờ hoạt động định kỳ</h3>
+             <p className="caption">Bật/tắt và điều chỉnh giờ mở cửa cho từng ngày.</p>
+           </div>
+        </div>
+
+        <div className={cn(
+          "rounded-xl border bg-card text-card-foreground shadow-sm px-6",
+          variant === "flat" && "border-none shadow-none bg-transparent px-0"
+        )}>
           <div className="space-y-4">
             {fields.map((field, index) => {
               const isClosed = form.watch(`regular_operating_hours.${index}.is_closed`);
@@ -268,7 +294,7 @@ export function OperatingHoursForm({
                                   variant="warning"
                                   className="gap-1 px-1.5 py-0 font-medium text-[9px] whitespace-nowrap"
                                 >
-                                  <AlertCircle className="size-3" />
+                                  <AlertCircle className="size-3 stroke-2" />
                                   <span>Sáng hôm sau (+1)</span>
                                 </Badge>
                               </div>
@@ -289,7 +315,7 @@ export function OperatingHoursForm({
                                 : "text-muted-foreground"
                             )}
                           >
-                            <Clock className="mr-1.5 size-3" />
+                            <Clock className="mr-1.5 size-3 stroke-2" />
                             Cả ngày
                           </Button>
 
@@ -311,7 +337,7 @@ export function OperatingHoursForm({
                             if (getOverlapError(index)) {
                                return (
                                  <Badge variant="error" className="h-8 px-2 text-[9px] gap-1 shrink-0">
-                                   <AlertCircle className="size-3" />
+                                   <AlertCircle className="size-3 stroke-2" />
                                    Xung đột
                                  </Badge>
                                );
@@ -336,7 +362,7 @@ export function OperatingHoursForm({
                         )}
                         title="Sao chép giờ"
                       >
-                        {lastCopiedIndex === index ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                        {lastCopiedIndex === index ? <Check className="h-5 w-5 stroke-2" /> : <Copy className="h-5 w-5 stroke-2" />}
                       </Button>
                       {clipboard && (
                         <>
@@ -351,7 +377,7 @@ export function OperatingHoursForm({
                             )}
                             title="Dán giờ"
                           >
-                            <ClipboardPaste className="h-4 w-4" />
+                            <ClipboardPaste className="h-5 w-5 stroke-2" />
                           </Button>
                           <Button
                             type="button"
@@ -365,7 +391,7 @@ export function OperatingHoursForm({
                             className="text-muted-foreground/30"
                             title="Hủy sao chép"
                           >
-                            <X className="h-3 w-3" />
+                            <X className="h-4 w-4 stroke-2" />
                           </Button>
                         </>
                       )}

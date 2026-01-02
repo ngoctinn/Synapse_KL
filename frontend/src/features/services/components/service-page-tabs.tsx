@@ -1,5 +1,7 @@
 "use client";
 
+import { Card, CardContent } from "@/shared/ui/card";
+import { SidebarTrigger } from "@/shared/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
@@ -40,66 +42,67 @@ export function ServicePageTabs({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Unified Page Header */}
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Quản lý Dịch vụ</h1>
-        <p className="text-sm text-muted-foreground">
-          Quản lý kỹ năng, danh mục, tài nguyên và dịch vụ của Spa
-        </p>
+      <div className="flex items-center gap-4 px-1">
+        <SidebarTrigger className="-ml-1" />
+        <h1>Quản lý dịch vụ</h1>
       </div>
 
-      <Tabs
-        value={activeTab}
-        onValueChange={handleTabChange}
-        className="w-full"
-      >
-        <TabsList>
-          <TabsTrigger value="services">Dịch vụ</TabsTrigger>
-          <TabsTrigger value="categories">Danh mục</TabsTrigger>
-          <TabsTrigger value="resources">Tài nguyên</TabsTrigger>
-          <TabsTrigger value="skills">Kỹ năng</TabsTrigger>
-        </TabsList>
-
-        <div className="mt-4">
-          <TabsContent
-            value="services"
-            forceMount
-            className="m-0 border-none p-0 data-[state=inactive]:hidden"
+      <Card className="shadow-sm max-w-full overflow-hidden">
+        <CardContent>
+          <Tabs
+            value={activeTab}
+            onValueChange={handleTabChange}
+            className="w-full"
           >
-            <ServicesTab
-              services={services}
-              categories={categories}
-              skills={skills}
-              resourceGroups={resourceGroups}
-            />
-          </TabsContent>
+            <TabsList className="mb-4">
+              <TabsTrigger value="services">Dịch vụ</TabsTrigger>
+              <TabsTrigger value="categories">Danh mục</TabsTrigger>
+              <TabsTrigger value="resources">Tài nguyên</TabsTrigger>
+              <TabsTrigger value="skills">Kỹ năng</TabsTrigger>
+            </TabsList>
 
-          <TabsContent
-            value="categories"
-            forceMount
-            className="m-0 border-none p-0 data-[state=inactive]:hidden"
-          >
-            <CategoriesTab categories={categories} />
-          </TabsContent>
+            <TabsContent
+                value="services"
+                forceMount
+                className="data-[state=inactive]:hidden"
+              >
+                <ServicesTab
+                  services={services}
+                  categories={categories}
+                  skills={skills}
+                  resourceGroups={resourceGroups}
+                  variant="flat"
+                />
+              </TabsContent>
 
-          <TabsContent
-            value="resources"
-            forceMount
-            className="m-0 border-none p-0 data-[state=inactive]:hidden"
-          >
-            <ResourcesTab groups={resourceGroups} />
-          </TabsContent>
+              <TabsContent
+                value="categories"
+                forceMount
+                className="data-[state=inactive]:hidden"
+              >
+                <CategoriesTab categories={categories} variant="flat" />
+              </TabsContent>
 
-          <TabsContent
-            value="skills"
-            forceMount
-            className="m-0 border-none p-0 data-[state=inactive]:hidden"
-          >
-            <SkillsTab skills={skills} />
-          </TabsContent>
-        </div>
-      </Tabs>
+              <TabsContent
+                value="resources"
+                forceMount
+                className="data-[state=inactive]:hidden"
+              >
+                <ResourcesTab groups={resourceGroups} variant="flat" />
+              </TabsContent>
+
+              <TabsContent
+                value="skills"
+                forceMount
+                className="data-[state=inactive]:hidden"
+              >
+                <SkillsTab skills={skills} variant="flat" />
+              </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 }

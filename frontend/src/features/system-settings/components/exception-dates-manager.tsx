@@ -11,20 +11,20 @@ import { cn } from "@/shared/lib/utils"
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/shared/ui/dialog"
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/shared/ui/form"
 import { Input } from "@/shared/ui/input"
 import { Switch } from "@/shared/ui/switch"
@@ -58,12 +58,14 @@ interface ExceptionDatesManagerProps {
   initialData?: ExceptionDate[]
   regularHours?: OperatingHour[]
   onChange: (data: ExceptionDate[]) => void
+  variant?: "default" | "flat"
 }
 
 export function ExceptionDatesManager({
   initialData = [],
   regularHours = [],
   onChange,
+  variant = "default",
 }: ExceptionDatesManagerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [exceptions, setExceptions] = React.useState<ExceptionDate[]>(initialData);
@@ -259,7 +261,10 @@ export function ExceptionDatesManager({
         </Dialog>
       </div>
 
-      <div className="rounded-md border">
+      <div className={cn(
+        "rounded-md",
+        variant !== "flat" && "border"
+      )}>
         {exceptions.length === 0 ? (
           <div className="p-8 text-center text-sm text-muted-foreground">
             Chưa có ngày ngoại lệ nào được thiết lập.

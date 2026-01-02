@@ -2,6 +2,7 @@
 
 import { ShiftFormSheet } from "@/features/staff/components/shift-form-sheet";
 import type { Shift } from "@/features/staff/types";
+import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Clock, Plus, Settings2 } from "lucide-react";
@@ -10,9 +11,10 @@ import { useState } from "react";
 
 interface ShiftListProps {
   shifts: Shift[];
+  variant?: "default" | "flat";
 }
 
-export function ShiftList({ shifts }: ShiftListProps) {
+export function ShiftList({ shifts, variant = "default" }: ShiftListProps) {
   const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedShift, setSelectedShift] = useState<Shift | undefined>();
@@ -48,7 +50,10 @@ export function ShiftList({ shifts }: ShiftListProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {shifts.length === 0 ? (
-          <div className="col-span-full border border-dashed bg-muted/20 rounded-2xl p-12 text-center">
+          <div className={cn(
+            "col-span-full border border-dashed bg-muted/20 rounded-2xl p-12 text-center",
+            variant === "flat" && "border-none"
+          )}>
             <div className="flex flex-col items-center gap-2">
               <Clock className="w-12 h-12 text-muted-foreground/30" />
               <p className="text-muted-foreground font-medium">Chưa có ca làm việc nào được định nghĩa.</p>
@@ -61,7 +66,10 @@ export function ShiftList({ shifts }: ShiftListProps) {
           shifts.map((shift) => (
             <div
               key={shift.id}
-              className="group relative overflow-hidden border border-border/50 shadow-sm hover:shadow-md transition-all rounded-2xl bg-card p-5"
+              className={cn(
+                "group relative overflow-hidden transition-all rounded-2xl p-5",
+                variant === "flat" ? "border-none shadow-none bg-card/10" : "border border-border/50 shadow-sm hover:shadow-md bg-card"
+              )}
             >
               <div
                 className="absolute top-0 left-0 w-full h-1.5 opacity-80"

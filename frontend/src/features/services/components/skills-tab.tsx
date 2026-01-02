@@ -33,9 +33,10 @@ import { SkillFormSheet } from "./skill-form-sheet";
 
 interface SkillsTabProps {
   skills: Skill[];
+  variant?: "default" | "flat";
 }
 
-export function SkillsTab({ skills }: SkillsTabProps) {
+export function SkillsTab({ skills, variant = "default" }: SkillsTabProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [isDeleting, startDeleteTransition] = useTransition();
@@ -187,6 +188,12 @@ export function SkillsTab({ skills }: SkillsTabProps) {
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <div>
+          <h3>Kỹ năng nhân viên</h3>
+          <p className="caption">Danh sách các chứng chỉ và kỹ năng trị liệu.</p>
+        </div>
+      </div>
       <TabToolbar
         searchPlaceholder="Tìm kiếm kỹ năng..."
         onSearch={setSearch}
@@ -197,6 +204,7 @@ export function SkillsTab({ skills }: SkillsTabProps) {
       <DataTable
         columns={columns}
         data={processedData}
+        variant={variant}
       />
 
       <SkillFormSheet

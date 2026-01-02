@@ -58,9 +58,10 @@ import { CategoryFormSheet } from "./category-form-sheet";
 
 interface CategoriesTabProps {
   categories: ServiceCategory[];
+  variant?: "default" | "flat";
 }
 
-export function CategoriesTab({ categories }: CategoriesTabProps) {
+export function CategoriesTab({ categories, variant = "default" }: CategoriesTabProps) {
   const [items, setItems] = useState(categories);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
@@ -154,7 +155,13 @@ export function CategoriesTab({ categories }: CategoriesTabProps) {
   }, [items, search]);
 
   return (
-    <div data-slot="data-table" className="space-y-4 font-sans">
+    <div data-slot="data-table" className="space-y-4 font-sans w-full max-w-full overflow-hidden">
+      <div className="flex justify-between items-center">
+        <div>
+          <h3>Danh mục dịch vụ</h3>
+          <p className="caption">Phân loại các nhóm dịch vụ của Spa.</p>
+        </div>
+      </div>
       <TabToolbar
         searchPlaceholder="Tìm kiếm danh mục..."
         onSearch={setSearch}
@@ -162,7 +169,10 @@ export function CategoriesTab({ categories }: CategoriesTabProps) {
         onActionClick={handleAdd}
       />
 
-      <div className="overflow-hidden rounded-xl border border-border bg-background relative">
+      <div className={cn(
+        "relative w-full overflow-x-auto",
+        variant !== "flat" && "overflow-hidden rounded-xl border border-border bg-background"
+      )}>
         <DndContext
           id={dndId}
           sensors={sensors}

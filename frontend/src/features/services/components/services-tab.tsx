@@ -50,6 +50,7 @@ interface ServicesTabProps {
   categories: ServiceCategory[];
   skills: Skill[];
   resourceGroups: ResourceGroup[];
+  variant?: "default" | "flat";
 }
 
 export function ServicesTab({
@@ -57,6 +58,7 @@ export function ServicesTab({
   categories,
   skills,
   resourceGroups,
+  variant = "default",
 }: ServicesTabProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<ServiceWithDetails | null>(null);
@@ -369,6 +371,13 @@ export function ServicesTab({
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <div>
+          <h3>Danh sách dịch vụ</h3>
+          <p className="caption">Quản lý toàn bộ dịch vụ và liệu trình.</p>
+        </div>
+      </div>
+
       <TabToolbar
         searchPlaceholder="Tìm kiếm dịch vụ..."
         onSearch={setSearch}
@@ -379,6 +388,7 @@ export function ServicesTab({
       <DataTable
         columns={columns}
         data={processedData}
+        variant={variant}
       />
 
       <ServiceFormSheet

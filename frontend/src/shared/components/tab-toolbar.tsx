@@ -32,7 +32,7 @@ export function TabToolbar({
       <div className="flex items-center gap-3">
         {onSearch && (
           <div className="relative w-64">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground stroke-2" />
             <Input
               placeholder={searchPlaceholder}
               className="pl-9"
@@ -46,7 +46,7 @@ export function TabToolbar({
       {/* Right side - Action Button */}
       {actionLabel && onActionClick && (
         <Button onClick={onActionClick} className="gap-2">
-          <Plus className="h-4 w-4" />
+          <Plus className="h-5 w-5 stroke-2" />
           <span>{actionLabel}</span>
         </Button>
       )}

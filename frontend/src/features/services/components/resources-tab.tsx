@@ -1,7 +1,6 @@
 "use client";
 
 import { DataTable, DataTableColumnHeader } from "@/shared/components/data-table";
-import { TabToolbar } from "@/shared/components/tab-toolbar";
 import { cn } from "@/shared/lib/utils";
 import {
   AlertDialog,
@@ -26,8 +25,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
+import { Input } from "@/shared/ui/input";
 import { ColumnDef } from "@tanstack/react-table";
-import { Bed, CalendarClock, MoreHorizontal, Plus, Trash2, Wrench } from "lucide-react";
+import { Bed, CalendarClock, MoreHorizontal, Plus, Search, Trash2, Wrench } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { deleteResourceAction, deleteResourceGroupAction, getResourcesAction } from "../actions";
@@ -38,9 +38,10 @@ import { ResourceGroupFormSheet } from "./resource-group-form-sheet";
 
 interface ResourcesTabProps {
   groups: ResourceGroupWithCount[];
+  variant?: "default" | "flat";
 }
 
-export function ResourcesTab({ groups }: ResourcesTabProps) {
+export function ResourcesTab({ groups, variant = "default" }: ResourcesTabProps) {
   const [isGroupSheetOpen, setIsGroupSheetOpen] = useState(false);
   const [isResourceSheetOpen, setIsResourceSheetOpen] = useState(false);
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false);
@@ -116,17 +117,31 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
 
   return (
     <div className="space-y-4">
-      <TabToolbar
-        searchPlaceholder="Tìm kiếm tài nguyên..."
-        onSearch={setSearch}
-        actionLabel="Thêm nhóm"
-        onActionClick={handleAddGroup}
-      />
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h3>Quản lý tài nguyên</h3>
+          <p className="caption">Danh sách các nhóm phòng, giường và thiết bị.</p>
+        </div>
+        <div className="flex items-center gap-2">
+           <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground stroke-2" />
+              <Input
+                placeholder="Tìm kiếm nhóm..."
+                className="pl-9"
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <Button onClick={handleAddGroup}>
+              <Plus className="w-5 h-5 mr-2 stroke-2" />
+              Thêm nhóm
+            </Button>
+        </div>
+      </div>
 
       {filteredGroups.length === 0 ? (
         <div className="text-center py-16 border rounded-lg border-dashed bg-muted/5">
           <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
-            <Bed className="w-6 h-6 text-muted-foreground" />
+            <Bed className="w-6 h-6 text-muted-foreground stroke-2" />
           </div>
           <h4 className="text-sm font-medium mb-1">Chưa có nhóm tài nguyên</h4>
           <p className="text-xs text-muted-foreground mb-6 max-w-[250px] mx-auto">
@@ -134,7 +149,7 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
           </p>
           <div className="flex flex-wrap justify-center gap-2">
             <Button size="sm" onClick={handleAddGroup}>
-              <Plus className="w-3.5 h-3.5 mr-1" /> Tạo nhóm mới
+              <Plus className="w-4 h-4 mr-1 stroke-2" /> Tạo nhóm mới
             </Button>
             <Button size="sm" variant="outline" onClick={() => {
               setSelectedGroup(null);
@@ -148,12 +163,15 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
       ) : (
         <div className="grid gap-4">
           {filteredGroups.map((group) => (
-            <Card key={group.id} className="overflow-hidden border-border bg-card/30 transition-all hover:bg-card/50">
+            <Card key={group.id} className={cn(
+              "overflow-hidden transition-all hover:bg-card/50",
+              variant === "flat" ? "border-none shadow-none bg-card/10" : "border-border bg-card/30 shadow-sm"
+            )}>
               <CardHeader className="p-5 pb-0">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/5 text-primary border border-primary/10 shadow-sm">
-                      {group.type === "BED" ? <Bed className="h-6 w-6" /> : <Wrench className="h-6 w-6" />}
+                      {group.type === "BED" ? <Bed className="h-6 w-6 stroke-2" /> : <Wrench className="h-6 w-6 stroke-2" />}
                     </div>
                     <div>
                       <h4 className="text-base font-bold text-foreground leading-none mb-1.5">{group.name}</h4>
@@ -189,12 +207,12 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
                       className="h-9 w-9 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5"
                       onClick={() => handleAddResource(group)}
                     >
-                      <Plus className="h-4 w-4" />
+                      <Plus className="h-5 w-5 stroke-2" />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/5">
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-5 w-5 stroke-2" />
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
@@ -319,14 +337,14 @@ function ResourcesDataTable({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
-              <MoreHorizontal className="h-4 w-4" />
+              <MoreHorizontal className="h-5 w-5 stroke-2" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[180px]">
             <DropdownMenuLabel>Hành động</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => onMaintenance(row.original)}>
-              <CalendarClock className="mr-2 h-4 w-4 text-warning" />
+              <CalendarClock className="mr-2 h-5 w-5 text-warning stroke-2" />
               Lên lịch bảo trì
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -336,7 +354,7 @@ function ResourcesDataTable({
                   className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-destructive hover:text-destructive-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-destructive"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <Trash2 className="mr-2 h-5 w-5 stroke-2" />
                   Xóa tài nguyên
                 </div>
               </AlertDialogTrigger>

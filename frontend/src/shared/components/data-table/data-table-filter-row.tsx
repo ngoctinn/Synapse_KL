@@ -73,7 +73,7 @@ export function DataTableFilterRow<TData>({ table }: DataTableFilterRowProps<TDa
                    )}
                 </div>
                 <div className="absolute right-2.5 pointer-events-none">
-                    <Filter className="h-3 w-3 text-neutral-30 group-focus-within:text-primary/60 transition-colors" />
+                    <Filter className="h-4 w-4 text-neutral-30 group-focus-within:text-primary/60 transition-colors stroke-2" />
                 </div>
              </div>
           </TableCell>
