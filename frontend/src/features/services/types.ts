@@ -30,7 +30,7 @@ export interface ServiceCategoryWithCount extends ServiceCategory {
 
 // ========== Resource ==========
 export type ResourceType = "BED" | "EQUIPMENT" | "ROOM" | "OTHER";
-export type ResourceStatus = "ACTIVE" | "MAINTENANCE" | "OUT_OF_SERVICE";
+export type ResourceStatus = "ACTIVE" | "MAINTENANCE" | "INACTIVE";
 
 export interface ResourceGroup {
   id: string;
@@ -95,6 +95,14 @@ export interface ServiceWithDetails extends Service {
   category: ServiceCategory | null;
   skills: Skill[];
   resource_requirements: ServiceResourceRequirement[];
+}
+
+// Pagination response wrapper
+export interface ServiceListResponse {
+  data: Service[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 // ========== Form DTOs ==========

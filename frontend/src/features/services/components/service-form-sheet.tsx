@@ -33,15 +33,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
-import { useForm, type FieldErrors } from "react-hook-form";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { useForm, useWatch, type FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
-import {
-  createCategoryAction,
-  createSkillAction
-} from "../actions";
+import { createCategoryAction, createSkillAction } from "../actions";
 import { serviceCreateSchema, type ServiceCreateForm } from "../schemas";
-import type { ResourceGroup, ResourceGroupWithCount, ServiceCategory, ServiceWithDetails, Skill } from "../types";
+import type {
+  ResourceGroup,
+  ResourceGroupWithCount,
+  ServiceCategory,
+  ServiceWithDetails,
+  Skill,
+} from "../types";
 import { ServiceGeneralTab } from "./service-form/service-general-tab";
 import { ServicePricingTab } from "./service-form/service-pricing-tab";
 import { ServiceResourceTab } from "./service-form/service-resource-tab";
@@ -79,21 +82,22 @@ export function ServiceFormSheet({
   const form = useForm({
     resolver: zodResolver(serviceCreateSchema),
     defaultValues: {
-        category_id: service?.category_id || "uncategorized",
+      category_id: service?.category_id || "uncategorized",
       name: service?.name || "",
-        duration: service?.duration ?? 0,
-        buffer_time: service?.buffer_time ?? 0,
+      duration: service?.duration ?? 0,
+      buffer_time: service?.buffer_time ?? 0,
       price: Number(service?.price) || 0,
       description: service?.description || "",
       image_url: service?.image_url || "",
       is_active: service?.is_active ?? true,
       skill_ids: service?.skills.map((s) => s.id) || [],
-      resource_requirements: service?.resource_requirements.map(r => ({
-        group_id: r.group_id,
-        quantity: r.quantity,
-        start_delay: r.start_delay,
-        usage_duration: r.usage_duration ?? undefined
-      })) || [],
+      resource_requirements:
+        service?.resource_requirements.map((r) => ({
+          group_id: r.group_id,
+          quantity: r.quantity,
+          start_delay: r.start_delay,
+          usage_duration: r.usage_duration ?? undefined,
+        })) || [],
     },
   });
 
@@ -101,7 +105,7 @@ export function ServiceFormSheet({
   useEffect(() => {
     if (open) {
       form.reset({
-          category_id: service?.category_id || "uncategorized",
+        category_id: service?.category_id || "uncategorized",
         name: service?.name || "",
         duration: service?.duration ?? 0,
         buffer_time: service?.buffer_time ?? 0,
@@ -110,12 +114,13 @@ export function ServiceFormSheet({
         image_url: service?.image_url || "",
         is_active: service?.is_active ?? true,
         skill_ids: service?.skills.map((s) => s.id) || [],
-        resource_requirements: service?.resource_requirements.map(r => ({
-          group_id: r.group_id,
-          quantity: r.quantity,
-          start_delay: r.start_delay,
-          usage_duration: r.usage_duration ?? undefined
-        })) || [],
+        resource_requirements:
+          service?.resource_requirements.map((r) => ({
+            group_id: r.group_id,
+            quantity: r.quantity,
+            start_delay: r.start_delay,
+            usage_duration: r.usage_duration ?? undefined,
+          })) || [],
       });
       setActiveTab("general");
     }
@@ -126,7 +131,7 @@ export function ServiceFormSheet({
     showExitConfirm,
     setShowExitConfirm,
     handleConfirmExit,
-    contentProps
+    contentProps,
   } = useFormGuard({
     isDirty: form.formState.isDirty,
     onClose: () => onOpenChange(false),
@@ -141,9 +146,19 @@ export function ServiceFormSheet({
   };
 
   const onInvalid = (errors: FieldErrors<ServiceCreateForm>) => {
-    const hasGeneralError = !!(errors.name || errors.category_id || errors.description);
-    const hasPricingError = !!(errors.price || errors.duration || errors.buffer_time);
-    const hasTechnicalError = !!(errors.skill_ids || errors.resource_requirements);
+    const hasGeneralError = !!(
+      errors.name ||
+      errors.category_id ||
+      errors.description
+    );
+    const hasPricingError = !!(
+      errors.price ||
+      errors.duration ||
+      errors.buffer_time
+    );
+    const hasTechnicalError = !!(
+      errors.skill_ids || errors.resource_requirements
+    );
 
     if (hasGeneralError) setActiveTab("general");
     else if (hasPricingError) setActiveTab("pricing");
@@ -151,11 +166,19 @@ export function ServiceFormSheet({
   };
 
   async function handleFormSubmit(data: ServiceCreateForm) {
-    // Validate resource availability
+    // Validate resource availability - Áp dụng cho cả CREATE và UPDATE
     for (const req of data.resource_requirements || []) {
-      const group = (resourceGroups as ResourceGroupWithCount[]).find(g => g.id === req.group_id);
-      if (group && 'active_count' in group && req.quantity > group.active_count) {
-        toast.error(`Nhóm "${group.name}" chỉ có ${group.active_count} tài nguyên khả dụng.`);
+      const group = (resourceGroups as ResourceGroupWithCount[]).find(
+        (g) => g.id === req.group_id
+      );
+      if (
+        group &&
+        "active_count" in group &&
+        req.quantity > group.active_count
+      ) {
+        toast.error(
+          `Nhóm "${group.name}" chỉ có ${group.active_count} tài nguyên khả dụng.`
+        );
         setActiveTab("technical");
         return;
       }
@@ -167,7 +190,9 @@ export function ServiceFormSheet({
         form.reset(data); // Reset with new data to clear isDirty
         onOpenChange(false);
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Đã có lỗi xảy ra");
+        toast.error(
+          error instanceof Error ? error.message : "Đã có lỗi xảy ra"
+        );
       }
     });
   }
@@ -198,7 +223,9 @@ export function ServiceFormSheet({
       if (res.success && res.data) {
         toast.success("Đã tạo kỹ năng mới");
         const currentSkills = form.getValues("skill_ids") || [];
-        form.setValue("skill_ids", [...currentSkills, res.data.id], { shouldDirty: true });
+        form.setValue("skill_ids", [...currentSkills, res.data.id], {
+          shouldDirty: true,
+        });
         setShowSkillDialog(false);
         setNewSkillName("");
       } else {
@@ -210,40 +237,63 @@ export function ServiceFormSheet({
   }
 
   // Validation Logic: Check if resources exceed service duration
-  const duration = form.watch("duration");
-  const bufferTime = form.watch("buffer_time");
-  const resourceRequirements = form.watch("resource_requirements");
+  // Sử dụng useWatch riêng biệt cho từng field để tránh infinite loop
+  const duration = useWatch({ control: form.control, name: "duration" }) || 0;
+  const bufferTime =
+    useWatch({ control: form.control, name: "buffer_time" }) || 0;
+  const resourceRequirements =
+    useWatch({ control: form.control, name: "resource_requirements" }) || [];
 
-  const totalDuration = (duration || 0) + (bufferTime || 0);
-  const conflictResources = resourceRequirements?.filter(r => {
-    const end = (r.start_delay || 0) + (r.usage_duration || 0);
-    return end > totalDuration;
-  }) || [];
-
-  const hasResourceConflict = conflictResources.length > 0;
+  // Tính toán conflict trong useMemo để optimize performance
+  const { conflictResources, hasResourceConflict, totalDuration } =
+    useMemo(() => {
+      const totalDuration = duration + bufferTime;
+      const conflicts = resourceRequirements.filter((r) => {
+        const end = (r.start_delay || 0) + (r.usage_duration || 0);
+        return end > totalDuration;
+      });
+      return {
+        conflictResources: conflicts,
+        hasResourceConflict: conflicts.length > 0,
+        totalDuration,
+      };
+    }, [duration, bufferTime, resourceRequirements]);
 
   return (
     <>
       <Sheet open={open} onOpenChange={handleOpenChange}>
-        <SheetContent className="sm:max-w-xl w-full flex flex-col p-0 gap-0" {...contentProps}>
+        <SheetContent
+          className="sm:max-w-xl w-full flex flex-col p-0 gap-0"
+          {...contentProps}
+        >
           <SheetHeader className="p-6 pb-2 shrink-0">
-            <SheetTitle>{isEdit ? "Cập nhật dịch vụ" : "Thêm dịch vụ mới"}</SheetTitle>
+            <SheetTitle>
+              {isEdit ? "Cập nhật dịch vụ" : "Thêm dịch vụ mới"}
+            </SheetTitle>
             <SheetDescription>
-              {isEdit ? "Điều chỉnh thông tin dịch vụ." : "Thiết lập thông tin dịch vụ mới."}
+              {isEdit
+                ? "Điều chỉnh thông tin dịch vụ."
+                : "Thiết lập thông tin dịch vụ mới."}
             </SheetDescription>
           </SheetHeader>
 
           {hasResourceConflict && (
-              <div className="px-6 pb-2">
-                <Alert variant="destructive" className="py-2.5 bg-destructive/10 border-destructive/20 text-destructive">
-                  <AlertTriangle className="h-4 w-4 stroke-destructive" />
-                  <AlertTitle className="ml-2 font-semibold text-destructive">Xung đột thời gian</AlertTitle>
-                  <AlertDescription className="ml-2 text-xs text-destructive/90">
-                    Có {conflictResources.length} tài nguyên dùng quá tổng thời lượng ({totalDuration}p).
-                    Vui lòng chỉnh lại ở tab &quot;Kỹ thuật&quot;.
-                  </AlertDescription>
-                </Alert>
-              </div>
+            <div className="px-6 pb-2">
+              <Alert
+                variant="destructive"
+                className="py-2.5 bg-destructive/10 border-destructive/20 text-destructive"
+              >
+                <AlertTriangle className="h-4 w-4 stroke-destructive" />
+                <AlertTitle className="ml-2 font-semibold text-destructive">
+                  Xung đột thời gian
+                </AlertTitle>
+                <AlertDescription className="ml-2 text-xs text-destructive/90">
+                  Có {conflictResources.length} tài nguyên dùng quá tổng thời
+                  lượng ({totalDuration}p). Vui lòng chỉnh lại ở tab &quot;Kỹ
+                  thuật&quot;.
+                </AlertDescription>
+              </Alert>
+            </div>
           )}
 
           <Form {...form}>
@@ -252,30 +302,25 @@ export function ServiceFormSheet({
               className="flex-1 flex flex-col min-h-0"
             >
               <div className="flex-1 overflow-y-auto overflow-x-hidden px-6">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <Tabs
+                  value={activeTab}
+                  onValueChange={setActiveTab}
+                  className="w-full"
+                >
                   <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger
-                      value="general"
-                      className="relative"
-                    >
+                    <TabsTrigger value="general" className="relative">
                       Thông tin chung
                       {tabErrors.general && (
                         <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-destructive" />
                       )}
                     </TabsTrigger>
-                    <TabsTrigger
-                      value="pricing"
-                      className="relative"
-                    >
+                    <TabsTrigger value="pricing" className="relative">
                       Giá & Thời gian
                       {tabErrors.pricing && (
                         <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-destructive" />
                       )}
                     </TabsTrigger>
-                    <TabsTrigger
-                      value="technical"
-                      className="relative"
-                    >
+                    <TabsTrigger value="technical" className="relative">
                       Kỹ thuật
                       {tabErrors.technical && (
                         <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-destructive" />
@@ -283,23 +328,32 @@ export function ServiceFormSheet({
                     </TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="general" className="mt-0 focus-visible:ring-0 outline-none">
+                  <TabsContent
+                    value="general"
+                    className="mt-0 focus-visible:ring-0 outline-none"
+                  >
                     <ServiceGeneralTab
                       categories={categories}
                       onAddCategory={() => setShowCategoryDialog(true)}
                     />
                   </TabsContent>
 
-                  <TabsContent value="pricing" className="mt-0 focus-visible:ring-0 outline-none">
+                  <TabsContent
+                    value="pricing"
+                    className="mt-0 focus-visible:ring-0 outline-none"
+                  >
                     <ServicePricingTab />
                   </TabsContent>
 
-                  <TabsContent value="technical" className="mt-0 focus-visible:ring-0 outline-none">
-                     <ServiceResourceTab
-                        skills={skills}
-                        resourceGroups={resourceGroups}
-                        onAddSkill={() => setShowSkillDialog(true)}
-                     />
+                  <TabsContent
+                    value="technical"
+                    className="mt-0 focus-visible:ring-0 outline-none"
+                  >
+                    <ServiceResourceTab
+                      skills={skills}
+                      resourceGroups={resourceGroups}
+                      onAddSkill={() => setShowSkillDialog(true)}
+                    />
                   </TabsContent>
                 </Tabs>
               </div>
@@ -312,7 +366,11 @@ export function ServiceFormSheet({
                 >
                   Hủy
                 </Button>
-                <Button type="submit" disabled={isPending || hasResourceConflict} className="min-w-[120px]">
+                <Button
+                  type="submit"
+                  disabled={isPending || hasResourceConflict}
+                  className="min-w-[120px]"
+                >
                   {isEdit ? "Lưu thay đổi" : "Tạo dịch vụ"}
                 </Button>
               </div>
@@ -325,7 +383,8 @@ export function ServiceFormSheet({
             <AlertDialogHeader>
               <AlertDialogTitle>Thay đổi chưa được lưu</AlertDialogTitle>
               <AlertDialogDescription>
-                Bạn đã thực hiện một số thay đổi trong biểu mẫu. Nếu thoát bây giờ, tất cả dữ liệu đã nhập sẽ bị mất.
+                Bạn đã thực hiện một số thay đổi trong biểu mẫu. Nếu thoát bây
+                giờ, tất cả dữ liệu đã nhập sẽ bị mất.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -345,7 +404,9 @@ export function ServiceFormSheet({
           <DialogContent className="sm:max-w-[400px]">
             <DialogHeader>
               <DialogTitle>Tạo danh mục mới</DialogTitle>
-              <DialogDescription>Nhập nhanh tên danh mục bạn muốn bổ sung.</DialogDescription>
+              <DialogDescription>
+                Nhập nhanh tên danh mục bạn muốn bổ sung.
+              </DialogDescription>
             </DialogHeader>
             <div className="py-4">
               <Input
@@ -356,20 +417,30 @@ export function ServiceFormSheet({
               />
             </div>
             <div className="flex justify-end gap-3">
-              <Button variant="ghost" onClick={() => setShowCategoryDialog(false)}>Hủy</Button>
-              <Button onClick={handleCreateCategory} disabled={isCreatingSub || !newCatName}>
+              <Button
+                variant="ghost"
+                onClick={() => setShowCategoryDialog(false)}
+              >
+                Hủy
+              </Button>
+              <Button
+                onClick={handleCreateCategory}
+                disabled={isCreatingSub || !newCatName}
+              >
                 {isCreatingSub ? "Đang tạo..." : "Xác nhận"}
               </Button>
             </div>
           </DialogContent>
         </Dialog>
 
-         {/* Quick Create Skill Dialog */}
-         <Dialog open={showSkillDialog} onOpenChange={setShowSkillDialog}>
+        {/* Quick Create Skill Dialog */}
+        <Dialog open={showSkillDialog} onOpenChange={setShowSkillDialog}>
           <DialogContent className="sm:max-w-[400px]">
             <DialogHeader>
               <DialogTitle>Tạo kỹ năng mới</DialogTitle>
-              <DialogDescription>Nhập nhanh tên kỹ năng cần bổ sung cho dịch vụ này.</DialogDescription>
+              <DialogDescription>
+                Nhập nhanh tên kỹ năng cần bổ sung cho dịch vụ này.
+              </DialogDescription>
             </DialogHeader>
             <div className="py-4">
               <Input
@@ -380,8 +451,13 @@ export function ServiceFormSheet({
               />
             </div>
             <div className="flex justify-end gap-3">
-              <Button variant="ghost" onClick={() => setShowSkillDialog(false)}>Hủy</Button>
-              <Button onClick={handleCreateSkill} disabled={isCreatingSub || !newSkillName}>
+              <Button variant="ghost" onClick={() => setShowSkillDialog(false)}>
+                Hủy
+              </Button>
+              <Button
+                onClick={handleCreateSkill}
+                disabled={isCreatingSub || !newSkillName}
+              >
                 {isCreatingSub ? "Đang tạo..." : "Xác nhận"}
               </Button>
             </div>

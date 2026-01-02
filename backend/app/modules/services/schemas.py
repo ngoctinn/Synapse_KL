@@ -57,6 +57,19 @@ class ServiceCreate(SQLModel):
             raise ValueError("Thời gian dịch vụ phải lớn hơn 0")
         if self.buffer_time < 0:
             raise ValueError("Thời gian nghỉ không được âm")
+
+        # Validate resource requirements không vượt total_time
+        total_time = self.duration + self.buffer_time
+        for req in self.resource_requirements:
+            usage = req.usage_duration if req.usage_duration is not None else (self.duration - req.start_delay)
+            if req.start_delay < 0:
+                raise ValueError("Start delay không được âm")
+            if usage <= 0:
+                raise ValueError("Thời gian sử dụng tài nguyên phải lớn hơn 0")
+            if req.start_delay + usage > total_time:
+                raise ValueError(
+                    f"Tài nguyên vượt quá tổng thời gian dịch vụ ({total_time}p = {self.duration}p + {self.buffer_time}p buffer)"
+                )
         return self
 
 

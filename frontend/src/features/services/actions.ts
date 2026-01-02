@@ -42,9 +42,9 @@ async function fetchAPI<T>(
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      return { 
-        success: false, 
-        message: err.detail || `Lỗi ${res.status}: ${res.statusText}` 
+      return {
+        success: false,
+        message: err.detail || `Lỗi ${res.status}: ${res.statusText}`,
       };
     }
 
@@ -63,7 +63,9 @@ async function fetchAPI<T>(
 
 // ========== Skills Actions ==========
 export async function getSkillsAction(): Promise<Skill[]> {
-  const res = await fetch(`${API_BASE_URL}${SKILLS_PATH}`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE_URL}${SKILLS_PATH}`, {
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error("Không thể tải danh sách kỹ năng");
   return res.json();
 }
@@ -74,7 +76,10 @@ export async function createSkillAction(data: SkillCreateInput) {
     body: JSON.stringify(data),
   });
   if (res.success) revalidatePath("/dashboard/manager/services", "page");
-  return { ...res, message: res.success ? "Tạo kỹ năng thành công" : res.message };
+  return {
+    ...res,
+    message: res.success ? "Tạo kỹ năng thành công" : res.message,
+  };
 }
 
 export async function updateSkillAction(id: string, data: SkillUpdateInput) {
@@ -83,7 +88,10 @@ export async function updateSkillAction(id: string, data: SkillUpdateInput) {
     body: JSON.stringify(data),
   });
   if (res.success) revalidatePath("/dashboard/manager/services", "page");
-  return { ...res, message: res.success ? "Cập nhật kỹ năng thành công" : res.message };
+  return {
+    ...res,
+    message: res.success ? "Cập nhật kỹ năng thành công" : res.message,
+  };
 }
 
 export async function deleteSkillAction(id: string): Promise<void> {
@@ -94,7 +102,9 @@ export async function deleteSkillAction(id: string): Promise<void> {
 
 // ========== Categories Actions ==========
 export async function getCategoriesAction(): Promise<ServiceCategory[]> {
-  const res = await fetch(`${API_BASE_URL}${CATEGORIES_PATH}`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE_URL}${CATEGORIES_PATH}`, {
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error("Không thể tải danh sách danh mục");
   return res.json();
 }
@@ -105,19 +115,30 @@ export async function createCategoryAction(data: CategoryCreateInput) {
     body: JSON.stringify(data),
   });
   if (res.success) revalidatePath("/dashboard/manager/services", "page");
-  return { ...res, message: res.success ? "Tạo danh mục thành công" : res.message };
+  return {
+    ...res,
+    message: res.success ? "Tạo danh mục thành công" : res.message,
+  };
 }
 
-export async function updateCategoryAction(id: string, data: CategoryUpdateInput) {
+export async function updateCategoryAction(
+  id: string,
+  data: CategoryUpdateInput
+) {
   const res = await fetchAPI(`${CATEGORIES_PATH}/${id}`, {
     method: "PUT",
     body: JSON.stringify(data),
   });
   if (res.success) revalidatePath("/dashboard/manager/services", "page");
-  return { ...res, message: res.success ? "Cập nhật danh mục thành công" : res.message };
+  return {
+    ...res,
+    message: res.success ? "Cập nhật danh mục thành công" : res.message,
+  };
 }
 
-export async function reorderCategoriesAction(ids: string[]): Promise<ServiceCategory[]> {
+export async function reorderCategoriesAction(
+  ids: string[]
+): Promise<ServiceCategory[]> {
   const res = await fetchAPI<ServiceCategory[]>(`${CATEGORIES_PATH}/reorder`, {
     method: "PUT",
     body: JSON.stringify({ ids }),
@@ -135,29 +156,40 @@ export async function deleteCategoryAction(id: string): Promise<void> {
 
 // ========== Resource Groups Actions ==========
 export async function getResourceGroupsAction(): Promise<ResourceGroup[]> {
-  const res = await fetch(`${API_BASE_URL}${RESOURCES_PATH}/groups`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE_URL}${RESOURCES_PATH}/groups`, {
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error("Không thể tải danh sách nhóm tài nguyên");
   return res.json();
 }
 
-export async function createResourceGroupAction(data: ResourceGroupCreateInput) {
+export async function createResourceGroupAction(
+  data: ResourceGroupCreateInput
+) {
   const res = await fetchAPI(`${RESOURCES_PATH}/groups`, {
     method: "POST",
     body: JSON.stringify(data),
   });
-  
+
   if (res.success) revalidatePath("/dashboard/manager/services", "page");
-  return { ...res, message: res.success ? "Tạo nhóm tài nguyên thành công" : res.message };
+  return {
+    ...res,
+    message: res.success ? "Tạo nhóm tài nguyên thành công" : res.message,
+  };
 }
 
 export async function deleteResourceGroupAction(id: string): Promise<void> {
-  const res = await fetchAPI(`${RESOURCES_PATH}/groups/${id}`, { method: "DELETE" });
+  const res = await fetchAPI(`${RESOURCES_PATH}/groups/${id}`, {
+    method: "DELETE",
+  });
   if (!res.success) throw new Error(res.message);
   revalidatePath("/dashboard/manager/services", "page");
 }
 
 // ========== Resources Actions ==========
-export async function getResourcesAction(groupId?: string): Promise<Resource[]> {
+export async function getResourcesAction(
+  groupId?: string
+): Promise<Resource[]> {
   const url = groupId
     ? `${API_BASE_URL}${RESOURCES_PATH}?group_id=${groupId}`
     : `${API_BASE_URL}${RESOURCES_PATH}`;
@@ -172,7 +204,10 @@ export async function createResourceAction(data: ResourceCreateInput) {
     body: JSON.stringify(data),
   });
   if (res.success) revalidatePath("/dashboard/manager/services", "page");
-  return { ...res, message: res.success ? "Tạo tài nguyên thành công" : res.message };
+  return {
+    ...res,
+    message: res.success ? "Tạo tài nguyên thành công" : res.message,
+  };
 }
 
 export async function deleteResourceAction(id: string): Promise<void> {
@@ -185,10 +220,13 @@ export async function createMaintenanceAction(
   resourceId: string,
   data: MaintenanceCreateInput
 ): Promise<ResourceMaintenance> {
-  const res = await fetchAPI<ResourceMaintenance>(`${RESOURCES_PATH}/${resourceId}/maintenance`, {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
+  const res = await fetchAPI<ResourceMaintenance>(
+    `${RESOURCES_PATH}/${resourceId}/maintenance`,
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    }
+  );
   if (!res.success) throw new Error(res.message);
   revalidatePath("/dashboard/manager/services", "page");
   return res.data!;
@@ -197,23 +235,41 @@ export async function createMaintenanceAction(
 // ========== Services Actions ==========
 export async function getServicesAction(
   categoryId?: string,
-  isActive?: boolean
-): Promise<Service[]> {
+  isActive?: boolean,
+  page: number = 1,
+  limit: number = 1000
+): Promise<{ data: Service[]; total: number; page: number; limit: number }> {
   const params = new URLSearchParams();
   if (categoryId) params.append("category_id", categoryId);
   if (isActive !== undefined) params.append("is_active", String(isActive));
-  params.append("page", "1");
-  params.append("limit", "1000");
+  params.append("page", String(page));
+  params.append("limit", String(limit));
 
   const url = `${API_BASE_URL}${SERVICES_PATH}?${params.toString()}`;
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error("Không thể tải danh sách dịch vụ");
   const responseData = await res.json();
-  return Array.isArray(responseData) ? responseData : responseData.data || [];
+
+  // Backend trả về ServiceListResponse format: { data, total, page, limit }
+  if (responseData.data && typeof responseData.total === "number") {
+    return responseData;
+  }
+
+  // Fallback nếu backend trả array trực tiếp (backward compatibility)
+  return {
+    data: Array.isArray(responseData) ? responseData : [],
+    total: Array.isArray(responseData) ? responseData.length : 0,
+    page: 1,
+    limit: 1000,
+  };
 }
 
-export async function getServiceByIdAction(id: string): Promise<ServiceWithDetails> {
-  const res = await fetch(`${API_BASE_URL}${SERVICES_PATH}/${id}`, { cache: "no-store" });
+export async function getServiceByIdAction(
+  id: string
+): Promise<ServiceWithDetails> {
+  const res = await fetch(`${API_BASE_URL}${SERVICES_PATH}/${id}`, {
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error("Không thể tải thông tin dịch vụ");
   return res.json();
 }
@@ -221,7 +277,10 @@ export async function getServiceByIdAction(id: string): Promise<ServiceWithDetai
 export async function createServiceAction(data: ServiceCreateInput) {
   const payload = {
     ...data,
-    category_id: (data.category_id && data.category_id !== "uncategorized") ? data.category_id : undefined,
+    category_id:
+      data.category_id && data.category_id !== "uncategorized"
+        ? data.category_id
+        : undefined,
     image_url: data.image_url || undefined,
     description: data.description || undefined,
   };
@@ -231,13 +290,22 @@ export async function createServiceAction(data: ServiceCreateInput) {
     body: JSON.stringify(payload),
   });
   if (res.success) revalidatePath("/dashboard/manager/services", "page");
-  return { ...res, message: res.success ? "Tạo dịch vụ thành công" : res.message };
+  return {
+    ...res,
+    message: res.success ? "Tạo dịch vụ thành công" : res.message,
+  };
 }
 
-export async function updateServiceAction(id: string, data: ServiceUpdateInput) {
+export async function updateServiceAction(
+  id: string,
+  data: ServiceUpdateInput
+) {
   const payload = {
     ...data,
-    category_id: (data.category_id && data.category_id !== "uncategorized") ? data.category_id : null,
+    category_id:
+      data.category_id && data.category_id !== "uncategorized"
+        ? data.category_id
+        : null,
     image_url: data.image_url || null,
     description: data.description || null,
   };
@@ -247,11 +315,16 @@ export async function updateServiceAction(id: string, data: ServiceUpdateInput) 
     body: JSON.stringify(payload),
   });
   if (res.success) revalidatePath("/dashboard/manager/services", "page");
-  return { ...res, message: res.success ? "Cập nhật dịch vụ thành công" : res.message };
+  return {
+    ...res,
+    message: res.success ? "Cập nhật dịch vụ thành công" : res.message,
+  };
 }
 
 export async function toggleServiceStatusAction(id: string): Promise<Service> {
-  const res = await fetchAPI<Service>(`${SERVICES_PATH}/${id}/toggle-status`, { method: "PATCH" });
+  const res = await fetchAPI<Service>(`${SERVICES_PATH}/${id}/toggle-status`, {
+    method: "PATCH",
+  });
   if (!res.success) throw new Error(res.message);
   revalidatePath("/dashboard/manager/services", "page");
   return res.data!;

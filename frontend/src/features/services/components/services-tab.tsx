@@ -1,6 +1,9 @@
 "use client";
 
-import { DataTable, DataTableColumnHeader } from "@/shared/components/data-table";
+import {
+  DataTable,
+  DataTableColumnHeader,
+} from "@/shared/components/data-table";
 import { TabToolbar } from "@/shared/components/tab-toolbar";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
@@ -21,7 +24,14 @@ import {
   TooltipTrigger,
 } from "@/shared/ui/tooltip";
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit2, Image as ImageIcon, MoreHorizontal, Power, PowerOff, Trash2 } from "lucide-react";
+import {
+  Edit2,
+  Image as ImageIcon,
+  MoreHorizontal,
+  Power,
+  PowerOff,
+  Trash2,
+} from "lucide-react";
 import NextImage from "next/image";
 import { useRouter } from "next/navigation";
 import { useOptimistic, useState, useTransition } from "react";
@@ -31,10 +41,16 @@ import {
   deleteServiceAction,
   getServiceByIdAction,
   toggleServiceStatusAction,
-  updateServiceAction
+  updateServiceAction,
 } from "../actions";
 import type { ServiceCreateForm } from "../schemas";
-import type { ResourceGroup, Service, ServiceCategory, ServiceWithDetails, Skill } from "../types";
+import type {
+  ResourceGroup,
+  Service,
+  ServiceCategory,
+  ServiceWithDetails,
+  Skill,
+} from "../types";
 import { DeleteDialog } from "./delete-dialog";
 import { ServiceFormSheet } from "./service-form-sheet";
 
@@ -55,39 +71,47 @@ export function ServicesTab({
 }: ServicesTabProps) {
   const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState<ServiceWithDetails | null>(null);
+  const [selectedService, setSelectedService] =
+    useState<ServiceWithDetails | null>(null);
   const [isPending, startTransition] = useTransition();
 
   // Quản lý trạng thái Optimistic để phản hồi UI tức thì mà không chờ Server Action hoàn tất
-  const [optimisticServices, addOptimisticService] = useOptimistic(
-    services,
-    (state, action: { type: "ADD" | "UPDATE" | "DELETE" | "TOGGLE"; payload: Service | string }) => {
-      switch (action.type) {
-        case "ADD":
-          return [action.payload as Service, ...state];
-        case "UPDATE":
-          return state.map((s) => (s.id === (action.payload as Service).id ? { ...s, ...(action.payload as Service) } : s));
-        case "DELETE":
-          return state.filter((s) => s.id !== action.payload);
-        case "TOGGLE":
-          return state.map((s) =>
-            s.id === action.payload ? { ...s, is_active: !s.is_active } : s
-          );
-        default:
-          return state;
-      }
+  // useOptimistic nhận passthrough value (services prop) - nó sẽ sync khi prop thay đổi
+  const [optimisticServices, addOptimisticService] = useOptimistic<
+    Service[],
+    { type: "ADD" | "UPDATE" | "DELETE" | "TOGGLE"; payload: Service | string }
+  >(services, (state, action) => {
+    // Early return nếu state không phải array (edge case khi hydration)
+    const currentState = Array.isArray(state) ? state : [];
+
+    switch (action.type) {
+      case "ADD":
+        return [action.payload as Service, ...currentState];
+      case "UPDATE":
+        return currentState.map((s) =>
+          s.id === (action.payload as Service).id
+            ? { ...s, ...(action.payload as Service) }
+            : s
+        );
+      case "DELETE":
+        return currentState.filter((s) => s.id !== action.payload);
+      case "TOGGLE":
+        return currentState.map((s) =>
+          s.id === action.payload ? { ...s, is_active: !s.is_active } : s
+        );
+      default:
+        return currentState;
     }
-  );
-
-
+  });
 
   const getCategoryName = (id: string | null) =>
     categories.find((c) => c.id === id)?.name || "Chưa phân loại";
 
   const formatPrice = (price: string) =>
-    new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
-      Number(price)
-    );
+    new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(Number(price));
 
   const handleAdd = () => {
     setSelectedService(null);
@@ -101,7 +125,7 @@ export function ServicesTab({
         ...service,
         category: null,
         skills: [],
-        resource_requirements: []
+        resource_requirements: [],
       });
       setIsSheetOpen(true);
       const data = await getServiceByIdAction(service.id);
@@ -126,8 +150,12 @@ export function ServicesTab({
         addOptimisticService({ type: "UPDATE", payload: updatedService });
         const res = await updateServiceAction(selectedService.id, data);
         if (res.success) {
-           setIsSheetOpen(false); // Close modal on success
-           router.refresh();
+          setIsSheetOpen(false); // Close modal on success
+          router.refresh();
+        } else {
+          // router.refresh() sẽ fetch lại data mới, useOptimistic tự động sync
+          router.refresh();
+          toast.error(res.message || "Cập nhật dịch vụ thất bại");
         }
       });
     } else {
@@ -149,9 +177,13 @@ export function ServicesTab({
         addOptimisticService({ type: "ADD", payload: tempService });
         const res = await createServiceAction(data);
         if (res.success) {
-           toast.success(`Đã tạo dịch vụ "${data.name}" thành công`);
-           setIsSheetOpen(false);
-           router.refresh();
+          toast.success(`Đã tạo dịch vụ "${data.name}" thành công`);
+          setIsSheetOpen(false);
+          router.refresh();
+        } else {
+          // router.refresh() sẽ fetch lại data mới, useOptimistic tự động sync
+          router.refresh();
+          toast.error(res.message || "Tạo dịch vụ thất bại");
         }
       });
     }
@@ -164,9 +196,17 @@ export function ServicesTab({
         const result = await toggleServiceStatusAction(id);
         if (result) {
           toast.success("Đã thay đổi trạng thái dịch vụ");
+        } else {
+          throw new Error("Thay đổi trạng thái thất bại");
         }
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Không thể thay đổi trạng thái");
+        // router.refresh() sẽ fetch lại data mới, useOptimistic tự động sync
+        router.refresh();
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Không thể thay đổi trạng thái"
+        );
       }
     });
   };
@@ -178,12 +218,14 @@ export function ServicesTab({
         await deleteServiceAction(id);
         toast.success("Xóa dịch vụ thành công");
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Không thể xóa dịch vụ");
+        // router.refresh() sẽ fetch lại data mới, useOptimistic tự động sync
+        router.refresh();
+        toast.error(
+          error instanceof Error ? error.message : "Không thể xóa dịch vụ"
+        );
       }
     });
   };
-
-
 
   // Định nghĩa các cột cho DataTable, bao gồm logic hiển thị và filter đặc thù
   const columns: ColumnDef<Service>[] = [
@@ -191,7 +233,10 @@ export function ServicesTab({
       id: "select",
       header: ({ table }) => (
         <Checkbox
-          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
           className="translate-y-[2px]"
@@ -210,7 +255,9 @@ export function ServicesTab({
     },
     {
       accessorKey: "name",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Dịch vụ" />,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Dịch vụ" />
+      ),
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 relative shrink-0 overflow-hidden rounded-md border bg-muted">
@@ -238,7 +285,10 @@ export function ServicesTab({
                       {row.original.description}
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom" className="max-w-[300px] break-words">
+                  <TooltipContent
+                    side="bottom"
+                    className="max-w-[300px] break-words"
+                  >
                     <p>{row.original.description}</p>
                   </TooltipContent>
                 </Tooltip>
@@ -250,11 +300,13 @@ export function ServicesTab({
     },
     {
       accessorKey: "category_id",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Danh mục" />,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Danh mục" />
+      ),
       meta: {
         filterOptions: [
           { label: "Chưa phân loại", value: "uncategorized" },
-          ...categories.map(c => ({ label: c.name, value: c.id }))
+          ...categories.map((c) => ({ label: c.name, value: c.id })),
         ],
       },
       cell: ({ row }) => {
@@ -277,16 +329,23 @@ export function ServicesTab({
     },
     {
       accessorKey: "duration",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Thời gian" />,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Thời gian" />
+      ),
       cell: ({ row }) => (
         <div className="text-muted-foreground">
-          {row.getValue("duration")}p <span className="text-xs opacity-70">(+{row.original.buffer_time}p nghỉ)</span>
+          {row.getValue("duration")}p{" "}
+          <span className="text-xs opacity-70">
+            (+{row.original.buffer_time}p nghỉ)
+          </span>
         </div>
       ),
     },
     {
       accessorKey: "price",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Giá" />,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Giá" />
+      ),
       cell: ({ row }) => (
         <div className="font-medium text-primary">
           {formatPrice(row.getValue("price"))}
@@ -295,7 +354,9 @@ export function ServicesTab({
     },
     {
       accessorKey: "is_active",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Trạng thái" />,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Trạng thái" />
+      ),
       meta: {
         filterOptions: [
           { label: "Hoạt động", value: "true" },
@@ -308,7 +369,9 @@ export function ServicesTab({
           size="sm"
           className={cn(
             "gap-1.5",
-            row.getValue("is_active") ? "text-success border-success/30 bg-success/5" : "text-muted-foreground"
+            row.getValue("is_active")
+              ? "text-success border-success/30 bg-success/5"
+              : "text-muted-foreground"
           )}
           onClick={(e) => {
             e.stopPropagation();
@@ -317,9 +380,13 @@ export function ServicesTab({
           disabled={isPending}
         >
           {row.getValue("is_active") ? (
-            <><Power className="h-3 w-3" /> Hoạt động</>
+            <>
+              <Power className="h-3 w-3" /> Hoạt động
+            </>
           ) : (
-            <><PowerOff className="h-3 w-3" /> Tạm ngưng</>
+            <>
+              <PowerOff className="h-3 w-3" /> Tạm ngưng
+            </>
           )}
         </Button>
       ),
@@ -341,7 +408,9 @@ export function ServicesTab({
               <Edit2 className="mr-2 h-4 w-4" />
               Chỉnh sửa
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleToggleStatus(row.original.id)}>
+            <DropdownMenuItem
+              onClick={() => handleToggleStatus(row.original.id)}
+            >
               {row.original.is_active ? (
                 <>
                   <PowerOff className="mr-2 h-4 w-4 text-warning" />
@@ -375,8 +444,6 @@ export function ServicesTab({
     },
   ];
 
-
-
   return (
     <div className="space-y-4">
       <TabToolbar
@@ -392,7 +459,6 @@ export function ServicesTab({
         data={optimisticServices}
         variant={variant}
       />
-
 
       <ServiceFormSheet
         open={isSheetOpen}

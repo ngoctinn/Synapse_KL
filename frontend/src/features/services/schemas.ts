@@ -46,7 +46,7 @@ export const resourceCreateSchema = z.object({
   group_id: z.string().uuid("Chọn nhóm tài nguyên"),
   name: z.string().min(1, "Tên tài nguyên là bắt buộc").max(100),
   code: z.string().max(50).optional(),
-  status: z.enum(["ACTIVE", "MAINTENANCE", "OUT_OF_SERVICE"]),
+  status: z.enum(["ACTIVE", "MAINTENANCE", "INACTIVE"]),
   description: z.string().max(500).optional(),
   image_url: z.string().url().optional().or(z.literal("")),
 });
@@ -54,14 +54,16 @@ export const resourceCreateSchema = z.object({
 export type ResourceCreateForm = z.infer<typeof resourceCreateSchema>;
 
 // ========== Maintenance Schemas ==========
-export const maintenanceCreateSchema = z.object({
-  start_time: z.string().min(1, "Thời gian bắt đầu là bắt buộc"),
-  end_time: z.string().min(1, "Thời gian kết thúc là bắt buộc"),
-  reason: z.string().max(500).optional(),
-}).refine(
-  (data) => new Date(data.end_time) > new Date(data.start_time),
-  { message: "Thời gian kết thúc phải sau thời gian bắt đầu", path: ["end_time"] }
-);
+export const maintenanceCreateSchema = z
+  .object({
+    start_time: z.string().min(1, "Thời gian bắt đầu là bắt buộc"),
+    end_time: z.string().min(1, "Thời gian kết thúc là bắt buộc"),
+    reason: z.string().max(500).optional(),
+  })
+  .refine((data) => new Date(data.end_time) > new Date(data.start_time), {
+    message: "Thời gian kết thúc phải sau thời gian bắt đầu",
+    path: ["end_time"],
+  });
 
 export type MaintenanceCreateForm = z.infer<typeof maintenanceCreateSchema>;
 
@@ -73,28 +75,39 @@ const resourceRequirementSchema = z.object({
   usage_duration: z.number().min(1).optional(),
 });
 
-export const serviceCreateSchema = z.object({
-  category_id: z.string().uuid().optional().or(z.literal("")).or(z.literal("uncategorized")),
-  name: z.string().min(1, "Tên dịch vụ là bắt buộc").max(255),
-  duration: z.number().min(1, "Thời gian phải lớn hơn 0"),
-  buffer_time: z.number().min(0),
-  price: z.number().min(0, "Giá không được âm"),
-  description: z.string().max(2000).optional(),
-  image_url: z.string().url().optional().or(z.literal("")),
-  skill_ids: z.array(z.string().uuid()).min(1, "Phải chọn ít nhất 1 kỹ năng thực hiện"),
-  resource_requirements: z.array(resourceRequirementSchema),
-  is_active: z.boolean(),
-}).refine(
-  (data) => {
-    return data.resource_requirements.every(req => {
-      const usage = req.usage_duration || (data.duration - req.start_delay);
-      return (req.start_delay + usage) <= data.duration;
-    });
-  },
-  {
-    message: "Thời gian sử dụng tài nguyên vượt quá tổng thời lượng dịch vụ",
-    path: ["resource_requirements"]
-  }
-);
+export const serviceCreateSchema = z
+  .object({
+    category_id: z
+      .string()
+      .uuid()
+      .optional()
+      .or(z.literal(""))
+      .or(z.literal("uncategorized")),
+    name: z.string().min(1, "Tên dịch vụ là bắt buộc").max(255),
+    duration: z.number().min(1, "Thời gian phải lớn hơn 0"),
+    buffer_time: z.number().min(0),
+    price: z.number().min(0, "Giá không được âm"),
+    description: z.string().max(2000).optional(),
+    image_url: z.string().url().optional().or(z.literal("")),
+    skill_ids: z
+      .array(z.string().uuid())
+      .min(1, "Phải chọn ít nhất 1 kỹ năng thực hiện"),
+    resource_requirements: z.array(resourceRequirementSchema),
+    is_active: z.boolean(),
+  })
+  .refine(
+    (data) => {
+      const totalTime = data.duration + data.buffer_time;
+      return data.resource_requirements.every((req) => {
+        const usage = req.usage_duration || data.duration - req.start_delay;
+        return req.start_delay + usage <= totalTime;
+      });
+    },
+    {
+      message:
+        "Thời gian sử dụng tài nguyên vượt quá tổng thời lượng dịch vụ (duration + buffer_time)",
+      path: ["resource_requirements"],
+    }
+  );
 
 export type ServiceCreateForm = z.infer<typeof serviceCreateSchema>;

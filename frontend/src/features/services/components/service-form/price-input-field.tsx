@@ -24,7 +24,9 @@ export function PriceInputField({ field }: PriceInputFieldProps) {
       return;
     }
 
-    const formatted = field.value ? new Intl.NumberFormat("vi-VN").format(field.value) : "";
+    const formatted = field.value
+      ? new Intl.NumberFormat("vi-VN").format(field.value)
+      : "";
     setDisplayValue(formatted);
   }, [field.value]);
 
@@ -37,21 +39,24 @@ export function PriceInputField({ field }: PriceInputFieldProps) {
     // Logic nghiệp vụ: Cho phép nhập nhanh các đơn vị nghìn (k) và triệu (m)
     if (clean.endsWith("k")) {
       const num = parseFloat(clean) || 0;
-      field.onChange(Math.round(num * 1000));
+      field.onChange(num * 1000); // Không round để giữ độ chính xác
     } else if (clean.endsWith("m")) {
       const num = parseFloat(clean) || 0;
-      field.onChange(Math.round(num * 1000000));
-    } else if (!clean.includes(".")) {
-      // Trường hợp nhập số bình thường
-      const numeric = parseInt(clean.replace(/[^0-9]/g, ""), 10) || 0;
-      field.onChange(numeric);
+      field.onChange(num * 1000000); // Không round để giữ độ chính xác
+    } else if (clean) {
+      // Trường hợp nhập số bình thường (có thể có dấu thập phân)
+      const numeric = parseFloat(clean.replace(/[^0-9.]/g, "")) || 0;
+      field.onChange(numeric); // Không round, giữ nguyên giá trị thập phân
+    } else {
+      field.onChange(0);
     }
-    // If it has a dot but NO shorthand yet (e.g. "1.2"), we wait until they type 'k/m'
   };
 
   const handleBlur = () => {
     // On blur, force standard format
-    setDisplayValue(field.value ? new Intl.NumberFormat("vi-VN").format(field.value) : "");
+    setDisplayValue(
+      field.value ? new Intl.NumberFormat("vi-VN").format(field.value) : ""
+    );
   };
 
   return (

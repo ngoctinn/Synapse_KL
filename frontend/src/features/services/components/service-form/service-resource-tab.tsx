@@ -31,7 +31,11 @@ interface ServiceResourceTabProps {
   onAddSkill: () => void;
 }
 
-export function ServiceResourceTab({ skills, resourceGroups, onAddSkill }: ServiceResourceTabProps) {
+export function ServiceResourceTab({
+  skills,
+  resourceGroups,
+  onAddSkill,
+}: ServiceResourceTabProps) {
   const form = useFormContext<ServiceCreateForm>();
 
   const { fields, append, remove } = useFieldArray({
@@ -81,13 +85,17 @@ export function ServiceResourceTab({ skills, resourceGroups, onAddSkill }: Servi
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <FormLabel>Yêu cầu tài nguyên</FormLabel>
-            <p className="text-[10px] text-muted-foreground italic">Xem timeline sử dụng bên dưới</p>
+            <p className="text-[10px] text-muted-foreground italic">
+              Xem timeline sử dụng bên dưới
+            </p>
           </div>
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() => append({ group_id: "", quantity: 1, start_delay: 0 })}
+            onClick={() =>
+              append({ group_id: "", quantity: 1, start_delay: 0 })
+            }
             className="h-8 text-primary hover:text-primary hover:bg-primary/10 -mr-2"
           >
             <Plus className="w-3.5 h-3.5 mr-1" /> Thêm tài nguyên
@@ -98,14 +106,19 @@ export function ServiceResourceTab({ skills, resourceGroups, onAddSkill }: Servi
 
         <div className="space-y-3">
           {fields.map((item, index) => (
-            <div key={item.id} className="p-3 rounded-lg border bg-background space-y-3 relative group">
+            <div
+              key={item.id}
+              className="p-3 rounded-lg border bg-background space-y-3 relative group"
+            >
               <div className="flex items-center justify-between gap-2">
                 <FormField
                   control={form.control}
                   name={`resource_requirements.${index}.group_id`}
                   render={({ field }) => (
                     <FormItem className="flex-1 space-y-0 mb-0">
-                      <FormLabel className="text-[11px] font-normal text-muted-foreground">Loại tài nguyên</FormLabel>
+                      <FormLabel className="text-[11px] font-normal text-muted-foreground">
+                        Loại tài nguyên
+                      </FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
@@ -117,14 +130,29 @@ export function ServiceResourceTab({ skills, resourceGroups, onAddSkill }: Servi
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {resourceGroups.map((g) => {
-                             const countInfo = 'active_count' in g ? `(Trống: ${g.active_count})` : '';
-                             return (
-                              <SelectItem key={g.id} value={g.id}>
-                                {g.name} {countInfo}
-                              </SelectItem>
-                             );
-                          })}
+                          {resourceGroups
+                            .filter((g) => {
+                              // Chỉ hiển thị nhóm có tài nguyên ACTIVE khả dụng
+                              if ("active_count" in g) {
+                                return (
+                                  (g as ResourceGroupWithCount).active_count > 0
+                                );
+                              }
+                              return true; // Fallback nếu không có active_count
+                            })
+                            .map((g) => {
+                              const countInfo =
+                                "active_count" in g
+                                  ? `(Trống: ${
+                                      (g as ResourceGroupWithCount).active_count
+                                    })`
+                                  : "";
+                              return (
+                                <SelectItem key={g.id} value={g.id}>
+                                  {g.name} {countInfo}
+                                </SelectItem>
+                              );
+                            })}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -136,29 +164,48 @@ export function ServiceResourceTab({ skills, resourceGroups, onAddSkill }: Servi
                   control={form.control}
                   name={`resource_requirements.${index}.quantity`}
                   render={({ field }) => {
-                    const groupId = form.watch(`resource_requirements.${index}.group_id`);
-                    const group = resourceGroups.find(g => g.id === groupId) as ResourceGroupWithCount | undefined;
+                    const groupId = form.watch(
+                      `resource_requirements.${index}.group_id`
+                    );
+                    const group = resourceGroups.find(
+                      (g) => g.id === groupId
+                    ) as ResourceGroupWithCount | undefined;
                     const activeCount = group?.active_count || 0;
                     const maxCount = group?.resource_count || 0;
                     const isOverLimit = field.value > activeCount;
 
                     return (
                       <FormItem className="w-24 space-y-0 mb-0">
-                        <FormLabel className="text-[11px] font-normal text-muted-foreground">Số lượng</FormLabel>
+                        <FormLabel className="text-[11px] font-normal text-muted-foreground">
+                          Số lượng
+                        </FormLabel>
                         <FormControl>
                           <Input
                             type="number"
                             min={1}
-                            className={cn("h-9", isOverLimit && "border-destructive text-destructive focus-visible:ring-destructive")}
+                            className={cn(
+                              "h-9",
+                              isOverLimit &&
+                                "border-destructive text-destructive focus-visible:ring-destructive"
+                            )}
                             {...field}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                            onChange={(e) =>
+                              field.onChange(parseInt(e.target.value) || 1)
+                            }
                           />
                         </FormControl>
-                         {group && (
-                            <p className={cn("text-[10px] absolute -bottom-4 left-0 whitespace-nowrap", isOverLimit ? "text-destructive font-medium" : "text-muted-foreground")}>
-                              Khả dụng: {activeCount}/{maxCount}
-                            </p>
-                         )}
+                        {group && (
+                          <p
+                            className={cn(
+                              "text-[10px] absolute -bottom-4 left-0 whitespace-nowrap",
+                              isOverLimit
+                                ? "text-destructive font-medium"
+                                : "text-muted-foreground"
+                            )}
+                          >
+                            Khả dụng: {activeCount}/{maxCount}
+                          </p>
+                        )}
                         <FormMessage />
                       </FormItem>
                     );
@@ -178,55 +225,62 @@ export function ServiceResourceTab({ skills, resourceGroups, onAddSkill }: Servi
 
               {/* Advanced Time Controls */}
               <div className="grid grid-cols-2 gap-3 pl-1 pt-1 border-t border-dashed">
-                  <FormField
-                    control={form.control}
-                    name={`resource_requirements.${index}.start_delay`}
-                    render={({ field }) => (
-                      <FormItem className="space-y-0">
-                         <div className="flex justify-between items-center mb-1">
-                           <FormLabel className="text-[10px] text-muted-foreground font-normal">Sử dụng sau (phút)</FormLabel>
-                         </div>
-                         <FormControl>
-                            <DurationSelect
-                              value={field.value || 0}
-                              onValueChange={field.onChange}
-                              max={duration}
-                              step={5}
-                              className="h-8 text-xs"
-                              placeholder="Ngay lập tức"
-                            />
-                         </FormControl>
-                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <FormField
+                  control={form.control}
+                  name={`resource_requirements.${index}.start_delay`}
+                  render={({ field }) => (
+                    <FormItem className="space-y-0">
+                      <div className="flex justify-between items-center mb-1">
+                        <FormLabel className="text-[10px] text-muted-foreground font-normal">
+                          Sử dụng sau (phút)
+                        </FormLabel>
+                      </div>
+                      <FormControl>
+                        <DurationSelect
+                          value={field.value || 0}
+                          onValueChange={field.onChange}
+                          max={duration}
+                          step={5}
+                          className="h-8 text-xs"
+                          placeholder="Ngay lập tức"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <FormField
-                    control={form.control}
-                    name={`resource_requirements.${index}.usage_duration`}
-                    render={({ field }) => {
-                       const startDelay = form.watch(`resource_requirements.${index}.start_delay`) || 0;
-                       const maxDuration = duration - startDelay;
-                       return (
-                        <FormItem className="space-y-0">
-                           <div className="flex justify-between items-center mb-1">
-                             <FormLabel className="text-[10px] text-muted-foreground font-normal">Thời lượng dùng</FormLabel>
-                           </div>
-                           <FormControl>
-                              <DurationSelect
-                                value={field.value ?? undefined}
-                                onValueChange={field.onChange}
-                                max={maxDuration}
-                                step={5}
-                                className="h-8 text-xs"
-                                placeholder={`Suốt liệu trình (${maxDuration}p)`}
-                              />
-                           </FormControl>
-                           <FormMessage />
-                        </FormItem>
-                       );
-                    }}
-                  />
+                <FormField
+                  control={form.control}
+                  name={`resource_requirements.${index}.usage_duration`}
+                  render={({ field }) => {
+                    const startDelay =
+                      form.watch(
+                        `resource_requirements.${index}.start_delay`
+                      ) || 0;
+                    const maxDuration = duration - startDelay;
+                    return (
+                      <FormItem className="space-y-0">
+                        <div className="flex justify-between items-center mb-1">
+                          <FormLabel className="text-[10px] text-muted-foreground font-normal">
+                            Thời lượng dùng
+                          </FormLabel>
+                        </div>
+                        <FormControl>
+                          <DurationSelect
+                            value={field.value ?? undefined}
+                            onValueChange={field.onChange}
+                            max={maxDuration}
+                            step={5}
+                            className="h-8 text-xs"
+                            placeholder={`Suốt liệu trình (${maxDuration}p)`}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
               </div>
             </div>
           ))}
@@ -234,7 +288,9 @@ export function ServiceResourceTab({ skills, resourceGroups, onAddSkill }: Servi
           {fields.length === 0 && (
             <div className="text-center p-8 border-2 border-dashed rounded-lg bg-muted/10 text-muted-foreground">
               <p className="text-sm">Chưa có tài nguyên nào được gán.</p>
-              <p className="text-xs opacity-70 mt-1">Dịch vụ này không yêu cầu phòng/giường/máy?</p>
+              <p className="text-xs opacity-70 mt-1">
+                Dịch vụ này không yêu cầu phòng/giường/máy?
+              </p>
             </div>
           )}
         </div>
