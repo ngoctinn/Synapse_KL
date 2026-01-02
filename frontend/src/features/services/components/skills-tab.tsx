@@ -146,7 +146,7 @@ export function SkillsTab({ skills, variant = "default" }: SkillsTabProps) {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Hành động này không thể hoàn tác. Kỹ năng "{row.original.name}" sẽ bị xóa vĩnh viễn khỏi hệ thống.
+                    Hành động này không thể hoàn tác. Kỹ năng &quot;{row.original.name}&quot; sẽ bị xóa vĩnh viễn khỏi hệ thống.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

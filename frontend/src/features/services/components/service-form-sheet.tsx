@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormGuard } from "@/shared/hooks/use-form-guard";
+import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,6 +31,7 @@ import {
 } from "@/shared/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { useForm, type FieldErrors } from "react-hook-form";
@@ -206,6 +208,19 @@ export function ServiceFormSheet({
     }
   }
 
+  // Validation Logic: Check if resources exceed service duration
+  const duration = form.watch("duration");
+  const bufferTime = form.watch("buffer_time");
+  const resourceRequirements = form.watch("resource_requirements");
+
+  const totalDuration = (duration || 0) + (bufferTime || 0);
+  const conflictResources = resourceRequirements?.filter(r => {
+    const end = (r.start_delay || 0) + (r.usage_duration || 0);
+    return end > totalDuration;
+  }) || [];
+
+  const hasResourceConflict = conflictResources.length > 0;
+
   return (
     <>
       <Sheet open={open} onOpenChange={handleOpenChange}>
@@ -216,6 +231,19 @@ export function ServiceFormSheet({
               {isEdit ? "Điều chỉnh thông tin dịch vụ." : "Thiết lập thông tin dịch vụ mới."}
             </SheetDescription>
           </SheetHeader>
+
+          {hasResourceConflict && (
+              <div className="px-6 pb-2">
+                <Alert variant="destructive" className="py-2.5 bg-destructive/10 border-destructive/20 text-destructive">
+                  <AlertTriangle className="h-4 w-4 stroke-destructive" />
+                  <AlertTitle className="ml-2 font-semibold text-destructive">Xung đột thời gian</AlertTitle>
+                  <AlertDescription className="ml-2 text-xs text-destructive/90">
+                    Có {conflictResources.length} tài nguyên dùng quá tổng thời lượng ({totalDuration}p).
+                    Vui lòng chỉnh lại ở tab &quot;Kỹ thuật&quot;.
+                  </AlertDescription>
+                </Alert>
+              </div>
+          )}
 
           <Form {...form}>
             <form
@@ -283,7 +311,7 @@ export function ServiceFormSheet({
                 >
                   Hủy
                 </Button>
-                <Button type="submit" disabled={isPending} className="min-w-[120px]">
+                <Button type="submit" disabled={isPending || hasResourceConflict} className="min-w-[120px]">
                   {isEdit ? "Lưu thay đổi" : "Tạo dịch vụ"}
                 </Button>
               </div>

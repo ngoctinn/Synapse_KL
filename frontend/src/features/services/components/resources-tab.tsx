@@ -199,12 +199,18 @@ export function ResourcesTab({ groups, variant = "default" }: ResourcesTabProps)
                     >
                       <Plus className="h-5 w-5 stroke-2" />
                     </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/5">
-                          <Trash2 className="h-5 w-5 stroke-2" />
-                        </Button>
-                      </AlertDialogTrigger>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/5"
+                            disabled={group.resource_count > 0}
+                            title={group.resource_count > 0 ? "Không thể xóa nhóm đang có tài nguyên" : "Xóa nhóm"}
+                          >
+                            <Trash2 className="h-5 w-5 stroke-2" />
+                          </Button>
+                        </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>

@@ -2,6 +2,7 @@
 
 import { DurationSelect } from "@/shared/components/duration-select";
 import { MultiSelect } from "@/shared/components/multi-select";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import {
   FormControl,
@@ -134,21 +135,34 @@ export function ServiceResourceTab({ skills, resourceGroups, onAddSkill }: Servi
                 <FormField
                   control={form.control}
                   name={`resource_requirements.${index}.quantity`}
-                  render={({ field }) => (
-                    <FormItem className="w-20 space-y-0 mb-0">
-                      <FormLabel className="text-[11px] font-normal text-muted-foreground">Số lượng</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={1}
-                          className="h-9"
-                          {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    const groupId = form.watch(`resource_requirements.${index}.group_id`);
+                    const group = resourceGroups.find(g => g.id === groupId) as ResourceGroupWithCount | undefined;
+                    const activeCount = group?.active_count || 0;
+                    const maxCount = group?.resource_count || 0;
+                    const isOverLimit = field.value > activeCount;
+
+                    return (
+                      <FormItem className="w-24 space-y-0 mb-0">
+                        <FormLabel className="text-[11px] font-normal text-muted-foreground">Số lượng</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={1}
+                            className={cn("h-9", isOverLimit && "border-destructive text-destructive focus-visible:ring-destructive")}
+                            {...field}
+                            onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                          />
+                        </FormControl>
+                         {group && (
+                            <p className={cn("text-[10px] absolute -bottom-4 left-0 whitespace-nowrap", isOverLimit ? "text-destructive font-medium" : "text-muted-foreground")}>
+                              Khả dụng: {activeCount}/{maxCount}
+                            </p>
+                         )}
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
 
                 <Button

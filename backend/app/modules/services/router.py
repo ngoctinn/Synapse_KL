@@ -10,6 +10,7 @@ from app.core.db import get_db
 from app.modules.services import service
 from app.modules.services.schemas import (
     ServiceCreate,
+    ServiceListResponse,
     ServiceRead,
     ServiceReadWithDetails,
     ServiceUpdate,
@@ -18,13 +19,23 @@ from app.modules.services.schemas import (
 router = APIRouter(prefix="/services", tags=["Services"])
 
 
-@router.get("", response_model=list[ServiceRead])
+@router.get("", response_model=ServiceListResponse)
 async def list_services(
     category_id: UUID | None = Query(None),
     is_active: bool | None = Query(None),
+    page: int = Query(1, ge=1),
+    limit: int = Query(100, ge=1, le=1000),
     session: AsyncSession = Depends(get_db)
 ):
-    return await service.get_all_services(session, category_id, is_active)
+    services, total = await service.get_all_services(
+        session, category_id, is_active, page, limit
+    )
+    return ServiceListResponse(
+        data=services,
+        total=total,
+        page=page,
+        limit=limit
+    )
 
 
 @router.get("/{service_id}", response_model=ServiceReadWithDetails)

@@ -266,13 +266,25 @@ export async function getServicesAction(
   if (categoryId) params.append("category_id", categoryId);
   if (isActive !== undefined) params.append("is_active", String(isActive));
 
+  // Strategy: "Safe Load All".
+  // We request a large limit (1000) to fetch "all" services for small/medium spas,
+  // providing a seamless UX without pagination controls, while preventing server crashes
+  // if data unexpectedly grows (backend limit cap).
+  params.append("page", "1");
+  params.append("limit", "1000");
+
   const url = `${API_BASE_URL}${SERVICES_PATH}?${params.toString()}`;
   const res = await fetch(url, {
     next: { revalidate: 60, tags: ["services"] },
   });
 
   if (!res.ok) throw new Error("Không thể tải danh sách dịch vụ");
-  return res.json();
+
+  const responseData = await res.json();
+  // Handle both:
+  // 1. Legacy format: Array directly
+  // 2. New Pagination format: { data: [], total: ... }
+  return Array.isArray(responseData) ? responseData : responseData.data || [];
 }
 
 export async function getServiceByIdAction(id: string): Promise<ServiceWithDetails> {

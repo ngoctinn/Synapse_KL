@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import HTTPException
 from sqlalchemy.orm import selectinload
-from sqlmodel import select
+from sqlmodel import func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.modules.categories.models import ServiceCategory
@@ -17,21 +17,29 @@ from app.modules.services.models import (
 from app.modules.services.schemas import ServiceCreate, ServiceUpdate
 from app.modules.skills.models import Skill
 
-
 async def get_all_services(
     session: AsyncSession,
     category_id: UUID | None = None,
-    is_active: bool | None = None
-) -> list[Service]:
+    is_active: bool | None = None,
+    page: int = 1,
+    limit: int = 100
+) -> tuple[list[Service], int]:
+    # Base query
     stmt = select(Service).where(Service.deleted_at.is_(None))
     if category_id:
         stmt = stmt.where(Service.category_id == category_id)
     if is_active is not None:
         stmt = stmt.where(Service.is_active == is_active)
-    stmt = stmt.order_by(Service.name)
+
+    # Count query
+    count_stmt = select(func.count()).select_from(stmt.subquery())
+    total = (await session.exec(count_stmt)).one()
+
+    # Pagination
+    stmt = stmt.order_by(Service.name).offset((page - 1) * limit).limit(limit)
 
     result = await session.exec(stmt)
-    return list(result.all())
+    return list(result.all()), total
 
 
 async def get_service_by_id(session: AsyncSession, service_id: UUID) -> Service | None:
