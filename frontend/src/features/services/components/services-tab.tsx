@@ -59,7 +59,6 @@ interface ServicesTabProps {
   categories: ServiceCategory[];
   skills: Skill[];
   resourceGroups: ResourceGroup[];
-  variant?: "default" | "flat";
 }
 
 export function ServicesTab({
@@ -67,7 +66,6 @@ export function ServicesTab({
   categories,
   skills,
   resourceGroups,
-  variant = "default",
 }: ServicesTabProps) {
   const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -457,7 +455,6 @@ export function ServicesTab({
       <DataTable
         columns={columns}
         data={optimisticServices}
-        variant={variant}
       />
 
       <ServiceFormSheet

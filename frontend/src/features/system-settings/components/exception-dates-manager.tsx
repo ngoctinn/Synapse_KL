@@ -58,14 +58,12 @@ interface ExceptionDatesManagerProps {
   initialData?: ExceptionDate[]
   regularHours?: OperatingHour[]
   onChange: (data: ExceptionDate[]) => void
-  variant?: "default" | "flat"
 }
 
 export function ExceptionDatesManager({
   initialData = [],
   regularHours = [],
   onChange,
-  variant = "default",
 }: ExceptionDatesManagerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [exceptions, setExceptions] = React.useState<ExceptionDate[]>(initialData);
@@ -255,10 +253,7 @@ export function ExceptionDatesManager({
         </Dialog>
       </div>
 
-      <div className={cn(
-        "rounded-md",
-        variant !== "flat" && "border"
-      )}>
+      <div className="rounded-md border">
         {exceptions.length === 0 ? (
           <div className="p-8 text-center text-sm text-muted-foreground">
             Chưa có ngày ngoại lệ nào được thiết lập.

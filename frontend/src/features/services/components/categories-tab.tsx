@@ -49,10 +49,9 @@ import { DeleteDialog } from "./delete-dialog";
 
 interface CategoriesTabProps {
   categories: ServiceCategory[];
-  variant?: "default" | "flat";
 }
 
-export function CategoriesTab({ categories, variant = "default" }: CategoriesTabProps) {
+export function CategoriesTab({ categories }: CategoriesTabProps) {
   const [items, setItems] = useState(categories);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
@@ -145,10 +144,7 @@ export function CategoriesTab({ categories, variant = "default" }: CategoriesTab
         searchPlaceholder="Tìm kiếm danh mục..."
       />
 
-      <div className={cn(
-        "relative w-full overflow-x-auto",
-        variant !== "flat" && "overflow-hidden rounded-xl border border-border bg-background"
-      )}>
+      <div className="relative w-full overflow-x-auto overflow-hidden rounded-xl border border-border bg-background">
         <DndContext
           id={dndId}
           sensors={sensors}

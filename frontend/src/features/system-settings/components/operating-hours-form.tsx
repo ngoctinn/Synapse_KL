@@ -36,7 +36,6 @@ type FormValues = z.infer<typeof formSchema>;
 interface OperatingHoursFormProps {
   data?: OperatingHour[]
   onChange: (data: OperatingHour[]) => void
-  variant?: "default" | "flat"
 }
 
 const DEFAULT_HOURS: OperatingHour[] = ([1, 2, 3, 4, 5, 6, 0] as DayOfWeek[]).map((day) => ({
@@ -49,7 +48,6 @@ const DEFAULT_HOURS: OperatingHour[] = ([1, 2, 3, 4, 5, 6, 0] as DayOfWeek[]).ma
 export function OperatingHoursForm({
   data,
   onChange,
-  variant = "default",
 }: OperatingHoursFormProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -170,10 +168,7 @@ export function OperatingHoursForm({
       <form className="space-y-6">
 
 
-        <div className={cn(
-          "rounded-xl border bg-card text-card-foreground shadow-sm px-6",
-          variant === "flat" && "border-none shadow-none bg-transparent px-0"
-        )}>
+        <div className="rounded-xl border bg-card text-card-foreground shadow-sm px-6">
           <div className="space-y-4">
             {fields.map((field, index) => {
               const isClosed = form.watch(`regular_operating_hours.${index}.is_closed`);

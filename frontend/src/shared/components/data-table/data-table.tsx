@@ -34,7 +34,6 @@ interface DataTableProps<TData, TValue> {
   enableRowSelection?: boolean
   onRowClick?: (row: TData) => void
   stickyHeader?: boolean
-  variant?: "default" | "flat"
 }
 
 export function DataTable<TData, TValue>({
@@ -43,7 +42,6 @@ export function DataTable<TData, TValue>({
   enableRowSelection = true,
   onRowClick,
   stickyHeader = true,
-  variant = "default",
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -79,15 +77,11 @@ export function DataTable<TData, TValue>({
 
   return (
     <div data-slot="data-table" className="space-y-4 w-full min-w-0">
-      <div className={cn(
-        "relative w-full overflow-hidden",
-        variant === "default" && "rounded-lg border border-border bg-background"
-      )}>
+      <div className="relative w-full overflow-hidden rounded-lg border border-border bg-background">
         <Table className="w-full">
           <TableHeader className={cn(
             "sticky top-0 z-30",
-            "bg-neutral-5/30",
-            variant === "flat" ? "border-b-0" : "border-b"
+            "bg-neutral-5/30 border-b"
           )}>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="hover:bg-transparent border-b border-neutral-10/50">

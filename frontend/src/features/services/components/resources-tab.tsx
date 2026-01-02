@@ -26,10 +26,9 @@ import { ResourceGroupFormSheet } from "./resource-group-form-sheet";
 
 interface ResourcesTabProps {
   groups: ResourceGroupWithCount[];
-  variant?: "default" | "flat";
 }
 
-export function ResourcesTab({ groups, variant = "default" }: ResourcesTabProps) {
+export function ResourcesTab({ groups }: ResourcesTabProps) {
   const [isGroupSheetOpen, setIsGroupSheetOpen] = useState(false);
   const [isResourceSheetOpen, setIsResourceSheetOpen] = useState(false);
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false);
@@ -150,12 +149,7 @@ export function ResourcesTab({ groups, variant = "default" }: ResourcesTabProps)
       ) : (
         <div className="grid gap-4">
           {groups.map((group) => (
-            <Card key={group.id} className={cn(
-              "overflow-hidden transition-all hover:bg-neutral-5/5",
-              variant === "flat"
-                ? "border border-neutral-20/40 shadow-none bg-card"
-                : "border-border bg-card/30 shadow-sm"
-            )}>
+            <Card key={group.id} className="overflow-hidden transition-all hover:bg-neutral-5/5 border-border shadow-sm">
               <CardHeader className="p-5 pb-0">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
@@ -349,7 +343,6 @@ function ResourcesDataTable({
     <DataTable
       columns={columns}
       data={data}
-      variant="flat"
     />
   );
 }

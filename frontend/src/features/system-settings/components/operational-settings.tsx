@@ -169,7 +169,6 @@ export function OperationalSettings({ initialData }: OperationalSettingsProps) {
               <OperatingHoursForm
                 data={settings?.regular_operating_hours}
                 onChange={handleOperatingHoursChange}
-                variant="flat"
               />
             </div>
           </TabsContent>
@@ -181,7 +180,6 @@ export function OperationalSettings({ initialData }: OperationalSettingsProps) {
                 initialData={settings?.exception_dates}
                 regularHours={settings?.regular_operating_hours}
                 onChange={handleExceptionDatesChange}
-                variant="flat"
               />
             </div>
           </TabsContent>

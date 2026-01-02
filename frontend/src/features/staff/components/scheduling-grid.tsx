@@ -42,10 +42,9 @@ interface SchedulingGridProps {
   shifts: Shift[];
   schedules: StaffScheduleWithDetails[];
   currentDate: Date;
-  variant?: "default" | "flat";
 }
 
-export function SchedulingGrid({ staff, shifts, schedules, currentDate, variant = "default" }: SchedulingGridProps) {
+export function SchedulingGrid({ staff, shifts, schedules, currentDate }: SchedulingGridProps) {
   const router = useRouter();
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -254,10 +253,7 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate, variant 
         </div>
       )}
 
-      <div className={cn(
-        "w-full rounded-xl overflow-hidden",
-        variant !== "flat" && "border"
-      )}
+      <div className="w-full rounded-xl overflow-hidden border"
            onPointerUp={handlePointerUp}> {/* Catch pointer up bubble */}
         <div className="w-full overflow-x-auto relative scrollbar-hide">
           <table className="w-full border-collapse">

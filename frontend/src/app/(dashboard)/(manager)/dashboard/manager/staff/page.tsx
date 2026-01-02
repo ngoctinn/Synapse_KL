@@ -1,5 +1,4 @@
 import { getSchedulesAction, getShiftsAction, getStaffAction } from "@/features/staff/actions";
-import { Card, CardContent } from "@/shared/ui/card";
 import { SidebarTrigger } from "@/shared/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { endOfWeek, format, startOfWeek } from "date-fns";
@@ -47,48 +46,42 @@ export default async function StaffPage({ searchParams }: PageProps) {
   ]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center gap-4 px-1">
         <SidebarTrigger className="-ml-1" />
         <h1>Quản lý nhân sự</h1>
       </div>
 
-      <Card className="shadow-sm">
-        <CardContent>
-          <Tabs defaultValue="technicians" className="w-full max-w-full">
-            <TabsList>
-              <TabsTrigger value="technicians">Nhân viên</TabsTrigger>
-              <TabsTrigger value="shifts">Phòng/Ca</TabsTrigger>
-              <TabsTrigger value="schedule">Lịch biểu</TabsTrigger>
-            </TabsList>
+      <Tabs defaultValue="technicians" className="w-full max-w-full space-y-6">
+        <TabsList>
+          <TabsTrigger value="technicians">Nhân viên</TabsTrigger>
+          <TabsTrigger value="shifts">Phòng/Ca</TabsTrigger>
+          <TabsTrigger value="schedule">Lịch biểu</TabsTrigger>
+        </TabsList>
 
-            <TabsContent value="technicians" forceMount={true} className="data-[state=inactive]:hidden focus-visible:outline-none">
-                <Suspense fallback={<StaffLoading />}>
-                  <StaffTable data={staff} variant="flat" />
-                </Suspense>
-              </TabsContent>
+        <TabsContent value="technicians" forceMount={true} className="data-[state=inactive]:hidden focus-visible:outline-none mt-0">
+          <Suspense fallback={<StaffLoading />}>
+            <StaffTable data={staff} />
+          </Suspense>
+        </TabsContent>
 
-              <TabsContent value="shifts" forceMount={true} className="data-[state=inactive]:hidden focus-visible:outline-none">
-                <Suspense fallback={<StaffLoading />}>
-                  <ShiftList shifts={shifts} variant="flat" />
-                </Suspense>
-              </TabsContent>
+        <TabsContent value="shifts" forceMount={true} className="data-[state=inactive]:hidden focus-visible:outline-none mt-0">
+          <Suspense fallback={<StaffLoading />}>
+            <ShiftList shifts={shifts} />
+          </Suspense>
+        </TabsContent>
 
-              <TabsContent value="schedule" forceMount={true} className="data-[state=inactive]:hidden focus-visible:outline-none">
-                <Suspense fallback={<StaffLoading />}>
-                  {/* Dependency Injection: Pass all server data to Client Component */}
-                  <SchedulingGrid
-                    staff={staff.filter(s => s.is_active)}
-                    shifts={shifts}
-                    schedules={schedules}
-                    currentDate={safeDate}
-                    variant="flat"
-                  />
-                </Suspense>
-              </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+        <TabsContent value="schedule" forceMount={true} className="data-[state=inactive]:hidden focus-visible:outline-none mt-0">
+          <Suspense fallback={<StaffLoading />}>
+            <SchedulingGrid
+              staff={staff.filter(s => s.is_active)}
+              shifts={shifts}
+              schedules={schedules}
+              currentDate={safeDate}
+            />
+          </Suspense>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

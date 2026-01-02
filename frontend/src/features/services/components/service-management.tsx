@@ -8,7 +8,7 @@ import {
 import { ServicePageTabs } from "./service-page-tabs";
 
 export async function ServiceManagement() {
-  const [skills, categories, resourceGroups, resources, services] = await Promise.all([
+  const [skills, categories, resourceGroups, resources, servicesResponse] = await Promise.all([
     getSkillsAction(),
     getCategoriesAction(),
     getResourceGroupsAction(),
@@ -31,7 +31,7 @@ export async function ServiceManagement() {
       skills={skills}
       categories={categories}
       resourceGroups={groupsWithCount}
-      services={services || []}
+      services={servicesResponse.data || []}
     />
   );
 }

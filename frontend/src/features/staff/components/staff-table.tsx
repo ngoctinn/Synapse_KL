@@ -20,10 +20,9 @@ import { useState } from "react";
 
 interface StaffTableProps {
   data: StaffProfileWithSkills[];
-  variant?: "default" | "flat";
 }
 
-export function StaffTable({ data, variant = "default" }: StaffTableProps) {
+export function StaffTable({ data }: StaffTableProps) {
   const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<StaffProfileWithSkills | undefined>(undefined);
@@ -160,10 +159,7 @@ export function StaffTable({ data, variant = "default" }: StaffTableProps) {
       </div>
 
       {data.length === 0 ? (
-        <div className={cn(
-          "rounded-xl border border-dashed bg-muted/5 overflow-hidden",
-          variant === "flat" && "border-none"
-        )}>
+        <div className="rounded-xl border border-dashed bg-muted/5 overflow-hidden">
           <div className="flex flex-col items-center justify-center py-16 px-4 gap-4">
             <div className="rounded-full bg-muted/50 p-4">
               <Plus className="h-8 w-8 text-muted-foreground/50" />
@@ -181,7 +177,6 @@ export function StaffTable({ data, variant = "default" }: StaffTableProps) {
           <DataTable
             columns={columns}
             data={tableData}
-            variant={variant}
           />
       )}
 

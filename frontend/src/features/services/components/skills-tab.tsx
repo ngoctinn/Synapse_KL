@@ -24,10 +24,9 @@ import { SkillFormSheet } from "./skill-form-sheet";
 
 interface SkillsTabProps {
   skills: Skill[];
-  variant?: "default" | "flat";
 }
 
-export function SkillsTab({ skills, variant = "default" }: SkillsTabProps) {
+export function SkillsTab({ skills }: SkillsTabProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [isDeleting, startDeleteTransition] = useTransition();
@@ -158,7 +157,6 @@ export function SkillsTab({ skills, variant = "default" }: SkillsTabProps) {
       <DataTable
         columns={columns}
         data={skills}
-        variant={variant}
       />
 
       <SkillFormSheet
