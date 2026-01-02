@@ -1,5 +1,5 @@
 
-import { DataTable, DataTableColumnHeader } from "@/shared/components/smart-data-table";
+import { DataTable, DataTableColumnHeader } from "@/shared/components/data-table";
 import { TabToolbar } from "@/shared/components/tab-toolbar";
 import { cn } from "@/shared/lib/utils";
 import {

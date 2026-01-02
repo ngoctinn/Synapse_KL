@@ -188,9 +188,9 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
   // Empty state when no staff
   if (staff.length === 0) {
     return (
-      <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-dashed bg-muted/5 overflow-hidden">
         <div className="flex flex-col items-center justify-center py-16 px-4 gap-4">
-          <div className="rounded-full bg-muted p-4">
+          <div className="rounded-full bg-muted/50 p-4">
             <Users className="h-8 w-8 text-muted-foreground/50" />
           </div>
           <div className="text-center space-y-1">
@@ -203,7 +203,7 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
   }
 
   return (
-    <div className={cn("space-y-4", selection.isSelecting && "cursor-crosshair")}>
+    <div className={cn("w-full max-w-full space-y-4", selection.isSelecting && "cursor-crosshair")}>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <CalendarToolbar
           currentDate={currentDate}
@@ -253,9 +253,9 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
         </div>
       )}
 
-      <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden"
+      <div className="w-full rounded-xl border overflow-hidden"
            onPointerUp={handlePointerUp}> {/* Catch pointer up bubble */}
-        <div className="overflow-x-auto relative scrollbar-hide">
+        <div className="w-full overflow-x-auto relative scrollbar-hide">
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-muted/30 border-b border-border">

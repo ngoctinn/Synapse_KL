@@ -2,15 +2,15 @@
 
 import { StaffFormSheet } from "@/features/staff/components/staff-form-sheet";
 import type { StaffProfileWithSkills } from "@/features/staff/types";
-import { DataTable, DataTableColumnHeader } from "@/shared/components/smart-data-table";
+import { DataTable, DataTableColumnHeader } from "@/shared/components/data-table";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from "@/shared/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { Edit, MoreHorizontal, Plus, Trash2 } from "lucide-react";
@@ -158,27 +158,25 @@ export function StaffTable({ data }: StaffTableProps) {
       </div>
 
       {data.length === 0 ? (
-        <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+        <div className="rounded-xl border border-dashed bg-muted/5 overflow-hidden">
           <div className="flex flex-col items-center justify-center py-16 px-4 gap-4">
-            <div className="rounded-full bg-muted p-4">
+            <div className="rounded-full bg-muted/50 p-4">
               <Plus className="h-8 w-8 text-muted-foreground/50" />
             </div>
             <div className="text-center space-y-1">
               <p className="text-sm font-medium text-foreground">Chưa có nhân viên nào</p>
               <p className="text-xs text-muted-foreground">Thêm nhân viên đầu tiên để bắt đầu quản lý đội ngũ.</p>
             </div>
-            <Button onClick={handleCreate} variant="outline" className="mt-2">
+            <Button onClick={handleCreate} variant="outline" className="mt-2 h-9">
               Thêm nhân viên đầu tiên
             </Button>
           </div>
         </div>
       ) : (
-        <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
           <DataTable
             columns={columns}
             data={tableData}
           />
-        </div>
       )}
 
       <StaffFormSheet

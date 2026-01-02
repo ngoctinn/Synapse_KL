@@ -34,6 +34,7 @@ interface DataTableProps<TData, TValue> {
   enableRowSelection?: boolean
   onRowClick?: (row: TData) => void
   stickyHeader?: boolean
+  variant?: "default" | "flat"
 }
 
 export function DataTable<TData, TValue>({
@@ -42,6 +43,7 @@ export function DataTable<TData, TValue>({
   enableRowSelection = true,
   onRowClick,
   stickyHeader = true,
+  variant = "default",
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -76,15 +78,18 @@ export function DataTable<TData, TValue>({
   })
 
   return (
-    <div data-slot="smart-data-table" className="space-y-4 font-sans">
-      <div className="overflow-hidden rounded-xl border border-neutral-10/60 bg-background relative shadow-sm transition-all hover:shadow-md">
+    <div data-slot="data-table" className="space-y-4 font-sans">
+      <div className={cn(
+        "relative",
+        variant === "default" && "overflow-hidden rounded-xl border border-border bg-background"
+      )}>
         <Table>
-          <TableHeader className={cn("bg-neutral-5/10 dark:bg-neutral-90/5 border-b border-neutral-10/60", stickyHeader && "sticky top-0 z-30 backdrop-blur-md shadow-sm")}>
+          <TableHeader className={cn("bg-neutral-5/20 dark:bg-neutral-90/10 border-b-0 sticky top-0 z-30 shadow-none hover:bg-transparent", stickyHeader && "backdrop-blur-md")}>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="hover:bg-transparent border-b border-neutral-20/50">
+              <TableRow key={headerGroup.id} className="hover:bg-transparent border-none transition-none">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} colSpan={header.colSpan} className="h-12 text-sm font-bold text-neutral-80 bg-inherit px-4">
+                    <TableHead key={header.id} colSpan={header.colSpan} className="h-12 text-sm font-bold text-neutral-80 bg-transparent px-4 border-b border-neutral-20/80">
                       {header.isPlaceholder
                         ? null
                         : flexRender(

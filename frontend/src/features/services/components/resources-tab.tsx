@@ -1,28 +1,30 @@
 "use client";
 
-import { DataTable, DataTableColumnHeader } from "@/shared/components/smart-data-table";
+import { DataTable, DataTableColumnHeader } from "@/shared/components/data-table";
 import { TabToolbar } from "@/shared/components/tab-toolbar";
+import { cn } from "@/shared/lib/utils";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardHeader } from "@/shared/ui/card";
 import { Checkbox } from "@/shared/ui/checkbox";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { Bed, CalendarClock, MoreHorizontal, Plus, Trash2, Wrench } from "lucide-react";
@@ -146,68 +148,85 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
       ) : (
         <div className="grid gap-4">
           {filteredGroups.map((group) => (
-            <div key={group.id} className="border rounded-lg overflow-hidden">
-              <div className="p-4 flex items-center justify-between bg-muted/30">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-background rounded-md border text-muted-foreground">
-                    {group.type === "BED" ? <Bed className="h-5 w-5" /> : <Wrench className="h-5 w-5" />}
+            <Card key={group.id} className="overflow-hidden border-border bg-card/30 transition-all hover:bg-card/50">
+              <CardHeader className="p-5 pb-0">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/5 text-primary border border-primary/10 shadow-sm">
+                      {group.type === "BED" ? <Bed className="h-6 w-6" /> : <Wrench className="h-6 w-6" />}
+                    </div>
+                    <div>
+                      <h4 className="text-base font-bold text-foreground leading-none mb-1.5">{group.name}</h4>
+                      <div className="flex items-center gap-2">
+                         <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wider py-0 px-1.5 rounded-md border-neutral-20/50 bg-neutral-5/10">
+                          {group.type}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground font-medium">
+                          {group.resource_count} tài nguyên
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-medium">{group.name}</h4>
-                    <p className="text-xs text-muted-foreground">
-                      {group.type} • {group.resource_count} tài nguyên
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                   <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleGroup(group.id)}
-                  >
-                    {resourcesByGroup[group.id] ? "Thu gọn" : "Chi tiết"}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-muted-foreground"
-                    onClick={() => handleAddResource(group)}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="text-destructive">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Xóa nhóm tài nguyên?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Hành động này sẽ xóa nhóm &quot;{group.name}&quot;. Bạn không thể xóa nếu nhóm còn tài nguyên.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Hủy</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDeleteGroup(group.id)} className="bg-destructive">Xóa</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </div>
 
-              {resourcesByGroup[group.id] && (
-                <div className="p-2 border-t bg-background animation-in slide-in-from-top-2 duration-200">
-                  <ResourcesDataTable
-                    data={resourcesByGroup[group.id]}
-                    search={search}
-                    onMaintenance={handleMaintenance}
-                    onDelete={handleDeleteResource}
-                  />
+                  <div className="flex items-center gap-2 self-end sm:self-auto">
+                     <Button
+                      variant="secondary"
+                      size="sm"
+                      className={cn(
+                        "h-9 px-4 text-xs font-bold rounded-lg transition-all",
+                        resourcesByGroup[group.id] ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-muted/50 hover:bg-muted"
+                      )}
+                      onClick={() => toggleGroup(group.id)}
+                    >
+                      {resourcesByGroup[group.id] ? "Thu gọn" : "Xem chi tiết"}
+                    </Button>
+
+                    <div className="h-8 w-[1px] bg-border/60 mx-1 hidden sm:block" />
+
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5"
+                      onClick={() => handleAddResource(group)}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/5">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Hành động này sẽ xóa nhóm &quot;{group.name}&quot;. Bạn không thể xóa nếu nhóm còn tài nguyên.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Hủy</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDeleteGroup(group.id)} className="bg-destructive">Xóa</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
-              )}
-            </div>
+              </CardHeader>
+
+              <CardContent className={cn("p-0 px-5 transition-all duration-300", resourcesByGroup[group.id] ? "mt-5 pb-5 border-t border-border/50" : "h-0 overflow-hidden")}>
+                {resourcesByGroup[group.id] && (
+                  <div className="pt-5 animation-in slide-in-from-top-2 duration-300">
+                    <ResourcesDataTable
+                      data={resourcesByGroup[group.id]}
+                      search={search}
+                      onMaintenance={handleMaintenance}
+                      onDelete={handleDeleteResource}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
@@ -349,6 +368,7 @@ function ResourcesDataTable({
     <DataTable
       columns={columns}
       data={processedData}
+      variant="flat"
     />
   );
 }

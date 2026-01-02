@@ -45,7 +45,7 @@ export default async function StaffPage({ searchParams }: PageProps) {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-full space-y-6">
       {/* Page Header aligned with ServicePageTabs standard */}
       <div className="flex flex-col gap-1 px-1">
         <h1 className="text-2xl font-semibold tracking-tight">Nhân sự & Lập lịch</h1>
@@ -54,7 +54,7 @@ export default async function StaffPage({ searchParams }: PageProps) {
         </p>
       </div>
 
-      <Tabs defaultValue="technicians" className="w-full">
+      <Tabs defaultValue="technicians" className="w-full max-w-full">
         <div className="px-1">
           <TabsList>
             <TabsTrigger value="technicians">Nhân viên</TabsTrigger>
@@ -63,7 +63,7 @@ export default async function StaffPage({ searchParams }: PageProps) {
           </TabsList>
         </div>
 
-        <div className="mt-4">
+        <div className="mt-4 w-full max-w-full overflow-hidden">
           <TabsContent value="technicians" forceMount={true} className="data-[state=inactive]:hidden focus-visible:outline-none">
             <Suspense fallback={<StaffLoading />}>
               <StaffTable data={staff} />

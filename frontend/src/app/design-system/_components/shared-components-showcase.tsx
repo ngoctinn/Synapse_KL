@@ -1,13 +1,13 @@
 "use client"
 
 import { CalendarToolbar } from "@/shared/components/calendar-toolbar"
+import { DataTable, DataTableColumnHeader } from "@/shared/components/data-table"
 import { DatePickerWithRange } from "@/shared/components/date-range-picker"
 import { DateTimePicker } from "@/shared/components/date-time-picker"
 import { DurationSelect } from "@/shared/components/duration-select"
 import { MultiSelect } from "@/shared/components/multi-select"
 import { PageHeader } from "@/shared/components/page-header"
 import { SearchInput } from "@/shared/components/search-input"
-import { DataTable, DataTableColumnHeader } from "@/shared/components/smart-data-table"
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import { Checkbox } from "@/shared/ui/checkbox"
@@ -239,7 +239,7 @@ export function SharedComponentsShowcase() {
             <DataTable
               columns={tableColumns}
               data={tableData}
-              onRowClick={(row) => toast.info(`Clicked row: ${row.name}`)}
+              onRowClick={(row: typeof tableData[0]) => toast.info(`Clicked row: ${row.name}`)}
             />
           </div>
         </div>

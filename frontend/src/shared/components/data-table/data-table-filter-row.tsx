@@ -1,4 +1,4 @@
-"use client"
+  "use client"
 
 import { Table } from "@tanstack/react-table"
 import { Filter } from "lucide-react"
@@ -31,7 +31,7 @@ export function DataTableFilterRow<TData>({ table }: DataTableFilterRowProps<TDa
   const headerGroup = table.getHeaderGroups()[table.getHeaderGroups().length - 1]
 
   return (
-    <TableRow data-slot="filter-row" className="hover:bg-transparent border-b border-neutral-20/50 bg-background/50">
+    <TableRow data-slot="filter-row" className="hover:bg-transparent border-none bg-transparent transition-none">
       {headerGroup.headers.map((header) => {
         const column = header.column
         const meta = column.columnDef.meta as SmartColumnMeta
@@ -39,17 +39,17 @@ export function DataTableFilterRow<TData>({ table }: DataTableFilterRowProps<TDa
 
         // Không hiển thị filter cho cột checkbox/actions hoặc cột không hỗ trợ lọc
         if (header.id === 'select' || header.id === 'actions' || !column.getCanFilter()) {
-             return <TableCell key={`filter-${header.id}`} className="py-2.5 h-14 bg-inherit border-none" />
+             return <TableCell key={`filter-${header.id}`} className="py-2.5 h-14 bg-transparent border-b border-neutral-20/80" />
         }
 
         return (
-          <TableCell key={`filter-${header.id}`} className="py-2.5 h-14 px-4 bg-inherit border-none align-middle overflow-visible">
+          <TableCell key={`filter-${header.id}`} className="py-2.5 h-14 px-4 bg-transparent border-b border-neutral-20/80 align-middle overflow-visible">
              <div data-slot="filter-container" className="relative flex items-center w-full group">
                 <div className="flex-1">
                    {filterOptions ? (
                         <Select
                             value={(column.getFilterValue() as string) ?? "all"}
-                            onValueChange={(value) => column.setFilterValue(value === "all" ? undefined : value)}
+                            onValueChange={(value: string) => column.setFilterValue(value === "all" ? undefined : value)}
                         >
                             <SelectTrigger className="w-full h-9 text-[11px] sm:text-xs bg-background border-neutral-10/60 rounded-lg shadow-sm focus:ring-1 focus:ring-primary/20 transition-all hover:border-neutral-20 pr-8">
                                 <SelectValue placeholder="Chọn..." />
@@ -67,7 +67,7 @@ export function DataTableFilterRow<TData>({ table }: DataTableFilterRowProps<TDa
                        <Input
                             placeholder="Tìm kiếm..."
                             value={(column.getFilterValue() as string) ?? ""}
-                            onChange={(event) => column.setFilterValue(event.target.value)}
+                            onChange={(event: React.ChangeEvent<HTMLInputElement>) => column.setFilterValue(event.target.value)}
                             className="w-full h-9 text-[11px] sm:text-xs bg-background border-neutral-10/60 rounded-lg shadow-sm focus-visible:ring-1 focus-visible:ring-primary/20 transition-all hover:border-neutral-20 pr-8"
                        />
                    )}

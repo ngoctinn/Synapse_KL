@@ -3,53 +3,54 @@
 import { TabToolbar } from "@/shared/components/tab-toolbar";
 import { cn } from "@/shared/lib/utils";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
-import { Checkbox } from "@/shared/ui/checkbox";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/shared/ui/table";
 import {
-    closestCenter,
-    DndContext,
-    DragEndEvent,
-    KeyboardSensor,
-    PointerSensor,
-    useSensor,
-    useSensors,
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
 } from "@dnd-kit/core";
 import {
-    arrayMove,
-    SortableContext,
-    sortableKeyboardCoordinates,
-    useSortable,
-    verticalListSortingStrategy,
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Edit2, GripVertical, MoreHorizontal, Trash2 } from "lucide-react";
-import { useEffect, useId, useMemo, useState, useTransition } from "react";
+import React, { useEffect, useId, useMemo, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { deleteCategoryAction, reorderCategoriesAction } from "../actions";
 import type { ServiceCategory } from "../types";
@@ -63,9 +64,15 @@ export function CategoriesTab({ categories }: CategoriesTabProps) {
   const [items, setItems] = useState(categories);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [isDeleting, startDeleteTransition] = useTransition();
   const dndId = useId();
+
+  const activeCategory = useMemo(() =>
+    items.find(cat => cat.id === activeId),
+    [items, activeId]
+  );
 
   // Update items if prop changes (e.g. initial load or external update)
   useEffect(() => {
@@ -84,8 +91,13 @@ export function CategoriesTab({ categories }: CategoriesTabProps) {
     })
   );
 
+  const handleDragStart = (event: { active: { id: any } }) => {
+    setActiveId(event.active.id as string);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    setActiveId(null);
 
     if (active.id !== over?.id) {
       const oldIndex = items.findIndex((item) => item.id === active.id);
@@ -101,6 +113,10 @@ export function CategoriesTab({ categories }: CategoriesTabProps) {
           setItems(items); // Revert on failure
       });
     }
+  };
+
+  const handleDragCancel = () => {
+    setActiveId(null);
   };
 
   const handleAdd = () => {
@@ -138,7 +154,7 @@ export function CategoriesTab({ categories }: CategoriesTabProps) {
   }, [items, search]);
 
   return (
-    <div className="space-y-4">
+    <div data-slot="data-table" className="space-y-4 font-sans">
       <TabToolbar
         searchPlaceholder="Tìm kiếm danh mục..."
         onSearch={setSearch}
@@ -146,24 +162,23 @@ export function CategoriesTab({ categories }: CategoriesTabProps) {
         onActionClick={handleAdd}
       />
 
-      <div className="overflow-x-auto rounded-lg border border-border">
+      <div className="overflow-hidden rounded-xl border border-border bg-background relative">
         <DndContext
           id={dndId}
           sensors={sensors}
           collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
         >
           <Table className="min-w-full">
-            <TableHeader>
-              <TableRow className="hover:bg-transparent border-b-0">
-                <TableHead className="w-12 bg-inherit"></TableHead>
-                <TableHead className="w-12 font-bold text-foreground bg-inherit text-sm">No</TableHead>
-                <TableHead className="w-12 bg-inherit">
-                  <Checkbox disabled />
-                </TableHead>
-                <TableHead className="bg-inherit font-bold text-foreground text-sm">Tên Danh Mục</TableHead>
-                <TableHead className="bg-inherit font-bold text-foreground text-sm">Mô tả</TableHead>
-                <TableHead className="bg-inherit font-bold text-foreground text-sm text-right sticky right-0 bg-secondary z-10 w-[80px]">Thao tác</TableHead>
+            <TableHeader className="bg-neutral-5/10 dark:bg-neutral-90/5 border-b border-neutral-10/60 sticky top-0 z-30 backdrop-blur-md">
+              <TableRow className="hover:bg-transparent border-b border-neutral-20/50">
+                <TableHead className="w-12 h-12 bg-inherit px-4"></TableHead>
+                <TableHead className="w-12 h-12 font-bold text-neutral-80 bg-inherit text-sm px-4">No</TableHead>
+                <TableHead className="h-12 bg-inherit font-bold text-neutral-80 text-sm px-4">Tên Danh Mục</TableHead>
+                <TableHead className="h-12 bg-inherit font-bold text-neutral-80 text-sm px-4">Mô tả</TableHead>
+                <TableHead className="h-12 bg-inherit font-bold text-neutral-80 text-sm px-4 text-right">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -189,6 +204,24 @@ export function CategoriesTab({ categories }: CategoriesTabProps) {
               </SortableContext>
             </TableBody>
           </Table>
+
+          {createPortal(
+            <DragOverlay dropAnimation={null}>
+              {activeId && activeCategory ? (
+                <div className="w-full border rounded-xl bg-background shadow-2xl opacity-90 overflow-hidden ring-2 ring-primary/20">
+                  <table className="w-full border-collapse">
+                    <tbody>
+                        <CategoryStaticRow
+                          category={activeCategory}
+                          index={items.findIndex(c => c.id === activeId)}
+                        />
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
+            </DragOverlay>,
+            document.body
+          )}
         </DndContext>
       </div>
 
@@ -201,7 +234,7 @@ export function CategoriesTab({ categories }: CategoriesTabProps) {
   );
 }
 
-// --- Sortable Row Component ---
+// --- Memoized Sortable Row Component ---
 interface SortableCategoryRowProps {
   category: ServiceCategory;
   index: number;
@@ -210,7 +243,7 @@ interface SortableCategoryRowProps {
   onDelete: (id: string) => void;
 }
 
-function SortableCategoryRow({ category, index, isDeleting, onEdit, onDelete }: SortableCategoryRowProps) {
+const SortableCategoryRow = React.memo(({ category, index, isDeleting, onEdit, onDelete }: SortableCategoryRowProps) => {
   const {
     attributes,
     listeners,
@@ -221,10 +254,10 @@ function SortableCategoryRow({ category, index, isDeleting, onEdit, onDelete }: 
   } = useSortable({ id: category.id });
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: CSS.Translate.toString(transform),
     transition,
-    zIndex: isDragging ? 2 : 1,
-    position: "relative" as const,
+    zIndex: isDragging ? 0 : 1,
+    opacity: isDragging ? 0.3 : 1,
   };
 
   return (
@@ -232,33 +265,31 @@ function SortableCategoryRow({ category, index, isDeleting, onEdit, onDelete }: 
       ref={setNodeRef}
       style={style}
       className={cn(
-        isDragging && "bg-accent opacity-80"
+        "group transition-all duration-200 border-b border-neutral-20/50 last:border-0 h-16 hover:bg-neutral-5/20 dark:hover:bg-neutral-90/10",
+        isDragging && "bg-muted/50"
       )}
     >
-      <TableCell className="w-12 py-2">
+      <TableCell className="w-12 py-2 px-4">
          <Button
            variant="ghost"
            size="icon"
-           className="cursor-grab active:cursor-grabbing text-muted-foreground"
+           className="h-8 w-8 cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-primary transition-colors"
            {...attributes}
            {...listeners}
          >
            <GripVertical className="h-4 w-4" />
          </Button>
       </TableCell>
-      <TableCell className="font-medium text-muted-foreground/80 py-2 w-12">
+      <TableCell className="font-bold text-sm text-neutral-60 py-2 w-12 px-4">
         {index + 1}
       </TableCell>
-      <TableCell className="w-12 py-2">
-        <Checkbox disabled />
-      </TableCell>
-      <TableCell className="font-medium py-2">
+      <TableCell className="font-bold text-sm text-neutral-80 py-2 px-4">
         {category.name}
       </TableCell>
-      <TableCell className="py-2 text-muted-foreground line-clamp-1 max-w-sm" title={category.description || ""}>
+      <TableCell className="py-2 px-4 text-xs text-neutral-60 font-medium line-clamp-1 max-w-sm" title={category.description || ""}>
          {category.description || "-"}
       </TableCell>
-      <TableCell className="py-2 text-right sticky right-0 bg-card z-10 w-[80px]">
+      <TableCell className="py-2 px-4 text-right">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
@@ -303,6 +334,35 @@ function SortableCategoryRow({ category, index, isDeleting, onEdit, onDelete }: 
             </AlertDialog>
           </DropdownMenuContent>
         </DropdownMenu>
+      </TableCell>
+    </TableRow>
+  );
+});
+
+SortableCategoryRow.displayName = "SortableCategoryRow";
+
+// --- Static Static Row for DragOverlay ---
+function CategoryStaticRow({ category, index }: { category: ServiceCategory; index: number }) {
+  return (
+    <TableRow className="h-16 bg-background border-none">
+      <TableCell className="w-12 py-2 px-4">
+         <Button variant="ghost" size="icon" className="h-8 w-8 cursor-grabbing text-primary">
+           <GripVertical className="h-4 w-4" />
+         </Button>
+      </TableCell>
+      <TableCell className="font-bold text-sm text-neutral-60 py-2 w-12 px-4">
+        {index + 1}
+      </TableCell>
+      <TableCell className="font-bold text-sm text-neutral-80 py-2 px-4">
+        {category.name}
+      </TableCell>
+      <TableCell className="py-2 px-4 text-xs text-neutral-60 font-medium line-clamp-1 max-w-sm">
+         {category.description || "-"}
+      </TableCell>
+      <TableCell className="py-2 px-4 text-right">
+         <Button variant="ghost" size="icon" disabled>
+           <MoreHorizontal className="h-4 w-4" />
+         </Button>
       </TableCell>
     </TableRow>
   );
