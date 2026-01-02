@@ -2,8 +2,8 @@ import { AppSidebar } from "@/shared/components/app-sidebar"
 import { BottomNav } from "@/shared/components/bottom-nav"
 import { UserRole } from "@/shared/types"
 import {
-  SidebarInset,
-  SidebarProvider
+    SidebarInset,
+    SidebarProvider
 } from "@/shared/ui/sidebar"
 import { Metadata } from "next"
 import { cookies } from "next/headers"
@@ -40,8 +40,8 @@ export default async function DashboardLayout({
   return (
     <SidebarProvider>
       <AppSidebar role={userRole} />
-      <SidebarInset className="bg-background">
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 max-w-[1600px] w-full mx-auto">
+      <SidebarInset className="bg-background min-w-0 overflow-x-hidden">
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 max-w-[1600px] w-full mx-auto min-w-0">
           {children}
         </main>
       </SidebarInset>
