@@ -56,7 +56,7 @@ export default async function StaffPage({ searchParams }: PageProps) {
       <Card className="shadow-sm">
         <CardContent>
           <Tabs defaultValue="technicians" className="w-full max-w-full">
-            <TabsList className="mb-4">
+            <TabsList>
               <TabsTrigger value="technicians">Nhân viên</TabsTrigger>
               <TabsTrigger value="shifts">Phòng/Ca</TabsTrigger>
               <TabsTrigger value="schedule">Lịch biểu</TabsTrigger>

@@ -2,7 +2,7 @@
 
 import { API_BASE_URL } from "@/shared/api";
 import { revalidatePath } from "next/cache";
-import { OperationalSettings } from "./types";
+import type { ExceptionDate, OperatingHour, OperationalSettings } from "./types";
 
 const API_ENDPOINT = `${API_BASE_URL}/api/v1/settings/operational/`;
 
@@ -82,17 +82,18 @@ export async function updateOperationalSettingsAction(settings: OperationalSetti
 
     // Chuẩn hóa định dạng để khớp với Frontend (tương tự như hàm get)
     if (data.regular_operating_hours) {
-      data.regular_operating_hours = data.regular_operating_hours.map((h: any) => ({
+      data.regular_operating_hours = data.regular_operating_hours.map((h: OperatingHour) => ({
         ...h,
+        id: crypto.randomUUID(), // Add explicit ID for optimistic UI keys if needed (client-side only trick, or adjust types)
         open_time: h.open_time?.slice(0, 5) || "08:00",
         close_time: h.close_time?.slice(0, 5) || "20:00",
       }));
     }
 
     if (data.exception_dates) {
-      data.exception_dates = data.exception_dates.map((d: any, index: number) => ({
+      data.exception_dates = data.exception_dates.map((d: ExceptionDate, index: number) => ({
         ...d,
-        id: d.id || `${d.date}-${index}`,
+        id: d.id || crypto.randomUUID(),
         open_time: d.open_time?.slice(0, 5) || undefined,
         close_time: d.close_time?.slice(0, 5) || undefined,
       }));

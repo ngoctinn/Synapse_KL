@@ -7,9 +7,7 @@ import {
 } from "../actions";
 import { ServicePageTabs } from "./service-page-tabs";
 
-interface ServiceManagementProps {}
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function ServiceManagement({}: ServiceManagementProps) {
+export async function ServiceManagement() {
   const [skills, categories, resourceGroups, resources, services] = await Promise.all([
     getSkillsAction(),
     getCategoriesAction(),

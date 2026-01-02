@@ -1,55 +1,86 @@
 "use client"
 
+import { SearchInput } from "@/shared/components/search-input"
 import { cn } from "@/shared/lib/utils"
 import { Button } from "@/shared/ui/button"
-import { Input } from "@/shared/ui/input"
-import { Plus, Search } from "lucide-react"
+import { ListFilter, Plus } from "lucide-react"
 
 interface TabToolbarProps {
+  title?: string
+  description?: string
   searchPlaceholder?: string
   onSearch?: (value: string) => void
+  searchValue?: string
+  onFilterClick?: () => void
   actionLabel?: string
   onActionClick?: () => void
-  className?: string
   children?: React.ReactNode
+  className?: string
 }
 
-/**
- * Simpler toolbar for tab content.
- * Unlike PageHeader, this doesn't include title/subtitle (which belongs to page level).
- */
 export function TabToolbar({
-  searchPlaceholder = "Tìm kiếm...",
+  title,
+  description,
+  searchPlaceholder = "Search...",
   onSearch,
+  searchValue,
+  onFilterClick,
   actionLabel,
   onActionClick,
-  className,
   children,
+  className,
 }: TabToolbarProps) {
   return (
-    <div className={cn("flex flex-wrap items-center justify-between gap-3 mb-4", className)}>
-      {/* Left side - Search */}
-      <div className="flex items-center gap-3">
+    <div className={cn("flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-4 md:mb-6 pt-4 md:pt-6", className)}>
+      {/* Left side - Title & Description */}
+      <div className="space-y-1">
+        {title && (
+          <h2>
+            {title}
+          </h2>
+        )}
+        {description && (
+          <p className="text-sm text-muted-foreground m-0">
+            {description}
+          </p>
+        )}
+      </div>
+
+      {/* Right side - Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto">
+        {/* Search Input */}
         {onSearch && (
-          <div className="relative w-64">
-            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground stroke-2" />
-            <Input
+          <div className="w-full sm:w-64 lg:w-72">
+            <SearchInput
               placeholder={searchPlaceholder}
-              className="pl-9"
+              value={searchValue}
               onChange={(e) => onSearch(e.target.value)}
+              size="sm"
             />
           </div>
         )}
-        {children}
-      </div>
 
-      {/* Right side - Action Button */}
-      {actionLabel && onActionClick && (
-        <Button onClick={onActionClick} className="gap-2">
-          <Plus className="h-5 w-5 stroke-2" />
-          <span>{actionLabel}</span>
-        </Button>
-      )}
+        {/* Actions Wrapper for Mobile alignment */}
+        <div className="flex items-center gap-3 self-end sm:self-auto w-full sm:w-auto justify-end">
+            {/* Custom Children Slots (Date Picker, etc.) */}
+            {children}
+
+            {/* Filter Button */}
+            {onFilterClick && (
+            <Button variant="outline" size="sm" className="h-9 w-9 p-0 bg-background" onClick={onFilterClick}>
+                <ListFilter className="h-4 w-4" />
+            </Button>
+            )}
+
+            {/* Primary Action Button */}
+            {actionLabel && onActionClick && (
+            <Button onClick={onActionClick} className="shadow-sm grow sm:grow-0" size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                {actionLabel}
+            </Button>
+            )}
+        </div>
+      </div>
     </div>
   )
 }

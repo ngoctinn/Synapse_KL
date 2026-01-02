@@ -15,15 +15,15 @@ import { ExceptionDatesManager } from "./exception-dates-manager"
 import { OperatingHoursForm } from "./operating-hours-form"
 
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog"
 
 interface OperationalSettingsProps {
@@ -108,10 +108,10 @@ export function OperationalSettings({ initialData }: OperationalSettingsProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start gap-4">
-        <SidebarTrigger className="-ml-2 mt-0.5" />
+      <div className="flex items-start gap-4 px-1">
+        <SidebarTrigger className="-ml-1 mt-0.5" />
         <div>
-          <h2 className="text-lg font-semibold tracking-tight">Cấu hình vận hành</h2>
+          <h1 className="text-2xl font-bold tracking-tight">Cấu hình vận hành</h1>
           <p className="text-sm text-muted-foreground">
             Quản lý giờ làm việc và các ngày nghỉ lễ của Spa.
           </p>
@@ -120,7 +120,7 @@ export function OperationalSettings({ initialData }: OperationalSettingsProps) {
 
       <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
         <Tabs defaultValue="regular" className="w-full">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between">
             <TabsList className="grid w-full max-w-md grid-cols-2">
               <TabsTrigger value="regular">Giờ định kỳ</TabsTrigger>
               <TabsTrigger value="exceptions">Ngày ngoại lệ</TabsTrigger>
@@ -164,32 +164,24 @@ export function OperationalSettings({ initialData }: OperationalSettingsProps) {
           </div>
 
           <TabsContent value="regular" forceMount={true} className="mt-6 space-y-4 data-[state=inactive]:hidden">
-            <div>
-              <h3 className="text-lg font-medium tracking-tight">Giờ làm việc hàng tuần</h3>
-              <p className="text-muted-foreground text-sm">
-                Thiết lập khung giờ mở cửa và đóng cửa mặc định cho từng ngày trong tuần.
-              </p>
-            </div>
+
             <div className="pt-2">
               <OperatingHoursForm
                 data={settings?.regular_operating_hours}
                 onChange={handleOperatingHoursChange}
+                variant="flat"
               />
             </div>
           </TabsContent>
 
           <TabsContent value="exceptions" forceMount={true} className="mt-6 space-y-4 data-[state=inactive]:hidden">
-            <div>
-               <h3 className="text-lg font-medium tracking-tight">Ngày nghỉ lễ & Ngoại lệ</h3>
-               <p className="text-muted-foreground text-sm">
-                 Quản lý các ngày Spa đóng cửa hoặc thay đổi giờ làm việc (Tết, lễ hội, sửa chữa...).
-               </p>
-            </div>
+
             <div className="pt-2">
               <ExceptionDatesManager
                 initialData={settings?.exception_dates}
                 regularHours={settings?.regular_operating_hours}
                 onChange={handleExceptionDatesChange}
+                variant="flat"
               />
             </div>
           </TabsContent>

@@ -35,6 +35,7 @@ import {
   DndContext,
   DragEndEvent,
   DragOverlay,
+  DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -66,7 +67,7 @@ export function CategoriesTab({ categories, variant = "default" }: CategoriesTab
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
+
   const [isDeleting, startDeleteTransition] = useTransition();
   const dndId = useId();
 
@@ -92,7 +93,7 @@ export function CategoriesTab({ categories, variant = "default" }: CategoriesTab
     })
   );
 
-  const handleDragStart = (event: { active: { id: any } }) => {
+  const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
   };
 
@@ -144,29 +145,26 @@ export function CategoriesTab({ categories, variant = "default" }: CategoriesTab
   // Logic handleFormSubmit cho CategoryFormSheet (nếu cần xử lý tập trung)
   // Hiện tại Sheet tự gọi action bên trong, nên ta chỉ cần sync toast.
 
+  const [searchTerm, setSearchTerm] = useState("");
 
   const filteredItems = useMemo(() => {
-    if (!search) return items;
-    const searchLower = search.toLowerCase();
-    return items.filter(cat =>
-        cat.name.toLowerCase().includes(searchLower) ||
-        (cat.description && cat.description.toLowerCase().includes(searchLower))
-    );
-  }, [items, search]);
+    if (!searchTerm) return items;
+    return items.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [items, searchTerm]);
+
+  const isSearching = searchTerm.length > 0;
 
   return (
     <div data-slot="data-table" className="space-y-4 font-sans w-full max-w-full overflow-hidden">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3>Danh mục dịch vụ</h3>
-          <p className="caption">Phân loại các nhóm dịch vụ của Spa.</p>
-        </div>
-      </div>
+
       <TabToolbar
-        searchPlaceholder="Tìm kiếm danh mục..."
-        onSearch={setSearch}
+        title="Danh sách danh mục"
+        description="Phân loại và quản lý các nhóm dịch vụ."
         actionLabel="Thêm danh mục"
         onActionClick={handleAdd}
+        onSearch={setSearchTerm}
+        searchValue={searchTerm}
+        searchPlaceholder="Tìm kiếm danh mục..."
       />
 
       <div className={cn(
@@ -182,7 +180,7 @@ export function CategoriesTab({ categories, variant = "default" }: CategoriesTab
           onDragCancel={handleDragCancel}
         >
           <Table className="min-w-full">
-            <TableHeader className="bg-neutral-5/10 dark:bg-neutral-90/5 border-b border-neutral-10/60 sticky top-0 z-30 backdrop-blur-md">
+            <TableHeader className="bg-card/80 dark:bg-neutral-90/80 border-b border-neutral-10/60 sticky top-0 z-30 backdrop-blur-md">
               <TableRow className="hover:bg-transparent border-b border-neutral-20/50">
                 <TableHead className="w-12 h-12 bg-inherit px-4"></TableHead>
                 <TableHead className="w-12 h-12 font-bold text-neutral-80 bg-inherit text-sm px-4">No</TableHead>
@@ -196,7 +194,7 @@ export function CategoriesTab({ categories, variant = "default" }: CategoriesTab
                 {filteredItems.length === 0 ? (
                     <TableRow>
                         <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                            {search ? "Không tìm thấy danh mục nào." : "Chưa có danh mục nào."}
+                            Chưa có danh mục nào.
                         </TableCell>
                     </TableRow>
                 ) : (
@@ -208,6 +206,7 @@ export function CategoriesTab({ categories, variant = "default" }: CategoriesTab
                         isDeleting={isDeleting}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
+                        isDragDisabled={isSearching}
                     />
                     ))
                 )}
@@ -215,7 +214,8 @@ export function CategoriesTab({ categories, variant = "default" }: CategoriesTab
             </TableBody>
           </Table>
 
-          {createPortal(
+
+          {typeof document !== 'undefined' && createPortal(
             <DragOverlay dropAnimation={null}>
               {activeId && activeCategory ? (
                 <div className="w-full border rounded-xl bg-background shadow-2xl opacity-90 overflow-hidden ring-2 ring-primary/20">
@@ -251,9 +251,10 @@ interface SortableCategoryRowProps {
   isDeleting: boolean;
   onEdit: (category: ServiceCategory) => void;
   onDelete: (id: string) => void;
+  isDragDisabled?: boolean;
 }
 
-const SortableCategoryRow = React.memo(({ category, index, isDeleting, onEdit, onDelete }: SortableCategoryRowProps) => {
+const SortableCategoryRow = React.memo(({ category, index, isDeleting, onEdit, onDelete, isDragDisabled }: SortableCategoryRowProps) => {
   const {
     attributes,
     listeners,
@@ -261,7 +262,7 @@ const SortableCategoryRow = React.memo(({ category, index, isDeleting, onEdit, o
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: category.id });
+  } = useSortable({ id: category.id, disabled: isDragDisabled });
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -283,12 +284,13 @@ const SortableCategoryRow = React.memo(({ category, index, isDeleting, onEdit, o
          <Button
            variant="ghost"
            size="icon"
-           className="h-8 w-8 cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-primary transition-colors"
-           {...attributes}
-           {...listeners}
-         >
-           <GripVertical className="h-4 w-4" />
-         </Button>
+            className={cn("h-8 w-8 transition-colors", isDragDisabled ? "opacity-20 cursor-not-allowed" : "cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-primary")}
+            disabled={isDragDisabled}
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-4 w-4" />
+          </Button>
       </TableCell>
       <TableCell className="font-bold text-sm text-neutral-60 py-2 w-12 px-4">
         {index + 1}

@@ -25,7 +25,7 @@ import {
 } from "@/shared/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { Edit2, MoreHorizontal, Trash2 } from "lucide-react";
-import { useMemo, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { deleteSkillAction } from "../actions";
 import type { Skill } from "../types";
@@ -41,8 +41,13 @@ export function SkillsTab({ skills, variant = "default" }: SkillsTabProps) {
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [isDeleting, startDeleteTransition] = useTransition();
 
-  // Search state
-  const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredSkills = skills.filter(skill =>
+    !searchTerm || skill.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+
 
   const handleAdd = () => {
     setSelectedSkill(null);
@@ -65,22 +70,7 @@ export function SkillsTab({ skills, variant = "default" }: SkillsTabProps) {
     });
   };
 
-  // --- Data Processing (Search Only) ---
-  const processedData = useMemo(() => {
-    let result = [...skills];
 
-    // Search
-    if (search) {
-      const searchLower = search.toLowerCase();
-      result = result.filter(item =>
-        item.name.toLowerCase().includes(searchLower) ||
-        (item.description && item.description.toLowerCase().includes(searchLower)) ||
-        (item.code && item.code.toLowerCase().includes(searchLower))
-      );
-    }
-
-    return result;
-  }, [skills, search]);
 
   // --- Columns ---
   const columns: ColumnDef<Skill>[] = [
@@ -188,22 +178,20 @@ export function SkillsTab({ skills, variant = "default" }: SkillsTabProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3>Kỹ năng nhân viên</h3>
-          <p className="caption">Danh sách các chứng chỉ và kỹ năng trị liệu.</p>
-        </div>
-      </div>
+
       <TabToolbar
-        searchPlaceholder="Tìm kiếm kỹ năng..."
-        onSearch={setSearch}
-        actionLabel="Thêm kỹ năng"
-        onActionClick={handleAdd}
+         title="Danh sách kỹ năng"
+         description="Quản lý các kỹ năng tay nghề và chuyên môn."
+         actionLabel="Thêm kỹ năng"
+         onActionClick={handleAdd}
+         onSearch={setSearchTerm}
+         searchValue={searchTerm}
+         searchPlaceholder="Tìm kiếm kỹ năng..."
       />
 
       <DataTable
         columns={columns}
-        data={processedData}
+        data={filteredSkills}
         variant={variant}
       />
 

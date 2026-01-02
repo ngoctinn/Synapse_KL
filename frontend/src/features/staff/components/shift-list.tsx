@@ -37,12 +37,8 @@ export function ShiftList({ shifts, variant = "default" }: ShiftListProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center px-2">
-        <div>
-          <h3 className="text-xl font-bold tracking-tight text-foreground">Danh mục ca làm việc</h3>
-          <p className="text-sm text-muted-foreground font-medium">Cấu hình khung giờ hoạt động của Spa.</p>
-        </div>
-        <Button onClick={handleAdd} className="rounded-xl h-11 px-6 shadow-sm shadow-primary/10">
+      <div className="flex justify-end items-center px-2">
+        <Button onClick={handleAdd} size="sm" className="shadow-sm">
           <Plus className="w-4 h-4 mr-2" />
           <span>Thêm ca mới</span>
         </Button>

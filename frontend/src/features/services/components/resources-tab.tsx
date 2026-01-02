@@ -1,6 +1,7 @@
 "use client";
 
 import { DataTable, DataTableColumnHeader } from "@/shared/components/data-table";
+import { TabToolbar } from "@/shared/components/tab-toolbar";
 import { cn } from "@/shared/lib/utils";
 import {
   AlertDialog,
@@ -25,10 +26,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import { Input } from "@/shared/ui/input";
 import { ColumnDef } from "@tanstack/react-table";
-import { Bed, CalendarClock, MoreHorizontal, Plus, Search, Trash2, Wrench } from "lucide-react";
-import { useMemo, useState, useTransition } from "react";
+import { Bed, CalendarClock, MoreHorizontal, Plus, Trash2, Wrench } from "lucide-react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { deleteResourceAction, deleteResourceGroupAction, getResourcesAction } from "../actions";
 import type { Resource, ResourceGroup, ResourceGroupWithCount } from "../types";
@@ -51,7 +51,7 @@ export function ResourcesTab({ groups, variant = "default" }: ResourcesTabProps)
   const [activeGroupName, setActiveGroupName] = useState<string>("");
 
   const [resourcesByGroup, setResourcesByGroup] = useState<Record<string, Resource[]>>({});
-  const [search, setSearch] = useState("");
+
   const [, startDeleteTransition] = useTransition();
 
   const handleAddGroup = () => {
@@ -109,36 +109,28 @@ export function ResourcesTab({ groups, variant = "default" }: ResourcesTabProps)
     }
   };
 
-  const filteredGroups = useMemo(() => {
-    if (!search) return groups;
-    const searchLower = search.toLowerCase();
-    return groups.filter(g => g.name.toLowerCase().includes(searchLower));
-  }, [groups, search]);
+
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredGroups = groups.filter(g =>
+    !searchTerm || g.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h3>Quản lý tài nguyên</h3>
-          <p className="caption">Danh sách các nhóm phòng, giường và thiết bị.</p>
-        </div>
-        <div className="flex items-center gap-2">
-           <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground stroke-2" />
-              <Input
-                placeholder="Tìm kiếm nhóm..."
-                className="pl-9"
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            <Button onClick={handleAddGroup}>
-              <Plus className="w-5 h-5 mr-2 stroke-2" />
-              Thêm nhóm
-            </Button>
-        </div>
-      </div>
+      <TabToolbar
+        title="Danh sách nhóm tài nguyên"
+        description="Quản lý phòng, giường và thiết bị."
+        actionLabel="Thêm nhóm"
+        onActionClick={handleAddGroup}
+        onSearch={setSearchTerm}
+        searchValue={searchTerm}
+        searchPlaceholder="Tìm kiếm nhóm..."
+      />
 
-      {filteredGroups.length === 0 ? (
+
+      {groups.length === 0 ? (
         <div className="text-center py-16 border rounded-lg border-dashed bg-muted/5">
           <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
             <Bed className="w-6 h-6 text-muted-foreground stroke-2" />
@@ -162,10 +154,17 @@ export function ResourcesTab({ groups, variant = "default" }: ResourcesTabProps)
         </div>
       ) : (
         <div className="grid gap-4">
+          {filteredGroups.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+               Không tìm thấy nhóm nào phù hợp với &quot;{searchTerm}&quot;
+            </div>
+          )}
           {filteredGroups.map((group) => (
             <Card key={group.id} className={cn(
-              "overflow-hidden transition-all hover:bg-card/50",
-              variant === "flat" ? "border-none shadow-none bg-card/10" : "border-border bg-card/30 shadow-sm"
+              "overflow-hidden transition-all hover:bg-neutral-5/5",
+              variant === "flat"
+                ? "border border-neutral-20/40 shadow-none bg-card"
+                : "border-border bg-card/30 shadow-sm"
             )}>
               <CardHeader className="p-5 pb-0">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -237,7 +236,7 @@ export function ResourcesTab({ groups, variant = "default" }: ResourcesTabProps)
                   <div className="pt-5 animation-in slide-in-from-top-2 duration-300">
                     <ResourcesDataTable
                       data={resourcesByGroup[group.id]}
-                      search={search}
+
                       onMaintenance={handleMaintenance}
                       onDelete={handleDeleteResource}
                     />
@@ -275,27 +274,15 @@ export function ResourcesTab({ groups, variant = "default" }: ResourcesTabProps)
 // Inner Component for isolated state per table
 function ResourcesDataTable({
   data,
-  search,
+
   onMaintenance,
   onDelete
 }: {
   data: Resource[];
-  search: string;
   onMaintenance: (r: Resource) => void;
   onDelete: (id: string) => void;
 }) {
-  const processedData = useMemo(() => {
-    let result = [...data];
 
-    if (search) {
-      const searchLower = search.toLowerCase();
-      result = result.filter(res =>
-        res.name.toLowerCase().includes(searchLower) ||
-        (res.code && res.code.toLowerCase().includes(searchLower))
-      );
-    }
-    return result;
-  }, [data, search]);
 
   const columns: ColumnDef<Resource>[] = [
     {
@@ -385,7 +372,7 @@ function ResourcesDataTable({
   return (
     <DataTable
       columns={columns}
-      data={processedData}
+      data={data}
       variant="flat"
     />
   );

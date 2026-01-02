@@ -1,20 +1,20 @@
 import { UserRole } from "@/shared/types"
 import {
-    CalendarDays,
-    Clock,
-    CreditCard,
-    Home,
-    Package,
-    Settings,
-    UserCircle,
-    Users,
-    Wrench
+  CalendarDays,
+  Clock,
+  CreditCard,
+  Home,
+  Package,
+  Settings,
+  UserCircle,
+  Users,
+  Wrench
 } from "lucide-react"
 
 export interface NavItem {
   title: string
   href: string
-  icon: any
+  icon: React.ElementType
 }
 
 export interface NavConfig {

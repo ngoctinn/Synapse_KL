@@ -70,10 +70,10 @@ export function ServiceResourceTimeline({ resourceGroups }: ServiceResourceTimel
 
         {/* Buffer Scope (Hatched Background) */}
         <div
-          className="absolute inset-y-0 right-0 bg-orange-500/[0.04] rounded-r-md overflow-hidden pointer-events-none"
+          className="absolute inset-y-0 right-0 bg-alert-warning/10 rounded-r-md overflow-hidden pointer-events-none"
           style={{ width: `${(buffer / total) * 100}%` }}
         >
-          <div className="w-full h-full opacity-10 bg-[image:repeating-linear-gradient(45deg,var(--color-orange-500)_0,var(--color-orange-500)_1px,transparent_0,transparent_4px)] [background-size:6px_6px]" />
+          <div className="w-full h-full opacity-10 bg-[image:repeating-linear-gradient(45deg,var(--color-alert-warning-foreground)_0,var(--color-alert-warning-foreground)_1px,transparent_0,transparent_4px)] [background-size:6px_6px]" />
         </div>
 
         {/* Requirements Rows */}
@@ -130,8 +130,8 @@ export function ServiceResourceTimeline({ resourceGroups }: ServiceResourceTimel
           <div className="w-3 h-3 bg-primary/10 border border-primary/20 rounded-sm" /> Thời gian liệu trình
         </div>
         <div className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors">
-          <div className="w-3 h-3 bg-orange-500/10 border border-orange-500/20 rounded-sm overflow-hidden relative">
-              <div className="absolute inset-0 opacity-20 bg-[image:repeating-linear-gradient(45deg,var(--color-orange-500)_0,var(--color-orange-500)_1px,transparent_0,transparent_3px)] [background-size:4px_4px]" />
+          <div className="w-3 h-3 bg-alert-warning/20 border border-alert-warning-foreground/20 rounded-sm overflow-hidden relative">
+              <div className="absolute inset-0 opacity-20 bg-[image:repeating-linear-gradient(45deg,var(--color-alert-warning-foreground)_0,var(--color-alert-warning-foreground)_1px,transparent_0,transparent_3px)] [background-size:4px_4px]" />
           </div> Nghỉ/Chuẩn bị
         </div>
       </div>

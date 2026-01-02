@@ -1,3 +1,4 @@
+"use client";
 
 import { DataTable, DataTableColumnHeader } from "@/shared/components/data-table";
 import { TabToolbar } from "@/shared/components/tab-toolbar";
@@ -32,7 +33,7 @@ import {
 } from "@/shared/ui/tooltip";
 import { ColumnDef } from "@tanstack/react-table";
 import { Edit2, MoreHorizontal, Power, PowerOff, Trash2 } from "lucide-react";
-import { useMemo, useOptimistic, useState, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   createServiceAction,
@@ -85,8 +86,7 @@ export function ServicesTab({
     }
   );
 
-  // Search state
-  const [search, setSearch] = useState("");
+
 
   const getCategoryName = (id: string | null) =>
     categories.find((c) => c.id === id)?.name || "Chưa phân loại";
@@ -181,21 +181,7 @@ export function ServicesTab({
     });
   };
 
-  // --- Data Processing for SmartDataTable (Search Only) ---
-  const processedData = useMemo(() => {
-    let result = [...optimisticServices]; // Use optimistic data
 
-    // Search
-    if (search) {
-      const searchLower = search.toLowerCase();
-      result = result.filter(item =>
-        item.name.toLowerCase().includes(searchLower) ||
-        (item.description && item.description.toLowerCase().includes(searchLower))
-      );
-    }
-
-    return result;
-  }, [optimisticServices, search]);
 
   // --- Column Definitions ---
   const columns: ColumnDef<Service>[] = [
@@ -369,27 +355,37 @@ export function ServicesTab({
     },
   ];
 
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredServices = optimisticServices.filter(visitedService => {
+    if (!searchTerm) return true;
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      visitedService.name.toLowerCase().includes(searchLower) ||
+      (visitedService.description && visitedService.description.toLowerCase().includes(searchLower)) ||
+      (getCategoryName(visitedService.category_id).toLowerCase().includes(searchLower))
+    );
+  });
+
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3>Danh sách dịch vụ</h3>
-          <p className="caption">Quản lý toàn bộ dịch vụ và liệu trình.</p>
-        </div>
-      </div>
-
       <TabToolbar
-        searchPlaceholder="Tìm kiếm dịch vụ..."
-        onSearch={setSearch}
+        title="Danh sách dịch vụ"
+        description="Quản lý danh sách dịch vụ spa và trị liệu."
         actionLabel="Thêm dịch vụ"
         onActionClick={handleAdd}
+        onSearch={setSearchTerm}
+        searchValue={searchTerm}
+        searchPlaceholder="Tìm kiếm dịch vụ..."
       />
 
       <DataTable
         columns={columns}
-        data={processedData}
+        data={filteredServices}
         variant={variant}
       />
+
 
       <ServiceFormSheet
         open={isSheetOpen}

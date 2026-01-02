@@ -134,13 +134,7 @@ export function ExceptionDatesManager({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h3 className="text-sm font-medium">Danh sách ngày ngoại lệ</h3>
-          <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-alert-warning-border" />
-            Các thiết lập tại đây sẽ ghi đè lên Giờ hoạt động định kỳ.
-          </p>
-        </div>
+
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
             <Button size="sm" variant="secondary">

@@ -168,12 +168,7 @@ export function OperatingHoursForm({
   return (
     <Form {...form}>
       <form className="space-y-6">
-        <div className="flex justify-between items-center">
-           <div>
-             <h3>Giờ hoạt động định kỳ</h3>
-             <p className="caption">Bật/tắt và điều chỉnh giờ mở cửa cho từng ngày.</p>
-           </div>
-        </div>
+
 
         <div className={cn(
           "rounded-xl border bg-card text-card-foreground shadow-sm px-6",

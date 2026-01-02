@@ -225,36 +225,33 @@
     scrollbar-color: hsl(var(--neutral-20)) transparent;
   }
 
-  /* Typography Standard - Project Synapse */
+  /* Typography Standard - Project Synapse (Adjusted for Dashboard) */
   h1 {
-    @apply text-3xl md:text-4xl font-semibold tracking-tight text-foreground scroll-m-20;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
+    @apply scroll-m-20 text-3xl font-bold tracking-tight lg:text-4xl text-foreground;
   }
 
   h2 {
-    @apply text-2xl font-semibold tracking-tight text-foreground scroll-m-20;
-    line-height: 1.3;
-    letter-spacing: -0.01em;
+    @apply scroll-m-20 text-2xl font-bold tracking-tight text-foreground first:mt-0;
   }
 
   h3 {
-    @apply text-xl font-semibold tracking-normal text-foreground scroll-m-20;
-    line-height: 1.4;
+    @apply scroll-m-20 text-2xl font-semibold tracking-tight text-foreground;
   }
 
   h4 {
-    @apply text-base font-medium tracking-normal text-foreground scroll-m-20;
-    line-height: 1.5;
+    @apply scroll-m-20 text-xl font-semibold tracking-tight text-foreground;
   }
 
   h5 {
-    @apply text-sm font-medium tracking-normal text-foreground scroll-m-20;
-    line-height: 1.5;
+    @apply scroll-m-20 text-lg font-semibold tracking-tight text-foreground;
+  }
+
+  h6 {
+    @apply scroll-m-20 text-base font-semibold tracking-tight text-foreground;
   }
 
   p {
-    @apply leading-7 [&:not(:first-child)]:mt-1;
+    @apply leading-7 text-foreground [&:not(:first-child)]:mt-6;
   }
 
   /* Helper for removing margin from paragraphs in tight layouts */
@@ -264,7 +261,7 @@
 
   /* Standard Caption for List Headers */
   p.caption {
-    @apply text-sm text-muted-foreground font-medium mt-0 leading-normal;
+    @apply text-sm text-muted-foreground font-medium mt-0 leading-none;
   }
 }
 

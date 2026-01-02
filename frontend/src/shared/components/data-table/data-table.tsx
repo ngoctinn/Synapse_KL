@@ -84,12 +84,16 @@ export function DataTable<TData, TValue>({
         variant === "default" && "rounded-xl border bg-background shadow-sm"
       )}>
         <Table>
-          <TableHeader className={cn("bg-neutral-5/20 dark:bg-neutral-90/10 border-b-0 sticky top-0 z-30 shadow-none hover:bg-transparent", stickyHeader && "backdrop-blur-md")}>
+          <TableHeader className={cn(
+            "sticky top-0 z-30 shadow-sm",
+            "bg-card/50 dark:bg-neutral-90/50 backdrop-blur-md",
+            variant === "flat" ? "border-b-0" : "border-b"
+          )}>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="hover:bg-transparent border-none transition-none">
+              <TableRow key={headerGroup.id} className="hover:bg-transparent border-none">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} colSpan={header.colSpan} className="h-12 text-sm font-bold text-neutral-80 bg-transparent px-4 border-b border-neutral-20/80">
+                    <TableHead key={header.id} colSpan={header.colSpan} className="h-12 text-sm font-bold text-foreground bg-transparent px-4">
                       {header.isPlaceholder
                         ? null
                         : flexRender(

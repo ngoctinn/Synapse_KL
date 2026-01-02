@@ -32,7 +32,7 @@
 - **IDs**: If BE lacks IDs, gen via `crypto.randomUUID()`.
 
 ## 6. UI ARCHITECTURE & NESTING
-- **No Nested Cards**: CRITICAL. Never put a `<Card>` inside another `<Card>` or a `TabsContent`. Use generic `div` or Header/Content sections for internal grouping.
+- **No Nested Cards**: CRITICAL. Never put a `<Card>` inside another `<Card>` (Card > CardContent > Card). Using Card as a top-level container inside TabsContent is acceptable. Use generic `div` or Header/Content sections for internal grouping within cards.
 - **Flat Variant Pattern**: Standardized complex components (e.g., `DataTable`) must support a `variant="flat"` prop.
   - Use `variant="flat"` when the component is nested inside a container that already has a border (like a `Card`).
   - This prevents "border-stacking", double-shadows, and keeps the UI clean and premium.

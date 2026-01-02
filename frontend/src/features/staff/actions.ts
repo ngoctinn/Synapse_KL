@@ -3,15 +3,15 @@
 import { API_BASE_URL } from "@/shared/api";
 import { revalidatePath } from "next/cache";
 import type {
-  Shift,
-  ShiftCreateInput,
-  ShiftUpdateInput,
-  StaffProfileCreateInput,
-  StaffProfileUpdateInput,
-  StaffProfileWithSkills,
-  StaffScheduleBatchCreateInput,
-  StaffScheduleWithDetails,
-  StaffSkillsUpdate,
+    Shift,
+    ShiftCreateInput,
+    ShiftUpdateInput,
+    StaffProfileCreateInput,
+    StaffProfileUpdateInput,
+    StaffProfileWithSkills,
+    StaffScheduleBatchCreateInput,
+    StaffScheduleWithDetails,
+    StaffSkillsUpdate,
 } from "./types";
 
 const STAFF_PATH = "/api/v1/staff";
@@ -122,8 +122,10 @@ export async function updateStaffWithSkillsAction(
     revalidatePath("/dashboard/manager/staff");
     return { success: true, message: "Cập nhật nhân viên thành công" };
 
-  } catch (error: any) {
-    console.error("Update Staff Error:", error);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Update Staff Error:", error);
+    }
     return { success: false, message: "Lỗi hệ thống khi cập nhật" };
   }
 }
@@ -238,9 +240,10 @@ export async function bulkCreateSchedulesAction(items: StaffScheduleBatchCreateI
       message: `Đã phân ca cho ${items.length} nhân viên`,
       createdIds
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Bulk Create Schedules Error:", error);
-    return { success: false, message: error.message || "Lỗi khi xử lý hàng loạt", createdIds: [] };
+    const message = error instanceof Error ? error.message : "Lỗi khi xử lý hàng loạt";
+    return { success: false, message, createdIds: [] };
   }
 }
 
@@ -277,9 +280,10 @@ export async function deleteSchedulesBatchAction(ids: string[]) {
     );
     revalidatePath("/dashboard/manager/staff");
     return { success: true, message: `Đã xóa ${results.length} lịch làm việc` };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Batch Delete Schedules Error:", error);
-    return { success: false, message: error.message || "Lỗi khi xóa hàng loạt" };
+    const message = error instanceof Error ? error.message : "Lỗi khi xóa hàng loạt";
+    return { success: false, message };
   }
 }
 

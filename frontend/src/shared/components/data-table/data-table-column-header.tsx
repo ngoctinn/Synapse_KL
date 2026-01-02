@@ -2,9 +2,9 @@
 
 import { Column } from "@tanstack/react-table"
 import {
-    ArrowDown,
-    ArrowDownUp,
-    ArrowUp
+  ArrowDown,
+  ArrowDownUp,
+  ArrowUp
 } from "lucide-react"
 
 import { cn } from "@/shared/lib/utils"
