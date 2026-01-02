@@ -72,7 +72,7 @@ export function StaffTable({ data, variant = "default" }: StaffTableProps) {
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <div
-            className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center font-bold text-xs border bg-muted"
+            className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center font-semibold text-xs border bg-muted"
             style={{
               backgroundColor: row.original.color_code ? `${row.original.color_code}20` : undefined,
               color: row.original.color_code,
@@ -140,7 +140,7 @@ export function StaffTable({ data, variant = "default" }: StaffTableProps) {
               <Edit className="h-4 w-4 text-muted-foreground" />
               <span>Chỉnh sửa</span>
             </DropdownMenuItem>
-             <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive cursor-pointer">
+            <DropdownMenuItem variant="destructive" className="gap-2">
               <Trash2 className="h-4 w-4" />
               <span>Xóa</span>
             </DropdownMenuItem>
@@ -153,7 +153,7 @@ export function StaffTable({ data, variant = "default" }: StaffTableProps) {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-         <Button onClick={handleCreate} className="gap-2 h-9 text-sm shadow-sm">
+         <Button onClick={handleCreate} className="gap-2 h-9 text-sm">
           <Plus className="w-4 h-4" />
           <span>Thêm nhân sự</span>
         </Button>

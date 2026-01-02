@@ -25,10 +25,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" suppressHydrationWarning>
+    <html lang="vi">
       <body
         className={`${inter.variable} ${roboto.variable} font-sans antialiased bg-background text-foreground`}
-        suppressHydrationWarning
       >
         {children}
         <Toaster richColors closeButton position="top-right" />

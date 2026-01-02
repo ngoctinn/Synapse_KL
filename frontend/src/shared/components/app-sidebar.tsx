@@ -1,8 +1,8 @@
 "use client"
 
 import {
-    ChevronRight,
-    Flower2
+  ChevronRight,
+  Flower2
 } from "lucide-react"
 
 import { navigationConfig } from "@/shared/config/navigation"
@@ -10,15 +10,15 @@ import { cn } from "@/shared/lib/utils"
 import { UserRole } from "@/shared/types"
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from "@/shared/ui/sidebar"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
@@ -45,7 +45,7 @@ export function AppSidebar({ role = "manager" }: AppSidebarProps) {
       <SidebarHeader className="pt-9 pb-9 px-6 transition-all duration-300 flex-col items-start group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0">
         <Link href="/" className="flex items-center gap-2 transition-all">
           <Flower2 strokeWidth={1.5} className="w-6 h-6 shrink-0 text-sidebar-accent-foreground" style={{ width: '24px', height: '24px' }} />
-          <span className="text-2xl font-bold tracking-tight text-foreground group-data-[collapsible=icon]:hidden">Synapse</span>
+          <span className="text-2xl font-semibold tracking-tight text-foreground group-data-[collapsible=icon]:hidden">Synapse</span>
         </Link>
       </SidebarHeader>
 
@@ -118,7 +118,7 @@ export function AppSidebar({ role = "manager" }: AppSidebarProps) {
                 </Avatar>
                 <div className="flex flex-col items-start overflow-hidden group-data-[collapsible=icon]:hidden">
                   <span className="text-sm font-semibold text-foreground truncate w-full tracking-tight">Admin Synapse</span>
-                  <span className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">{role}</span>
+                  <span className="text-[11px] text-muted-foreground uppercase font-semibold tracking-wider">{role}</span>
                 </div>
                 <ChevronRight className="w-4 h-4 ml-auto text-muted-foreground/40 group-data-[collapsible=icon]:hidden" />
               </div>

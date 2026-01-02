@@ -180,13 +180,13 @@ export function CategoriesTab({ categories, variant = "default" }: CategoriesTab
           onDragCancel={handleDragCancel}
         >
           <Table className="min-w-full">
-            <TableHeader className="bg-card/80 dark:bg-neutral-90/80 border-b border-neutral-10/60 sticky top-0 z-30 backdrop-blur-md">
+            <TableHeader className="bg-card/80 border-b border-neutral-10/60 sticky top-0 z-30 backdrop-blur-md">
               <TableRow className="hover:bg-transparent border-b border-neutral-20/50">
                 <TableHead className="w-12 h-12 bg-inherit px-4"></TableHead>
-                <TableHead className="w-12 h-12 font-bold text-neutral-80 bg-inherit text-sm px-4">No</TableHead>
-                <TableHead className="h-12 bg-inherit font-bold text-neutral-80 text-sm px-4">Tên Danh Mục</TableHead>
-                <TableHead className="h-12 bg-inherit font-bold text-neutral-80 text-sm px-4">Mô tả</TableHead>
-                <TableHead className="h-12 bg-inherit font-bold text-neutral-80 text-sm px-4 text-right">Thao tác</TableHead>
+                <TableHead className="w-12 h-12 font-semibold text-neutral-80 bg-inherit text-sm px-4">No</TableHead>
+                <TableHead className="h-12 bg-inherit font-semibold text-neutral-80 text-sm px-4">Tên Danh Mục</TableHead>
+                <TableHead className="h-12 bg-inherit font-semibold text-neutral-80 text-sm px-4">Mô tả</TableHead>
+                <TableHead className="h-12 bg-inherit font-semibold text-neutral-80 text-sm px-4 text-right">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -276,7 +276,7 @@ const SortableCategoryRow = React.memo(({ category, index, isDeleting, onEdit, o
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group transition-all duration-200 border-b border-neutral-20/50 last:border-0 h-16 hover:bg-neutral-5/20 dark:hover:bg-neutral-90/10",
+        "group transition-all duration-200 border-b border-neutral-20/50 last:border-0 h-16 hover:bg-neutral-5/20",
         isDragging && "bg-muted/50"
       )}
     >
@@ -292,10 +292,10 @@ const SortableCategoryRow = React.memo(({ category, index, isDeleting, onEdit, o
             <GripVertical className="h-4 w-4" />
           </Button>
       </TableCell>
-      <TableCell className="font-bold text-sm text-neutral-60 py-2 w-12 px-4">
+      <TableCell className="font-semibold text-sm text-neutral-60 py-2 w-12 px-4">
         {index + 1}
       </TableCell>
-      <TableCell className="font-bold text-sm text-neutral-80 py-2 px-4">
+      <TableCell className="font-semibold text-sm text-neutral-80 py-2 px-4">
         {category.name}
       </TableCell>
       <TableCell className="py-2 px-4 text-xs text-neutral-60 font-medium line-clamp-1 max-w-sm" title={category.description || ""}>
@@ -319,11 +319,11 @@ const SortableCategoryRow = React.memo(({ category, index, isDeleting, onEdit, o
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <div
-                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-destructive hover:text-destructive-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-destructive"
+                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none transition-colors hover:bg-destructive/10  text-destructive gap-2"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Xóa danh mục
+                  <Trash2 className="h-4 w-4" />
+                  <span>Xóa danh mục</span>
                 </div>
               </AlertDialogTrigger>
               <AlertDialogContent onClick={(e) => e.stopPropagation()}>
@@ -362,10 +362,10 @@ function CategoryStaticRow({ category, index }: { category: ServiceCategory; ind
            <GripVertical className="h-4 w-4" />
          </Button>
       </TableCell>
-      <TableCell className="font-bold text-sm text-neutral-60 py-2 w-12 px-4">
+      <TableCell className="font-semibold text-sm text-neutral-60 py-2 w-12 px-4">
         {index + 1}
       </TableCell>
-      <TableCell className="font-bold text-sm text-neutral-80 py-2 px-4">
+      <TableCell className="font-semibold text-sm text-neutral-80 py-2 px-4">
         {category.name}
       </TableCell>
       <TableCell className="py-2 px-4 text-xs text-neutral-60 font-medium line-clamp-1 max-w-sm">

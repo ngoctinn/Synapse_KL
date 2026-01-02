@@ -81,47 +81,6 @@
   --alert-info-border: 188 64% 59%;
 }
 
-.dark {
-  /* ===== NEUTRALS PALETTE (Dark Overrides) ===== */
-  --background: 200 23% 8%;       /* Very dark navy */
-  --foreground: 199 15% 92%;
-
-  --card: 200 23% 12%;
-  --card-foreground: 199 15% 92%;
-
-  --popover: 200 23% 10%;
-  --popover-foreground: 199 15% 92%;
-
-  --primary: 187 100% 42%;        /* Brighter teal for dark mode */
-  --primary-foreground: var(--neutral-0);
-
-  --secondary: 200 23% 15%;
-  --secondary-foreground: 199 15% 92%;
-
-  --muted: 200 23% 15%;
-  --muted-foreground: 215 11% 65%;
-
-  --accent: 200 23% 18%;
-  --accent-foreground: 187 100% 42%;
-
-  --destructive: 0 84% 60%;
-  --destructive-foreground: var(--neutral-0);
-
-  --border: 200 23% 18%;
-  --input: 200 23% 18%;
-  --ring: 187 100% 42%;
-
-  /* Sidebar Tokens (Dark) */
-  --sidebar: 200 23% 10%;
-  --sidebar-foreground: 199 13% 70%;
-  --sidebar-primary: 187 100% 42%;
-  --sidebar-primary-foreground: var(--neutral-0);
-  --sidebar-accent: 200 23% 18%;
-  --sidebar-accent-foreground: 187 100% 42%;
-  --sidebar-border: 200 23% 18%;
-  --sidebar-ring: 187 100% 42%;
-}
-
 @theme inline {
   /* Core Mappings */
   --color-background: hsl(var(--background));
@@ -227,15 +186,15 @@
 
   /* Typography Standard - Project Synapse (Adjusted for Dashboard) */
   h1 {
-    @apply scroll-m-20 text-3xl font-bold tracking-tight lg:text-4xl text-foreground;
+    @apply scroll-m-20 text-3xl font-semibold tracking-tight lg:text-4xl text-neutral-100;
   }
 
   h2 {
-    @apply scroll-m-20 text-2xl font-bold tracking-tight text-foreground first:mt-0;
+    @apply scroll-m-20 text-2xl font-semibold tracking-tight text-neutral-100 first:mt-0;
   }
 
   h3 {
-    @apply scroll-m-20 text-2xl font-semibold tracking-tight text-foreground;
+    @apply scroll-m-20 text-xl font-semibold tracking-tight text-neutral-90;
   }
 
   h4 {

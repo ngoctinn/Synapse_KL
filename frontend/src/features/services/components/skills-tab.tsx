@@ -3,25 +3,25 @@
 import { DataTable, DataTableColumnHeader } from "@/shared/components/data-table";
 import { TabToolbar } from "@/shared/components/tab-toolbar";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { Edit2, MoreHorizontal, Trash2 } from "lucide-react";
@@ -145,11 +145,11 @@ export function SkillsTab({ skills, variant = "default" }: SkillsTabProps) {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <div
-                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-destructive hover:text-destructive-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-destructive"
+                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none transition-colors hover:bg-destructive/10 text-destructive gap-2"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Xóa kỹ năng
+                  <Trash2 className="h-4 w-4" />
+                  <span>Xóa kỹ năng</span>
                 </div>
               </AlertDialogTrigger>
               <AlertDialogContent onClick={(e) => e.stopPropagation()}>

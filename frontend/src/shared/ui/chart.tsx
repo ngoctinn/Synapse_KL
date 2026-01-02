@@ -6,7 +6,7 @@ import * as RechartsPrimitive from "recharts"
 import { cn } from "@/shared/lib/utils"
 
 // Format: { THEME_NAME: CSS_SELECTOR }
-const THEMES = { light: "", dark: ".dark" } as const
+const THEMES = { light: "" } as const
 
 export type ChartConfig = {
   [k in string]: {
@@ -348,10 +348,9 @@ function getPayloadConfigFromPayload(
 }
 
 export {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
-  ChartStyle,
+    ChartContainer, ChartLegend,
+    ChartLegendContent,
+    ChartStyle, ChartTooltip,
+    ChartTooltipContent
 }
+

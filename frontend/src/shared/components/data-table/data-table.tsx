@@ -86,7 +86,7 @@ export function DataTable<TData, TValue>({
         <Table className="w-full">
           <TableHeader className={cn(
             "sticky top-0 z-30",
-            "bg-neutral-5/30 dark:bg-neutral-90/20",
+            "bg-neutral-5/30",
             variant === "flat" ? "border-b-0" : "border-b"
           )}>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -115,7 +115,7 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="group cursor-pointer border-b border-border/50 last:border-0 h-14 hover:bg-neutral-5/50 dark:hover:bg-neutral-90/20 data-[state=selected]:bg-primary/5"
+                  className="group cursor-pointer border-b border-border/50 last:border-0 h-14 hover:bg-neutral-5/50 data-[state=selected]:bg-primary/5"
                   onClick={() => onRowClick?.(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (

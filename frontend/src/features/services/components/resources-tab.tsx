@@ -4,27 +4,27 @@ import { DataTable, DataTableColumnHeader } from "@/shared/components/data-table
 import { TabToolbar } from "@/shared/components/tab-toolbar";
 import { cn } from "@/shared/lib/utils";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/ui/card";
 import { Checkbox } from "@/shared/ui/checkbox";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { Bed, CalendarClock, MoreHorizontal, Plus, Trash2, Wrench } from "lucide-react";
@@ -173,9 +173,9 @@ export function ResourcesTab({ groups, variant = "default" }: ResourcesTabProps)
                       {group.type === "BED" ? <Bed className="h-6 w-6 stroke-2" /> : <Wrench className="h-6 w-6 stroke-2" />}
                     </div>
                     <div>
-                      <h4 className="text-base font-bold text-foreground leading-none mb-1.5">{group.name}</h4>
+                      <h4 className="text-base font-semibold text-foreground leading-none mb-1.5">{group.name}</h4>
                       <div className="flex items-center gap-2">
-                         <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wider py-0 px-1.5 rounded-md border-neutral-20/50 bg-neutral-5/10">
+                         <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-wider py-0 px-1.5 rounded-md border-neutral-20/50 bg-neutral-5/10">
                           {group.type}
                         </Badge>
                         <span className="text-xs text-muted-foreground font-medium">
@@ -190,7 +190,7 @@ export function ResourcesTab({ groups, variant = "default" }: ResourcesTabProps)
                       variant="secondary"
                       size="sm"
                       className={cn(
-                        "h-9 px-4 text-xs font-bold rounded-lg transition-all",
+                        "h-9 px-4 text-xs font-semibold rounded-lg transition-all",
                         resourcesByGroup[group.id] ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-muted/50 hover:bg-muted"
                       )}
                       onClick={() => toggleGroup(group.id)}
@@ -338,11 +338,11 @@ function ResourcesDataTable({
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <div
-                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-destructive hover:text-destructive-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-destructive"
+                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none transition-colors hover:bg-destructive/10 text-destructive gap-2"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <Trash2 className="mr-2 h-5 w-5 stroke-2" />
-                  Xóa tài nguyên
+                  <Trash2 className="h-4 w-4" />
+                  <span>Xóa tài nguyên</span>
                 </div>
               </AlertDialogTrigger>
               <AlertDialogContent onClick={(e) => e.stopPropagation()}>

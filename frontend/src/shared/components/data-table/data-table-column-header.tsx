@@ -25,7 +25,7 @@ export function DataTableColumnHeader<TData, TValue>({
     return (
       <div
         data-slot="column-header-title"
-        className={cn("px-1 py-1.5 text-sm font-bold text-neutral-80", className)}
+        className={cn("px-1 py-1.5 text-sm font-semibold text-neutral-80", className)}
       >
         {title}
       </div>
