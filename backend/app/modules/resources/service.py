@@ -100,9 +100,7 @@ async def delete_group(session: AsyncSession, group_id: UUID) -> None:
     if (result.one() or 0) > 0:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Không thể xóa. Nhóm đang được dịch vụ sử dụng")
 
-    # asyncpg requires the datetime to be offset-naive if the column is TIMESTAMP WITHOUT TIME ZONE
-    # We strip the timezone info from the UTC datetime to satisfy this constraint.
-    group.deleted_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    group.deleted_at = datetime.now(timezone.utc)
     session.add(group)
     await session.commit()
 
@@ -157,7 +155,7 @@ async def delete_resource(session: AsyncSession, resource_id: UUID) -> None:
     if not resource:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tài nguyên không tồn tại")
 
-    resource.deleted_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    resource.deleted_at = datetime.now(timezone.utc)
     session.add(resource)
     await session.commit()
 

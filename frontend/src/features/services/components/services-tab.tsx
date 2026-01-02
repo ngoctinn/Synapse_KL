@@ -4,43 +4,45 @@ import { DataTable, DataTableColumnHeader } from "@/shared/components/data-table
 import { TabToolbar } from "@/shared/components/tab-toolbar";
 import { cn } from "@/shared/lib/utils";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@/shared/ui/tooltip";
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit2, MoreHorizontal, Power, PowerOff, Trash2 } from "lucide-react";
+import { Edit2, Image as ImageIcon, MoreHorizontal, Power, PowerOff, Trash2 } from "lucide-react";
+import NextImage from "next/image";
+import { useRouter } from "next/navigation";
 import { useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
-    createServiceAction,
-    deleteServiceAction,
-    getServiceByIdAction,
-    toggleServiceStatusAction,
-    updateServiceAction
+  createServiceAction,
+  deleteServiceAction,
+  getServiceByIdAction,
+  toggleServiceStatusAction,
+  updateServiceAction
 } from "../actions";
 import type { ServiceCreateForm } from "../schemas";
 import type { ResourceGroup, Service, ServiceCategory, ServiceWithDetails, Skill } from "../types";
@@ -61,6 +63,7 @@ export function ServicesTab({
   resourceGroups,
   variant = "default",
 }: ServicesTabProps) {
+  const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<ServiceWithDetails | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -131,7 +134,10 @@ export function ServicesTab({
 
       startTransition(async () => {
         addOptimisticService({ type: "UPDATE", payload: updatedService });
-        await updateServiceAction(selectedService.id, data);
+        const res = await updateServiceAction(selectedService.id, data);
+        if (res.success) {
+           router.refresh();
+        }
       });
     } else {
       // CREATE
@@ -150,7 +156,10 @@ export function ServicesTab({
 
       startTransition(async () => {
         addOptimisticService({ type: "ADD", payload: tempService });
-        await createServiceAction(data);
+        const res = await createServiceAction(data);
+        if (res.success) {
+           router.refresh();
+        }
       });
     }
   };
@@ -210,22 +219,39 @@ export function ServicesTab({
       accessorKey: "name",
       header: ({ column }) => <DataTableColumnHeader column={column} title="Dịch vụ" />,
       cell: ({ row }) => (
-        <div className="max-w-xs">
-          <div className="font-medium truncate">{row.getValue("name")}</div>
-          {row.original.description && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="text-xs text-muted-foreground line-clamp-1 cursor-help">
-                    {row.original.description}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-[300px] break-words">
-                  <p>{row.original.description}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 relative shrink-0 overflow-hidden rounded-md border bg-muted">
+            {row.original.image_url ? (
+              <NextImage
+                src={row.original.image_url}
+                alt={row.original.name}
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-muted">
+                <ImageIcon className="h-4 w-4 text-muted-foreground" />
+              </div>
+            )}
+          </div>
+          <div className="max-w-xs min-w-0">
+            <div className="font-medium truncate">{row.getValue("name")}</div>
+            {row.original.description && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="text-xs text-muted-foreground line-clamp-1 cursor-help">
+                      {row.original.description}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-[300px] break-words">
+                    <p>{row.original.description}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
         </div>
       ),
     },
@@ -233,13 +259,28 @@ export function ServicesTab({
       accessorKey: "category_id",
       header: ({ column }) => <DataTableColumnHeader column={column} title="Danh mục" />,
       meta: {
-        filterOptions: categories.map(c => ({ label: c.name, value: c.id })),
+        filterOptions: [
+          { label: "Chưa phân loại", value: "uncategorized" },
+          ...categories.map(c => ({ label: c.name, value: c.id }))
+        ],
       },
-      cell: ({ row }) => (
-        <Badge variant="outline" className="font-normal">
-          {getCategoryName(row.getValue("category_id"))}
-        </Badge>
-      ),
+      cell: ({ row }) => {
+        const categoryId = row.getValue("category_id") as string | null;
+        const categoryName = getCategoryName(categoryId);
+        const isUncategorized = !categoryId;
+
+        return (
+          <Badge
+            variant="outline"
+            className={cn(
+              "font-normal",
+              isUncategorized && "text-muted-foreground"
+            )}
+          >
+            {categoryName}
+          </Badge>
+        );
+      },
     },
     {
       accessorKey: "duration",

@@ -1,48 +1,31 @@
 "use client";
 
 import { Input } from "@/shared/ui/input";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ControllerRenderProps } from "react-hook-form";
 import type { ServiceCreateForm } from "../../schemas";
 
 interface PriceInputFieldProps {
-  field: ControllerRenderProps<ServiceCreateForm, "price">; // Explicitly typed for the price field
+  field: ControllerRenderProps<ServiceCreateForm, "price">;
 }
 
 export function PriceInputField({ field }: PriceInputFieldProps) {
   const [displayValue, setDisplayValue] = useState("");
+  const prevFieldValueRef = useRef<number>(field.value);
 
-  // Sync with form state (e.g. when suggestions are clicked or form resets)
   useEffect(() => {
+    if (prevFieldValueRef.current === field.value) {
+      return;
+    }
+    prevFieldValueRef.current = field.value;
+
     if (field.value === 0) {
       setDisplayValue("");
       return;
     }
+
     const formatted = field.value ? new Intl.NumberFormat("vi-VN").format(field.value) : "";
-
-    // Helper to parse current display value to number for comparison
-    const parseDisplay = (val: string) => {
-      const clean = val.toLowerCase().replace(/[^0-9km.]/g, "");
-      if (clean.endsWith("k")) return Math.round((parseFloat(clean) || 0) * 1000);
-      if (clean.endsWith("m")) return Math.round((parseFloat(clean) || 0) * 1000000);
-      return parseInt(clean.replace(/[^0-9]/g, ""), 10) || 0;
-    };
-
-    const currentNumeric = parseDisplay(displayValue);
-
-    // Đồng bộ giá trị hiển thị với form state khi có sự thay đổi từ bên ngoài (reset form hoặc bấm nút gợi ý)
-    if (currentNumeric !== field.value) {
-      setDisplayValue(formatted);
-      return;
-    }
-
-    // Tránh việc cập nhật lại khi người dùng đang gõ phím viết tắt (k, m) để không làm nhảy con trỏ chuột
-    const isShorthand = displayValue.toLowerCase().includes('k') || displayValue.toLowerCase().includes('m');
-    const hasDot = displayValue.includes('.');
-
-    if (!isShorthand && !hasDot) {
-      setDisplayValue(formatted);
-    }
+    setDisplayValue(formatted);
   }, [field.value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

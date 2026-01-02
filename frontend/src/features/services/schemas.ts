@@ -74,7 +74,7 @@ const resourceRequirementSchema = z.object({
 });
 
 export const serviceCreateSchema = z.object({
-  category_id: z.string().uuid().optional().or(z.literal("")),
+  category_id: z.string().uuid().optional().or(z.literal("")).or(z.literal("uncategorized")),
   name: z.string().min(1, "Tên dịch vụ là bắt buộc").max(255),
   duration: z.number().min(1, "Thời gian phải lớn hơn 0"),
   buffer_time: z.number().min(0),

@@ -3,22 +3,22 @@
 import { API_BASE_URL } from "@/shared/api";
 import { revalidatePath } from "next/cache";
 import type {
-    CategoryCreateInput,
-    CategoryUpdateInput,
-    MaintenanceCreateInput,
-    Resource,
-    ResourceCreateInput,
-    ResourceGroup,
-    ResourceGroupCreateInput,
-    ResourceMaintenance,
-    Service,
-    ServiceCategory,
-    ServiceCreateInput,
-    ServiceUpdateInput,
-    ServiceWithDetails,
-    Skill,
-    SkillCreateInput,
-    SkillUpdateInput,
+  CategoryCreateInput,
+  CategoryUpdateInput,
+  MaintenanceCreateInput,
+  Resource,
+  ResourceCreateInput,
+  ResourceGroup,
+  ResourceGroupCreateInput,
+  ResourceMaintenance,
+  Service,
+  ServiceCategory,
+  ServiceCreateInput,
+  ServiceUpdateInput,
+  ServiceWithDetails,
+  Skill,
+  SkillCreateInput,
+  SkillUpdateInput,
 } from "./types";
 
 const SERVICES_PATH = "/api/v1/services";
@@ -46,7 +46,7 @@ export async function createSkillAction(data: SkillCreateInput) {
       const err = await res.json();
       return { success: false, message: err.detail || "Không thể tạo kỹ năng" };
     }
-    revalidatePath("/dashboard/manager/services");
+    revalidatePath("/dashboard/manager/services", "page");
     return { success: true, message: "Tạo kỹ năng thành công" };
   } catch (e) {
     return { success: false, message: "Lỗi kết nối máy chủ" };
@@ -64,7 +64,7 @@ export async function updateSkillAction(id: string, data: SkillUpdateInput) {
       const err = await res.json();
       return { success: false, message: err.detail || "Không thể cập nhật kỹ năng" };
     }
-    revalidatePath("/dashboard/manager/services");
+    revalidatePath("/dashboard/manager/services", "page");
     return { success: true, message: "Cập nhật kỹ năng thành công" };
   } catch (e) {
     return { success: false, message: "Lỗi kết nối máy chủ" };
@@ -79,7 +79,7 @@ export async function deleteSkillAction(id: string): Promise<void> {
     const err = await res.json();
     throw new Error(err.detail || "Không thể xóa kỹ năng");
   }
-  revalidatePath("/dashboard/manager/services");
+  revalidatePath("/dashboard/manager/services", "page");
 }
 
 // ========== Categories Actions ==========
@@ -102,7 +102,7 @@ export async function createCategoryAction(data: CategoryCreateInput) {
       const err = await res.json();
       return { success: false, message: err.detail || "Không thể tạo danh mục" };
     }
-    revalidatePath("/dashboard/manager/services");
+    revalidatePath("/dashboard/manager/services", "page");
     return { success: true, message: "Tạo danh mục thành công" };
   } catch (e) {
     return { success: false, message: "Lỗi kết nối máy chủ" };
@@ -120,7 +120,7 @@ export async function updateCategoryAction(id: string, data: CategoryUpdateInput
       const err = await res.json();
       return { success: false, message: err.detail || "Không thể cập nhật danh mục" };
     }
-    revalidatePath("/dashboard/manager/services");
+    revalidatePath("/dashboard/manager/services", "page");
     return { success: true, message: "Cập nhật danh mục thành công" };
   } catch (e) {
     return { success: false, message: "Lỗi kết nối máy chủ" };
@@ -137,7 +137,7 @@ export async function reorderCategoriesAction(ids: string[]): Promise<ServiceCat
     const err = await res.json();
     throw new Error(err.detail || "Không thể sắp xếp danh mục");
   }
-  revalidatePath("/dashboard/manager/services");
+  revalidatePath("/dashboard/manager/services", "page");
   return res.json();
 }
 
@@ -149,7 +149,7 @@ export async function deleteCategoryAction(id: string): Promise<void> {
     const err = await res.json();
     throw new Error(err.detail || "Không thể xóa danh mục");
   }
-  revalidatePath("/dashboard/manager/services");
+  revalidatePath("/dashboard/manager/services", "page");
 }
 
 // ========== Resource Groups Actions ==========
@@ -172,7 +172,7 @@ export async function createResourceGroupAction(data: ResourceGroupCreateInput) 
       const err = await res.json();
       return { success: false, message: err.detail || "Không thể tạo nhóm tài nguyên" };
     }
-    revalidatePath("/dashboard/manager/services");
+    revalidatePath("/dashboard/manager/services", "page");
     return { success: true, message: "Tạo nhóm tài nguyên thành công" };
   } catch (e) {
     return { success: false, message: "Lỗi kết nối máy chủ" };
@@ -187,7 +187,7 @@ export async function deleteResourceGroupAction(id: string): Promise<void> {
     const err = await res.json();
     throw new Error(err.detail || "Không thể xóa nhóm tài nguyên");
   }
-  revalidatePath("/dashboard/manager/services");
+  revalidatePath("/dashboard/manager/services", "page");
 }
 
 // ========== Resources Actions ==========
@@ -213,7 +213,7 @@ export async function createResourceAction(data: ResourceCreateInput) {
       const err = await res.json();
       return { success: false, message: err.detail || "Không thể tạo tài nguyên" };
     }
-    revalidatePath("/dashboard/manager/services");
+    revalidatePath("/dashboard/manager/services", "page");
     return { success: true, message: "Tạo tài nguyên thành công" };
   } catch (e) {
     return { success: false, message: "Lỗi kết nối máy chủ" };
@@ -228,7 +228,7 @@ export async function deleteResourceAction(id: string): Promise<void> {
     const err = await res.json();
     throw new Error(err.detail || "Không thể xóa tài nguyên");
   }
-  revalidatePath("/dashboard/manager/services");
+  revalidatePath("/dashboard/manager/services", "page");
 }
 
 export async function createMaintenanceAction(
@@ -244,7 +244,7 @@ export async function createMaintenanceAction(
     const err = await res.json();
     throw new Error(err.detail || "Không thể tạo lịch bảo trì");
   }
-  revalidatePath("/dashboard/manager/services");
+  revalidatePath("/dashboard/manager/services", "page");
   return res.json();
 }
 
@@ -285,16 +285,23 @@ export async function getServiceByIdAction(id: string): Promise<ServiceWithDetai
 
 export async function createServiceAction(data: ServiceCreateInput) {
   try {
+    const payload = {
+      ...data,
+      category_id: (data.category_id && data.category_id !== "uncategorized") ? data.category_id : undefined,
+      image_url: data.image_url || undefined,
+      description: data.description || undefined,
+    };
+
     const res = await fetch(`${API_BASE_URL}${SERVICES_PATH}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
     if (!res.ok) {
       const err = await res.json();
       return { success: false, message: err.detail || "Không thể tạo dịch vụ" };
     }
-    revalidatePath("/dashboard/manager/services");
+    revalidatePath("/dashboard/manager/services", "page");
     return { success: true, message: "Tạo dịch vụ thành công" };
   } catch (e) {
     return { success: false, message: "Lỗi kết nối máy chủ" };
@@ -306,16 +313,25 @@ export async function updateServiceAction(
   data: ServiceUpdateInput
 ) {
   try {
+    const payload = {
+      ...data,
+      category_id: (data.category_id && data.category_id !== "uncategorized") ? data.category_id : null,
+      image_url: data.image_url || null,
+      description: data.description || null,
+    };
+
+    console.log("[updateServiceAction] Payload:", JSON.stringify(payload, null, 2));
+
     const res = await fetch(`${API_BASE_URL}${SERVICES_PATH}/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
     if (!res.ok) {
       const err = await res.json();
       return { success: false, message: err.detail || "Không thể cập nhật dịch vụ" };
     }
-    revalidatePath("/dashboard/manager/services");
+    revalidatePath("/dashboard/manager/services", "page");
     return { success: true, message: "Cập nhật dịch vụ thành công" };
   } catch (e) {
     return { success: false, message: "Lỗi kết nối máy chủ" };
@@ -330,7 +346,7 @@ export async function toggleServiceStatusAction(id: string): Promise<Service> {
     const err = await res.json();
     throw new Error(err.detail || "Không thể thay đổi trạng thái dịch vụ");
   }
-  revalidatePath("/dashboard/manager/services");
+  revalidatePath("/dashboard/manager/services", "page");
   return res.json();
 }
 
@@ -342,5 +358,5 @@ export async function deleteServiceAction(id: string): Promise<void> {
     const err = await res.json();
     throw new Error(err.detail || "Không thể xóa dịch vụ");
   }
-  revalidatePath("/dashboard/manager/services");
+  revalidatePath("/dashboard/manager/services", "page");
 }

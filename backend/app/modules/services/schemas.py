@@ -39,6 +39,7 @@ class ServiceCreate(SQLModel):
     price: Decimal
     description: str | None = None
     image_url: str | None = None
+    is_active: bool = True
     skill_ids: list[UUID] = []
     resource_requirements: list[ServiceResourceRequirementCreate] = []
 

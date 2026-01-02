@@ -2,19 +2,20 @@
 
 import { Button } from "@/shared/ui/button";
 import {
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/shared/ui/form";
+import { ImageUpload } from "@/shared/ui/image-upload";
 import { Input } from "@/shared/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/shared/ui/select";
 import { Switch } from "@/shared/ui/switch";
 import { Textarea } from "@/shared/ui/textarea";
@@ -52,7 +53,7 @@ export function ServiceGeneralTab({ categories, onAddCategory }: ServiceGeneralT
         name="category_id"
         render={({ field }) => (
           <FormItem>
-            <FormLabel required>Danh mục</FormLabel>
+            <FormLabel>Danh mục</FormLabel>
             <div className="flex gap-2">
               <div className="flex-1 min-w-0">
                 <Select
@@ -66,6 +67,9 @@ export function ServiceGeneralTab({ categories, onAddCategory }: ServiceGeneralT
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
+                    <SelectItem value="uncategorized">
+                      <span className="text-muted-foreground">Chưa phân loại</span>
+                    </SelectItem>
                     {categories.map((c) => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.name}
@@ -78,12 +82,30 @@ export function ServiceGeneralTab({ categories, onAddCategory }: ServiceGeneralT
                 type="button"
                 variant="outline"
                 size="icon"
+                className="h-11 w-11 shrink-0"
                 onClick={onAddCategory}
-                className="shrink-0 h-11 w-11"
               >
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="image_url"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Hình ảnh dịch vụ</FormLabel>
+            <FormControl>
+              <ImageUpload
+                value={field.value}
+                onChange={(url: string | null) => field.onChange(url || "")}
+                bucket="service-images"
+              />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}

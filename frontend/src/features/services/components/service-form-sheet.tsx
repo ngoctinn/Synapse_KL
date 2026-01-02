@@ -32,7 +32,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
 import {
   createCategoryAction,
@@ -77,12 +77,13 @@ export function ServiceFormSheet({
   const form = useForm({
     resolver: zodResolver(serviceCreateSchema),
     defaultValues: {
-      category_id: service?.category_id || "",
+        category_id: service?.category_id || "uncategorized",
       name: service?.name || "",
-      duration: service?.duration || 60,
-      buffer_time: service?.buffer_time || 10,
+        duration: service?.duration ?? 0,
+        buffer_time: service?.buffer_time ?? 0,
       price: Number(service?.price) || 0,
       description: service?.description || "",
+      image_url: service?.image_url || "",
       is_active: service?.is_active ?? true,
       skill_ids: service?.skills.map((s) => s.id) || [],
       resource_requirements: service?.resource_requirements.map(r => ({
@@ -98,12 +99,13 @@ export function ServiceFormSheet({
   useEffect(() => {
     if (open) {
       form.reset({
-        category_id: service?.category_id || "",
+          category_id: service?.category_id || "uncategorized",
         name: service?.name || "",
-        duration: service?.duration || 60,
-        buffer_time: service?.buffer_time || 10,
+        duration: service?.duration ?? 0,
+        buffer_time: service?.buffer_time ?? 0,
         price: Number(service?.price) || 0,
         description: service?.description || "",
+        image_url: service?.image_url || "",
         is_active: service?.is_active ?? true,
         skill_ids: service?.skills.map((s) => s.id) || [],
         resource_requirements: service?.resource_requirements.map(r => ({
@@ -136,10 +138,14 @@ export function ServiceFormSheet({
     technical: !!(errors.skill_ids || errors.resource_requirements),
   };
 
-  const onInvalid = () => {
-    if (tabErrors.general) setActiveTab("general");
-    else if (tabErrors.pricing) setActiveTab("pricing");
-    else if (tabErrors.technical) setActiveTab("technical");
+  const onInvalid = (errors: FieldErrors<ServiceCreateForm>) => {
+    const hasGeneralError = !!(errors.name || errors.category_id || errors.description);
+    const hasPricingError = !!(errors.price || errors.duration || errors.buffer_time);
+    const hasTechnicalError = !!(errors.skill_ids || errors.resource_requirements);
+
+    if (hasGeneralError) setActiveTab("general");
+    else if (hasPricingError) setActiveTab("pricing");
+    else if (hasTechnicalError) setActiveTab("technical");
   };
 
   async function handleFormSubmit(data: ServiceCreateForm) {
