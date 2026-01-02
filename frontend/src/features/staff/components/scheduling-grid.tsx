@@ -1,9 +1,16 @@
 "use client";
 
 import { ScheduleFormSheet } from "@/features/staff/components/schedule-form-sheet";
-import { type GridCellCoords, useDragToSelect } from "@/features/staff/hooks/use-drag-select";
+import {
+  type GridCellCoords,
+  useDragToSelect,
+} from "@/features/staff/hooks/use-drag-select";
 import { useGridKeyboard } from "@/features/staff/hooks/use-grid-keyboard";
-import type { Shift, StaffProfile, StaffScheduleWithDetails } from "@/features/staff/types";
+import type {
+  Shift,
+  StaffProfile,
+  StaffScheduleWithDetails,
+} from "@/features/staff/types";
 import { CalendarToolbar } from "@/shared/components/calendar-toolbar";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { cn } from "@/shared/lib/utils";
@@ -14,12 +21,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared/ui/tooltip";
-import {
-  addDays,
-  format,
-  isSameDay,
-  startOfWeek
-} from "date-fns";
+import { addDays, format, isSameDay, startOfWeek } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
   AlertTriangle,
@@ -28,7 +30,7 @@ import {
   Clock,
   MousePointerClick,
   Plus,
-  Users
+  Users,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -44,7 +46,12 @@ interface SchedulingGridProps {
   currentDate: Date;
 }
 
-export function SchedulingGrid({ staff, shifts, schedules, currentDate }: SchedulingGridProps) {
+export function SchedulingGrid({
+  staff,
+  shifts,
+  schedules,
+  currentDate,
+}: SchedulingGridProps) {
   const router = useRouter();
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -54,7 +61,10 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
   const start = startOfWeek(currentDate, { weekStartsOn: 1 });
 
   const daysToShow = isMobile ? MOBILE_DAYS_TO_SHOW : DESKTOP_DAYS_TO_SHOW;
-  const allWeekDays = useMemo(() => [...Array(TOTAL_WEEK_DAYS)].map((_, i) => addDays(start, i)), [start]);
+  const allWeekDays = useMemo(
+    () => [...Array(TOTAL_WEEK_DAYS)].map((_, i) => addDays(start, i)),
+    [start]
+  );
 
   const [mobileStartIndex, setMobileStartIndex] = useState(0);
   const weekDays = useMemo(() => {
@@ -64,7 +74,7 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
 
   const scheduleMap = useMemo(() => {
     const map = new Map<string, StaffScheduleWithDetails[]>();
-    schedules.forEach(s => {
+    schedules.forEach((s) => {
       const dateKey = format(new Date(s.work_date), "yyyy-MM-dd");
       const key = `${s.staff_id}_${dateKey}`;
 
@@ -80,47 +90,53 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
     handlePointerUp,
     clearSelection,
     isCellSelected: isDragSelected,
-    selection
+    selection,
   } = useDragToSelect();
-
 
   useEffect(() => {
     if (!selection.isSelecting && selection.start && selection.end) {
-        // Collect selected cells
-        const minCol = Math.min(selection.start.colIndex, selection.end.colIndex);
-        const maxCol = Math.max(selection.start.colIndex, selection.end.colIndex);
-        const minRow = Math.min(selection.start.rowIndex, selection.end.rowIndex);
-        const maxRow = Math.max(selection.start.rowIndex, selection.end.rowIndex);
+      // Collect selected cells
+      const minCol = Math.min(selection.start.colIndex, selection.end.colIndex);
+      const maxCol = Math.max(selection.start.colIndex, selection.end.colIndex);
+      const minRow = Math.min(selection.start.rowIndex, selection.end.rowIndex);
+      const maxRow = Math.max(selection.start.rowIndex, selection.end.rowIndex);
 
-        const cells: GridCellCoords[] = [];
-        for (let r = minRow; r <= maxRow; r++) {
-            for (let c = minCol; c <= maxCol; c++) {
-                 const s = staff[r];
-                 if(s) {
-                    cells.push({
-                        staffId: s.user_id,
-                        dateStr: format(weekDays[c], "yyyy-MM-dd"),
-                        rowIndex: r,
-                        colIndex: c
-                    });
-                 }
-            }
+      const cells: GridCellCoords[] = [];
+      for (let r = minRow; r <= maxRow; r++) {
+        for (let c = minCol; c <= maxCol; c++) {
+          const s = staff[r];
+          if (s) {
+            cells.push({
+              staffId: s.user_id,
+              dateStr: format(weekDays[c], "yyyy-MM-dd"),
+              rowIndex: r,
+              colIndex: c,
+            });
+          }
         }
+      }
 
-        if (cells.length > 0) {
-            setSelectedCells(cells);
-        }
+      if (cells.length > 0) {
+        setSelectedCells(cells);
+      }
 
-        // CRITICAL: Clear the drag selection to prevent this effect from running again immediately
-        // and causing an infinite loop. We transferred state to `selectedCells`.
-        clearSelection();
+      // CRITICAL: Clear the drag selection to prevent this effect from running again immediately
+      // and causing an infinite loop. We transferred state to `selectedCells`.
+      clearSelection();
     }
-  }, [selection.isSelecting, selection.start, selection.end, staff, weekDays, clearSelection]);
+  }, [
+    selection.isSelecting,
+    selection.start,
+    selection.end,
+    staff,
+    weekDays,
+    clearSelection,
+  ]);
 
   // Optimize selection lookup for rendering
   const selectedKeys = useMemo(() => {
     const set = new Set<string>();
-    selectedCells.forEach(c => set.add(`${c.rowIndex}_${c.colIndex}`));
+    selectedCells.forEach((c) => set.add(`${c.rowIndex}_${c.colIndex}`));
     return set;
   }, [selectedCells]);
 
@@ -136,12 +152,16 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
 
   // Conflict Detection with details
   const conflictDetails = useMemo(() => {
-    const conflicts: { staffName: string; date: string; existingShift: string }[] = [];
-    selectedCells.forEach(cell => {
+    const conflicts: {
+      staffName: string;
+      date: string;
+      existingShift: string;
+    }[] = [];
+    selectedCells.forEach((cell) => {
       const key = `${cell.staffId}_${cell.dateStr}`;
       const existing = scheduleMap.get(key);
       if (existing && existing.length > 0) {
-        const staffMember = staff.find(s => s.user_id === cell.staffId);
+        const staffMember = staff.find((s) => s.user_id === cell.staffId);
         conflicts.push({
           staffName: staffMember?.full_name || "Nhân viên",
           date: format(new Date(cell.dateStr), "dd/MM"),
@@ -156,13 +176,12 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
 
   // Keyboard navigation
   const gridRef = useRef<HTMLTableElement>(null);
-  const formatDateForKeyboard = useCallback((date: Date) => format(date, "yyyy-MM-dd"), []);
+  const formatDateForKeyboard = useCallback(
+    (date: Date) => format(date, "yyyy-MM-dd"),
+    []
+  );
 
-  const {
-    handleKeyDown,
-    isCellFocused,
-    focusCell,
-  } = useGridKeyboard({
+  const { handleKeyDown, isCellFocused, focusCell } = useGridKeyboard({
     totalRows: staff.length,
     totalCols: TOTAL_WEEK_DAYS,
     staff,
@@ -171,19 +190,21 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
     enabled: !isSheetOpen,
   });
 
-
   const handleSheetSuccess = () => {
-      router.refresh(); // Refresh Server Data
-      clearSelection();
-      setSelectedCells([]);
-  }
+    router.refresh(); // Refresh Server Data
+    clearSelection();
+    setSelectedCells([]);
+  };
 
-  const handleNavigate = useCallback((newDate: Date) => {
-    const dateStr = format(newDate, "yyyy-MM-dd");
-    const params = new URLSearchParams(window.location.search);
-    params.set("date", dateStr);
-    router.push(`?${params.toString()}`);
-  }, [router]);
+  const handleNavigate = useCallback(
+    (newDate: Date) => {
+      const dateStr = format(newDate, "yyyy-MM-dd");
+      const params = new URLSearchParams(window.location.search);
+      params.set("date", dateStr);
+      router.push(`?${params.toString()}`);
+    },
+    [router]
+  );
 
   // Empty state when no staff
   if (staff.length === 0) {
@@ -194,8 +215,12 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
             <Users className="h-8 w-8 text-muted-foreground/50" />
           </div>
           <div className="text-center space-y-1">
-            <p className="text-sm font-medium text-foreground">Chưa có nhân viên nào đang hoạt động</p>
-            <p className="text-xs text-muted-foreground">Thêm nhân viên và kích hoạt trạng thái để bắt đầu lập lịch.</p>
+            <p className="text-sm font-medium text-foreground">
+              Chưa có nhân viên nào đang hoạt động
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Thêm nhân viên và kích hoạt trạng thái để bắt đầu lập lịch.
+            </p>
           </div>
         </div>
       </div>
@@ -203,7 +228,12 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
   }
 
   return (
-    <div className={cn("w-full max-w-full space-y-4", selection.isSelecting && "cursor-crosshair")}>
+    <div
+      className={cn(
+        "w-full max-w-full space-y-4",
+        selection.isSelecting && "cursor-crosshair"
+      )}
+    >
       <div className="flex flex-wrap items-center justify-between gap-4">
         <CalendarToolbar
           currentDate={currentDate}
@@ -221,7 +251,9 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
             className="h-9 px-3 gap-2"
           >
             <MousePointerClick className="w-4 h-4" />
-            <span className="hidden sm:inline">{isSelectMode ? "Thoát chọn" : "Chọn ô"}</span>
+            <span className="hidden sm:inline">
+              {isSelectMode ? "Thoát chọn" : "Chọn ô"}
+            </span>
           </Button>
         )}
       </div>
@@ -232,7 +264,7 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setMobileStartIndex(prev => Math.max(0, prev - 1))}
+            onClick={() => setMobileStartIndex((prev) => Math.max(0, prev - 1))}
             disabled={mobileStartIndex === 0}
             className="h-8 px-2"
           >
@@ -244,7 +276,11 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setMobileStartIndex(prev => Math.min(TOTAL_WEEK_DAYS - daysToShow, prev + 1))}
+            onClick={() =>
+              setMobileStartIndex((prev) =>
+                Math.min(TOTAL_WEEK_DAYS - daysToShow, prev + 1)
+              )
+            }
             disabled={mobileStartIndex >= TOTAL_WEEK_DAYS - daysToShow}
             className="h-8 px-2"
           >
@@ -253,30 +289,41 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
         </div>
       )}
 
-      <div className="w-full rounded-xl overflow-hidden border"
-           onPointerUp={handlePointerUp}> {/* Catch pointer up bubble */}
+      <div
+        className="w-full rounded-xl overflow-hidden border"
+        onPointerUp={handlePointerUp}
+      >
+        {" "}
+        {/* Catch pointer up bubble */}
         <div className="w-full overflow-x-auto relative scrollbar-hide">
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-muted/30 border-b border-border">
                 <th className="p-4 text-left border-r border-border min-w-[200px] sticky left-0 z-20 bg-background shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
-                  <span className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Nhân viên</span>
+                  <span className="text-xs uppercase font-bold tracking-wider text-muted-foreground">
+                    Nhân viên
+                  </span>
                 </th>
                 {weekDays.map((day) => {
                   const isToday = isSameDay(day, new Date());
                   return (
-                    <th key={day.toISOString()} className={cn(
-                      "p-3 text-center border-r border-border/50 min-w-[140px] last:border-r-0",
-                      isToday && "bg-primary/5"
-                    )}>
+                    <th
+                      key={day.toISOString()}
+                      className={cn(
+                        "p-3 text-center border-r border-border/50 min-w-[140px] last:border-r-0",
+                        isToday && "bg-primary/5"
+                      )}
+                    >
                       <div className="flex flex-col items-center gap-0.5">
                         <span className="text-[10px] uppercase font-bold tracking-tight text-muted-foreground">
                           {format(day, "EEEE", { locale: vi })}
                         </span>
-                        <span className={cn(
-                          "text-lg font-black tracking-tight",
-                          isToday ? "text-primary" : "text-foreground"
-                        )}>
+                        <span
+                          className={cn(
+                            "text-lg font-black tracking-tight",
+                            isToday ? "text-primary" : "text-foreground"
+                          )}
+                        >
                           {format(day, "dd/MM")}
                         </span>
                       </div>
@@ -287,15 +334,24 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
             </thead>
             <tbody>
               {staff.map((s, rowIndex) => (
-                <tr key={s.user_id} className="group hover:bg-muted/5 transition-colors">
+                <tr
+                  key={s.user_id}
+                  className="group hover:bg-muted/5 transition-colors"
+                >
                   <td className="p-3 border-b border-r border-border sticky left-0 z-20 bg-card group-hover:bg-muted/5 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
-                        <span className="text-[10px] font-bold text-primary">{s.full_name.charAt(0)}</span>
+                        <span className="text-[10px] font-bold text-primary">
+                          {s.full_name.charAt(0)}
+                        </span>
                       </div>
                       <div className="flex flex-col">
-                        <span className="font-bold text-sm text-foreground leading-tight">{s.full_name}</span>
-                        <span className="text-[10px] text-muted-foreground font-medium uppercase mt-0.5">{s.title}</span>
+                        <span className="font-bold text-sm text-foreground leading-tight">
+                          {s.full_name}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground font-medium uppercase mt-0.5">
+                          {s.title}
+                        </span>
                       </div>
                     </div>
                   </td>
@@ -304,10 +360,17 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
                     const key = `${s.user_id}_${dateStr}`;
                     const daySchedules = scheduleMap.get(key) || [];
                     // Check selection: Either currently dragging OR finalized selection
-                    const isSelected = isDragSelected(colIndex, rowIndex) || selectedKeys.has(`${rowIndex}_${colIndex}`);
+                    const isSelected =
+                      isDragSelected(colIndex, rowIndex) ||
+                      selectedKeys.has(`${rowIndex}_${colIndex}`);
                     const isToday = isSameDay(day, new Date());
 
-                    const cellCoords = { staffId: s.user_id, dateStr, colIndex, rowIndex };
+                    const cellCoords = {
+                      staffId: s.user_id,
+                      dateStr,
+                      colIndex,
+                      rowIndex,
+                    };
 
                     return (
                       <td
@@ -321,10 +384,14 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
                           !isSelectMode && "touch-auto",
                           isSelectMode && "touch-none",
                           isToday && "bg-primary/5",
-                          isSelected && "bg-primary/20 ring-inset ring-1 ring-primary/30",
-                          isCellFocused(rowIndex, colIndex) && "ring-2 ring-primary ring-offset-1",
+                          isSelected &&
+                            "bg-primary/20 ring-inset ring-1 ring-primary/30",
+                          isCellFocused(rowIndex, colIndex) &&
+                            "ring-2 ring-primary ring-offset-1",
                           // Visual hint when select mode is active on mobile
-                          isSelectMode && !isSelected && "after:absolute after:inset-0 after:border-2 after:border-dashed after:border-primary/20 after:rounded-sm after:pointer-events-none"
+                          isSelectMode &&
+                            !isSelected &&
+                            "after:absolute after:inset-0 after:border-2 after:border-dashed after:border-primary/20 after:rounded-sm after:pointer-events-none"
                         )}
                         onPointerDown={(e) => {
                           // On mobile in select mode, use tap-to-toggle instead of drag
@@ -333,9 +400,17 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
                             // Toggle cell in selection
                             const cellKey = `${rowIndex}_${colIndex}`;
                             if (selectedKeys.has(cellKey)) {
-                              setSelectedCells(prev => prev.filter(c => !(c.rowIndex === rowIndex && c.colIndex === colIndex)));
+                              setSelectedCells((prev) =>
+                                prev.filter(
+                                  (c) =>
+                                    !(
+                                      c.rowIndex === rowIndex &&
+                                      c.colIndex === colIndex
+                                    )
+                                )
+                              );
                             } else {
-                              setSelectedCells(prev => [...prev, cellCoords]);
+                              setSelectedCells((prev) => [...prev, cellCoords]);
                             }
                             return;
                           }
@@ -348,16 +423,22 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
                       >
                         <div className="min-h-[64px] h-full flex flex-col gap-1 w-full justify-center">
                           {daySchedules.length > 0 ? (
-                            daySchedules.map(sch => (
-                                <ScheduleBadge key={sch.id} schedule={sch} shifts={shifts} />
+                            daySchedules.map((sch) => (
+                              <ScheduleBadge
+                                key={sch.id}
+                                schedule={sch}
+                                shifts={shifts}
+                              />
                             ))
                           ) : (
-                            <div className={cn(
+                            <div
+                              className={cn(
                                 "h-full w-full rounded-md flex items-center justify-center opacity-0 transition-all duration-200",
                                 "group-hover/cell:opacity-100 group-hover:bg-muted/10",
                                 isSelected && "opacity-100",
                                 isSelectMode && "opacity-50"
-                            )}>
+                              )}
+                            >
                               <Plus className="w-4 h-4 text-muted-foreground/50" />
                             </div>
                           )}
@@ -382,52 +463,68 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
       {/* Floating Action Bar */}
       {selectedCells.length > 0 && !isSheetOpen && !selection.isSelecting && (
         <TooltipProvider>
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-popover border shadow-xl rounded-full px-6 py-2.5 flex items-center gap-4 animate-in slide-in-from-bottom-5 fade-in zoom-in-95 duration-200">
-             <div className="flex flex-col">
-                <span className="text-sm font-bold flex items-center gap-2 text-foreground">
-                    <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                        {selectedCells.length}
-                    </span>
-                    ô đang chọn
-                    {hasConflict && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="text-[10px] bg-destructive/10 text-destructive px-1.5 py-0.5 rounded font-bold uppercase tracking-wider cursor-help flex items-center gap-1">
-                            <AlertTriangle className="w-3 h-3" />
-                            {conflictDetails.length} trùng lặp
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-xs">
-                          <div className="text-xs space-y-1">
-                            <p className="font-semibold">Các ô đã có lịch:</p>
-                            <ul className="list-disc pl-4">
-                              {conflictDetails.slice(0, 5).map((c, i) => (
-                                <li key={i}>{c.staffName} - {c.date}: {c.existingShift}</li>
-                              ))}
-                              {conflictDetails.length > 5 && (
-                                <li>...và {conflictDetails.length - 5} ô khác</li>
-                              )}
-                            </ul>
-                            <p className="text-muted-foreground mt-2">Tiếp tục sẽ tạo thêm ca trùng.</p>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
+          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-popover border shadow-xl rounded-full px-6 py-2.5 flex items-center gap-4 animate-in slide-in-from-bottom-5 fade-in zoom-in-95 duration-200">
+            <div className="flex flex-col">
+              <span className="text-sm font-bold flex items-center gap-2 text-foreground">
+                <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                  {selectedCells.length}
                 </span>
-             </div>
+                ô đang chọn
+                {hasConflict && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="text-[10px] bg-destructive/10 text-destructive px-1.5 py-0.5 rounded font-bold uppercase tracking-wider cursor-help flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3" />
+                        {conflictDetails.length} trùng lặp
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs">
+                      <div className="text-xs space-y-1">
+                        <p className="font-semibold">Các ô đã có lịch:</p>
+                        <ul className="list-disc pl-4">
+                          {conflictDetails.slice(0, 5).map((c, i) => (
+                            <li key={i}>
+                              {c.staffName} - {c.date}: {c.existingShift}
+                            </li>
+                          ))}
+                          {conflictDetails.length > 5 && (
+                            <li>...và {conflictDetails.length - 5} ô khác</li>
+                          )}
+                        </ul>
+                        <p className="text-muted-foreground mt-2">
+                          Tiếp tục sẽ tạo thêm ca trùng.
+                        </p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </span>
+            </div>
 
-             <div className="h-6 w-px bg-border" />
+            <div className="h-6 w-px bg-border" />
 
-             <div className="flex items-center gap-2">
-                 <Button variant="ghost" size="sm" onClick={() => { clearSelection(); setSelectedCells([]); }} className="h-8 rounded-full px-3 text-muted-foreground hover:text-foreground">
-                    Hủy
-                 </Button>
-                 <Button size="sm" onClick={() => setIsSheetOpen(true)} className="h-8 rounded-full px-4 shadow-sm">
-                    Phân ca
-                    <ChevronRight className="w-3 h-3 ml-1" />
-                 </Button>
-             </div>
-        </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  clearSelection();
+                  setSelectedCells([]);
+                }}
+                className="h-8 rounded-full px-3 text-muted-foreground hover:text-foreground"
+              >
+                Hủy
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => setIsSheetOpen(true)}
+                className="h-8 rounded-full px-4 shadow-sm"
+              >
+                Phân ca
+                <ChevronRight className="w-3 h-3 ml-1" />
+              </Button>
+            </div>
+          </div>
         </TooltipProvider>
       )}
 
@@ -435,11 +532,11 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
         <ScheduleFormSheet
           open={isSheetOpen}
           onOpenChange={(v) => {
-              setIsSheetOpen(v);
-              if(!v) {
-                clearSelection();
-                setSelectedCells([]);
-              }
+            setIsSheetOpen(v);
+            if (!v) {
+              clearSelection();
+              setSelectedCells([]);
+            }
           }}
           selectedCells={selectedCells}
           staffList={staff}
@@ -451,41 +548,50 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
   );
 }
 
-function ScheduleBadge({ schedule: sch, shifts }: { schedule: StaffScheduleWithDetails, shifts: Shift[] }) {
-    const shiftDetails = shifts.find(s => s.id === sch.shift_id);
-    const startTime = shiftDetails?.start_time?.slice(0, 5) ?? "";
-    const endTime = shiftDetails?.end_time?.slice(0, 5) ?? "";
-    const color = sch.shift_color || "#94a3b8";
-    const isDraft = sch.status === 'DRAFT';
+function ScheduleBadge({
+  schedule: sch,
+  shifts,
+}: {
+  schedule: StaffScheduleWithDetails;
+  shifts: Shift[];
+}) {
+  const shiftDetails = shifts.find((s) => s.id === sch.shift_id);
+  const startTime = shiftDetails?.start_time?.slice(0, 5) ?? "";
+  const endTime = shiftDetails?.end_time?.slice(0, 5) ?? "";
+  const color = sch.shift_color || "#94a3b8";
+  const isDraft = sch.status === "DRAFT";
 
-    return (
-        <div
-        className={cn(
-            "w-full px-2 py-1.5 rounded-md text-[10px] sm:text-[11px] font-bold border shadow-sm flex flex-col gap-0.5 relative overflow-hidden group/badge",
-            "[--shift-color:var(--shift-color-value)]",
-            isDraft && "border-dashed opacity-90 hover:opacity-100 bg-[image:repeating-linear-gradient(45deg,transparent,transparent_5px,rgba(0,0,0,0.03)_5px,rgba(0,0,0,0.03)_10px)]"
-        )}
-        style={{
-            '--shift-color-value': color,
-            backgroundColor: `color-mix(in srgb, var(--shift-color) 15%, transparent)`,
-            borderColor: `color-mix(in srgb, var(--shift-color) 40%, transparent)`,
-            color: `color-mix(in srgb, var(--shift-color) 100%, black 40%)`
-        } as React.CSSProperties}
-        >
-        {isDraft && (
-            <div className="absolute top-0 right-0 w-2 h-2 bg-amber-400 rounded-bl-md z-10" />
-        )}
+  return (
+    <div
+      className={cn(
+        "w-full px-2 py-1.5 rounded-md text-[10px] sm:text-[11px] font-bold border shadow-sm flex flex-col gap-0.5 relative overflow-hidden group/badge",
+        "[--shift-color:var(--shift-color-value)]",
+        isDraft &&
+          "border-dashed opacity-90 hover:opacity-100 bg-[image:repeating-linear-gradient(45deg,transparent,transparent_5px,rgba(0,0,0,0.03)_5px,rgba(0,0,0,0.03)_10px)]"
+      )}
+      style={
+        {
+          "--shift-color-value": color,
+          backgroundColor: `color-mix(in srgb, var(--shift-color) 15%, transparent)`,
+          borderColor: `color-mix(in srgb, var(--shift-color) 40%, transparent)`,
+          color: `color-mix(in srgb, var(--shift-color) 100%, black 40%)`,
+        } as React.CSSProperties
+      }
+    >
+      {isDraft && (
+        <div className="absolute top-0 right-0 w-2 h-2 bg-amber-400 rounded-bl-md z-10" />
+      )}
 
-        <div className="flex items-center gap-1.5 truncate">
-            <Clock className="w-3 h-3 shrink-0 opacity-60" />
-            <span className="truncate">{sch.shift_name}</span>
+      <div className="flex items-center gap-1.5 truncate">
+        <Clock className="w-3 h-3 shrink-0 opacity-60" />
+        <span className="truncate">{sch.shift_name}</span>
+      </div>
+
+      {(startTime || endTime) && (
+        <div className="text-[9px] opacity-70 font-medium pl-4 leading-none">
+          {startTime} - {endTime}
         </div>
-
-        {(startTime || endTime) && (
-            <div className="text-[9px] opacity-70 font-medium pl-4 leading-none">
-            {startTime} - {endTime}
-            </div>
-        )}
-        </div>
-    );
+      )}
+    </div>
+  );
 }

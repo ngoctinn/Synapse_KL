@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   ColumnDef,
@@ -13,10 +13,10 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
-import * as React from "react"
+} from "@tanstack/react-table";
+import * as React from "react";
 
-import { cn } from "@/shared/lib/utils"
+import { cn } from "@/shared/lib/utils";
 import {
   Table,
   TableBody,
@@ -24,16 +24,16 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/ui/table"
-import { DataTableFilterRow } from "./data-table-filter-row"
-import { DataTablePagination } from "./data-table-pagination"
+} from "@/shared/ui/table";
+import { DataTableFilterRow } from "./data-table-filter-row";
+import { DataTablePagination } from "./data-table-pagination";
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
-  enableRowSelection?: boolean
-  onRowClick?: (row: TData) => void
-  stickyHeader?: boolean
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  enableRowSelection?: boolean;
+  onRowClick?: (row: TData) => void;
+  stickyHeader?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -43,10 +43,13 @@ export function DataTable<TData, TValue>({
   onRowClick,
   stickyHeader = true,
 }: DataTableProps<TData, TValue>) {
-  const [rowSelection, setRowSelection] = React.useState({})
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [rowSelection, setRowSelection] = React.useState({});
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
+  const [sorting, setSorting] = React.useState<SortingState>([]);
 
   const table = useReactTable({
     data,
@@ -70,24 +73,30 @@ export function DataTable<TData, TValue>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
     // Tự động nhận diện ID từ dữ liệu để quản lý state (rowSelection) chính xác
     getRowId: (originalRow, index) => {
-      const row = originalRow as Record<string, unknown>
-      return row.id ? String(row.id) : index.toString()
+      const row = originalRow as Record<string, unknown>;
+      return row.id ? String(row.id) : index.toString();
     },
-  })
+  });
 
   return (
     <div data-slot="data-table" className="space-y-4 w-full min-w-0">
       <div className="relative w-full overflow-hidden rounded-lg border border-border bg-background">
         <Table className="w-full">
-          <TableHeader className={cn(
-            "sticky top-0 z-30",
-            "bg-neutral-5/30 border-b"
-          )}>
+          <TableHeader
+            className={cn("sticky top-0 z-30", "bg-neutral-5/30 border-b")}
+          >
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="hover:bg-transparent border-b border-neutral-10/50">
+              <TableRow
+                key={headerGroup.id}
+                className="hover:bg-transparent border-b border-neutral-10/50"
+              >
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} colSpan={header.colSpan} className="h-11 text-xs font-semibold text-neutral-60 bg-transparent px-4 uppercase tracking-wider">
+                    <TableHead
+                      key={header.id}
+                      colSpan={header.colSpan}
+                      className="h-11 text-xs font-semibold text-neutral-60 bg-transparent px-4 uppercase tracking-wider"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -95,13 +104,12 @@ export function DataTable<TData, TValue>({
                             header.getContext()
                           )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
 
             <DataTableFilterRow table={table} />
-
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
@@ -113,8 +121,14 @@ export function DataTable<TData, TValue>({
                   onClick={() => onRowClick?.(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="py-2 px-4 text-sm text-neutral-80 font-medium group-hover:text-neutral-100 transition-none">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    <TableCell
+                      key={cell.id}
+                      className="py-2 px-4 text-sm text-neutral-80 font-medium group-hover:text-neutral-100 transition-none"
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -134,5 +148,5 @@ export function DataTable<TData, TValue>({
       </div>
       <DataTablePagination table={table} />
     </div>
-  )
+  );
 }

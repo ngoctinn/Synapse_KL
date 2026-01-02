@@ -47,7 +47,9 @@ export function SkillsTab({ skills }: SkillsTabProps) {
         await deleteSkillAction(id);
         toast.success("Xóa kỹ năng thành công");
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Không thể xóa kỹ năng");
+        toast.error(
+          error instanceof Error ? error.message : "Không thể xóa kỹ năng"
+        );
       }
     });
   };
@@ -57,7 +59,10 @@ export function SkillsTab({ skills }: SkillsTabProps) {
       id: "select",
       header: ({ table }) => (
         <Checkbox
-          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
           className="translate-y-[2px]"
@@ -76,19 +81,25 @@ export function SkillsTab({ skills }: SkillsTabProps) {
     },
     {
       accessorKey: "name",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Tên Kỹ Năng" />,
-      cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Tên Kỹ Năng" />
+      ),
+      cell: ({ row }) => (
+        <div className="font-medium">{row.getValue("name")}</div>
+      ),
     },
     {
       accessorKey: "code",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Mã" />,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Mã" />
+      ),
       cell: ({ row }) => {
         const value = row.getValue("code") as string;
         return (
           <code className="text-xs bg-muted px-2 py-0.5 rounded border">
-             {value ? value : "-"}
+            {value ? value : "-"}
           </code>
-        )
+        );
       },
     },
     {
@@ -97,10 +108,13 @@ export function SkillsTab({ skills }: SkillsTabProps) {
       cell: ({ row }) => {
         const value = row.getValue("description") as string;
         return (
-          <div className="text-muted-foreground line-clamp-1 max-w-xs" title={value}>
+          <div
+            className="text-muted-foreground line-clamp-1 max-w-xs"
+            title={value}
+          >
             {value ? value : "-"}
           </div>
-        )
+        );
       },
     },
     {
@@ -145,19 +159,15 @@ export function SkillsTab({ skills }: SkillsTabProps) {
 
   return (
     <div className="space-y-4">
-
       <TabToolbar
-         title="Danh sách kỹ năng"
-         description="Quản lý các kỹ năng tay nghề và chuyên môn."
-         actionLabel="Thêm kỹ năng"
-         onActionClick={handleAdd}
-         searchPlaceholder="Tìm kiếm kỹ năng..."
+        title="Danh sách kỹ năng"
+        description="Quản lý các kỹ năng tay nghề và chuyên môn."
+        actionLabel="Thêm kỹ năng"
+        onActionClick={handleAdd}
+        searchPlaceholder="Tìm kiếm kỹ năng..."
       />
 
-      <DataTable
-        columns={columns}
-        data={skills}
-      />
+      <DataTable columns={columns} data={skills} />
 
       <SkillFormSheet
         open={isSheetOpen}
@@ -167,4 +177,3 @@ export function SkillsTab({ skills }: SkillsTabProps) {
     </div>
   );
 }
-

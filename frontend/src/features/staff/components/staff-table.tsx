@@ -1,9 +1,11 @@
 "use client";
-import { cn } from "@/shared/lib/utils";
 
 import { StaffFormSheet } from "@/features/staff/components/staff-form-sheet";
 import type { StaffProfileWithSkills } from "@/features/staff/types";
-import { DataTable, DataTableColumnHeader } from "@/shared/components/data-table";
+import {
+  DataTable,
+  DataTableColumnHeader,
+} from "@/shared/components/data-table";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
@@ -11,7 +13,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { Edit, MoreHorizontal, Plus, Trash2 } from "lucide-react";
@@ -25,12 +27,14 @@ interface StaffTableProps {
 export function StaffTable({ data }: StaffTableProps) {
   const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [selectedStaff, setSelectedStaff] = useState<StaffProfileWithSkills | undefined>(undefined);
+  const [selectedStaff, setSelectedStaff] = useState<
+    StaffProfileWithSkills | undefined
+  >(undefined);
 
   // Map data to ensure consistency if needed, though simpler is better
-  const tableData = data.map(s => ({
+  const tableData = data.map((s) => ({
     ...s,
-    id: s.user_id // DataTable often requires an 'id' field
+    id: s.user_id, // DataTable often requires an 'id' field
   }));
 
   const handleEdit = (staff: StaffProfileWithSkills) => {
@@ -48,7 +52,10 @@ export function StaffTable({ data }: StaffTableProps) {
       id: "select",
       header: ({ table }) => (
         <Checkbox
-          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
           className="translate-y-[2px]"
@@ -67,48 +74,67 @@ export function StaffTable({ data }: StaffTableProps) {
     },
     {
       accessorKey: "full_name",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Họ tên" />,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Họ tên" />
+      ),
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <div
             className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center font-semibold text-xs border bg-muted"
             style={{
-              backgroundColor: row.original.color_code ? `${row.original.color_code}20` : undefined,
+              backgroundColor: row.original.color_code
+                ? `${row.original.color_code}20`
+                : undefined,
               color: row.original.color_code,
-              borderColor: row.original.color_code ? `${row.original.color_code}40` : undefined
+              borderColor: row.original.color_code
+                ? `${row.original.color_code}40`
+                : undefined,
             }}
           >
             {row.original.full_name.charAt(0)}
           </div>
           <div className="flex flex-col">
-             <span className="font-medium text-foreground text-sm">{row.original.full_name}</span>
-             <span className="text-[10px] text-muted-foreground uppercase">{row.original.user_id.slice(0, 8)}</span>
+            <span className="font-medium text-foreground text-sm">
+              {row.original.full_name}
+            </span>
+            <span className="text-[10px] text-muted-foreground uppercase">
+              {row.original.user_id.slice(0, 8)}
+            </span>
           </div>
         </div>
-      )
+      ),
     },
     {
       accessorKey: "title",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Chức danh" />,
-      cell: ({ row }) => <span className="text-sm font-medium">{row.getValue("title")}</span>
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Chức danh" />
+      ),
+      cell: ({ row }) => (
+        <span className="text-sm font-medium">{row.getValue("title")}</span>
+      ),
     },
     {
       accessorKey: "is_active",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Trạng thái" />,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Trạng thái" />
+      ),
       meta: {
         filterOptions: [
           { label: "Đang làm việc", value: "true" },
-          { label: "Nghỉ việc", value: "false" }
-        ]
+          { label: "Nghỉ việc", value: "false" },
+        ],
       },
       cell: ({ row }) => {
         const isActive = row.original.is_active;
         return (
-          <Badge variant={isActive ? "success" : "secondary"} className="h-5 px-2 text-[10px]">
-             {isActive ? "Đang làm việc" : "Nghỉ việc"}
+          <Badge
+            variant={isActive ? "success" : "secondary"}
+            className="h-5 px-2 text-[10px]"
+          >
+            {isActive ? "Đang làm việc" : "Nghỉ việc"}
           </Badge>
-        )
-      }
+        );
+      },
     },
     {
       accessorKey: "skill_ids",
@@ -116,26 +142,36 @@ export function StaffTable({ data }: StaffTableProps) {
       cell: ({ row }) => (
         <div className="flex flex-wrap gap-1">
           {row.original.skill_ids.length > 0 ? (
-            <Badge variant="outline" className="text-[10px] h-5 bg-background font-normal">
+            <Badge
+              variant="outline"
+              className="text-[10px] h-5 bg-background font-normal"
+            >
               {row.original.skill_ids.length} kỹ năng
             </Badge>
           ) : (
             <span className="text-[10px] text-muted-foreground italic">--</span>
           )}
         </div>
-      )
+      ),
     },
     {
       id: "actions",
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground"
+            >
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[160px]">
-            <DropdownMenuItem onClick={() => handleEdit(row.original)} className="gap-2 cursor-pointer">
+            <DropdownMenuItem
+              onClick={() => handleEdit(row.original)}
+              className="gap-2 cursor-pointer"
+            >
               <Edit className="h-4 w-4 text-muted-foreground" />
               <span>Chỉnh sửa</span>
             </DropdownMenuItem>
@@ -145,14 +181,14 @@ export function StaffTable({ data }: StaffTableProps) {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
-    }
+      ),
+    },
   ];
 
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-         <Button onClick={handleCreate} className="gap-2 h-9 text-sm">
+        <Button onClick={handleCreate} className="gap-2 h-9 text-sm">
           <Plus className="w-4 h-4" />
           <span>Thêm nhân sự</span>
         </Button>
@@ -165,31 +201,36 @@ export function StaffTable({ data }: StaffTableProps) {
               <Plus className="h-8 w-8 text-muted-foreground/50" />
             </div>
             <div className="text-center space-y-1">
-              <p className="text-sm font-medium text-foreground">Chưa có nhân viên nào</p>
-              <p className="text-xs text-muted-foreground">Thêm nhân viên đầu tiên để bắt đầu quản lý đội ngũ.</p>
+              <p className="text-sm font-medium text-foreground">
+                Chưa có nhân viên nào
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Thêm nhân viên đầu tiên để bắt đầu quản lý đội ngũ.
+              </p>
             </div>
-            <Button onClick={handleCreate} variant="outline" className="mt-2 h-9">
+            <Button
+              onClick={handleCreate}
+              variant="outline"
+              className="mt-2 h-9"
+            >
               Thêm nhân viên đầu tiên
             </Button>
           </div>
         </div>
       ) : (
-          <DataTable
-            columns={columns}
-            data={tableData}
-          />
+        <DataTable columns={columns} data={tableData} />
       )}
 
       <StaffFormSheet
         open={isSheetOpen}
         onOpenChange={(v) => {
-            setIsSheetOpen(v);
-            if(!v) setSelectedStaff(undefined);
+          setIsSheetOpen(v);
+          if (!v) setSelectedStaff(undefined);
         }}
         staff={selectedStaff}
         onSuccess={() => {
-            router.refresh();
-            setIsSheetOpen(false);
+          router.refresh();
+          setIsSheetOpen(false);
         }}
       />
     </div>

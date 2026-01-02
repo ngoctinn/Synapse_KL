@@ -452,10 +452,7 @@ export function ServicesTab({
         searchPlaceholder="Tìm kiếm dịch vụ..."
       />
 
-      <DataTable
-        columns={columns}
-        data={optimisticServices}
-      />
+      <DataTable columns={columns} data={optimisticServices} />
 
       <ServiceFormSheet
         open={isSheetOpen}

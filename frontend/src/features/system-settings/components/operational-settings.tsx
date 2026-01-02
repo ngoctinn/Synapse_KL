@@ -1,18 +1,25 @@
-"use client"
+"use client";
 
-import { useFormGuard } from "@/shared/hooks/use-form-guard"
-import { Button } from "@/shared/ui/button"
-import { SidebarTrigger } from "@/shared/ui/sidebar"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
-import * as React from "react"
-import { toast } from "sonner"
-import { getOperationalSettingsAction, updateOperationalSettingsAction } from "../actions"
-import { ExceptionDate, OperatingHour, OperationalSettings as OperationalSettingsType } from "../types"
-import { OperationalSettingsSkeleton } from "./operational-settings-skeleton"
+import { useFormGuard } from "@/shared/hooks/use-form-guard";
+import { Button } from "@/shared/ui/button";
+import { SidebarTrigger } from "@/shared/ui/sidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import * as React from "react";
+import { toast } from "sonner";
+import {
+  getOperationalSettingsAction,
+  updateOperationalSettingsAction,
+} from "../actions";
+import {
+  ExceptionDate,
+  OperatingHour,
+  OperationalSettings as OperationalSettingsType,
+} from "../types";
+import { OperationalSettingsSkeleton } from "./operational-settings-skeleton";
 
 // Lazy load Tab contents với loading skeleton riêng
-import { ExceptionDatesManager } from "./exception-dates-manager"
-import { OperatingHoursForm } from "./operating-hours-form"
+import { ExceptionDatesManager } from "./exception-dates-manager";
+import { OperatingHoursForm } from "./operating-hours-form";
 
 import {
   AlertDialog,
@@ -24,15 +31,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/shared/ui/alert-dialog"
+} from "@/shared/ui/alert-dialog";
 
 interface OperationalSettingsProps {
-  initialData?: OperationalSettingsType | null
+  initialData?: OperationalSettingsType | null;
 }
 
 export function OperationalSettings({ initialData }: OperationalSettingsProps) {
-  const [settings, setSettings] = React.useState<OperationalSettingsType | null>(initialData || null);
-  const [originalSettings, setOriginalSettings] = React.useState<OperationalSettingsType | null>(initialData || null);
+  const [settings, setSettings] =
+    React.useState<OperationalSettingsType | null>(initialData || null);
+  const [originalSettings, setOriginalSettings] =
+    React.useState<OperationalSettingsType | null>(initialData || null);
   const [isLoading, setIsLoading] = React.useState(!initialData);
   const [isSaving, setIsSaving] = React.useState(false);
 
@@ -54,29 +63,37 @@ export function OperationalSettings({ initialData }: OperationalSettingsProps) {
   // Browser Guard (Reuse hook just for browser protection)
   useFormGuard({ isDirty });
 
-  const handleOperatingHoursChange = React.useCallback((hours: OperatingHour[]) => {
-    setSettings(prev => {
-      if (!prev) return null;
-      // Chỉ cập nhật nếu mảng dữ liệu thực sự khác biệt (so sánh nông từng cặp)
-      const isSame = prev.regular_operating_hours.length === hours.length &&
-                   prev.regular_operating_hours.every((h, i) =>
-                     h.day_of_week === hours[i].day_of_week &&
-                     h.open_time === hours[i].open_time &&
-                     h.close_time === hours[i].close_time &&
-                     h.is_closed === hours[i].is_closed
-                   );
+  const handleOperatingHoursChange = React.useCallback(
+    (hours: OperatingHour[]) => {
+      setSettings((prev) => {
+        if (!prev) return null;
+        // Chỉ cập nhật nếu mảng dữ liệu thực sự khác biệt (so sánh nông từng cặp)
+        const isSame =
+          prev.regular_operating_hours.length === hours.length &&
+          prev.regular_operating_hours.every(
+            (h, i) =>
+              h.day_of_week === hours[i].day_of_week &&
+              h.open_time === hours[i].open_time &&
+              h.close_time === hours[i].close_time &&
+              h.is_closed === hours[i].is_closed
+          );
 
-      if (isSame) return prev;
-      return { ...prev, regular_operating_hours: hours };
-    });
-  }, []);
+        if (isSame) return prev;
+        return { ...prev, regular_operating_hours: hours };
+      });
+    },
+    []
+  );
 
-  const handleExceptionDatesChange = React.useCallback((exceptionDates: ExceptionDate[]) => {
-    setSettings(prev => {
-      if (!prev) return null;
-      return { ...prev, exception_dates: exceptionDates };
-    });
-  }, []);
+  const handleExceptionDatesChange = React.useCallback(
+    (exceptionDates: ExceptionDate[]) => {
+      setSettings((prev) => {
+        if (!prev) return null;
+        return { ...prev, exception_dates: exceptionDates };
+      });
+    },
+    []
+  );
 
   const handleSave = async () => {
     if (!settings) return;
@@ -111,7 +128,9 @@ export function OperationalSettings({ initialData }: OperationalSettingsProps) {
       <div className="flex items-start gap-4 px-1">
         <SidebarTrigger className="-ml-1 mt-0.5" />
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Cấu hình vận hành</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Cấu hình vận hành
+          </h1>
           <p className="text-sm text-muted-foreground">
             Quản lý giờ làm việc và các ngày nghỉ lễ của Spa.
           </p>
@@ -130,10 +149,16 @@ export function OperationalSettings({ initialData }: OperationalSettingsProps) {
               <div className="flex items-center gap-4 animate-in fade-in slide-in-from-right-4">
                 <div className="hidden items-center gap-2 md:flex">
                   <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
-                  <p className="text-sm font-medium text-orange-600">Bạn có thay đổi chưa lưu</p>
+                  <p className="text-sm font-medium text-orange-600">
+                    Bạn có thay đổi chưa lưu
+                  </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" onClick={handleReset} disabled={isSaving}>
+                  <Button
+                    variant="outline"
+                    onClick={handleReset}
+                    disabled={isSaving}
+                  >
                     Hủy
                   </Button>
 
@@ -147,7 +172,9 @@ export function OperationalSettings({ initialData }: OperationalSettingsProps) {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Xác nhận thay đổi?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Việc thay đổi giờ hoạt động có thể ảnh hưởng đến các lịch hẹn đã được đặt trước đó. Hệ thống sẽ áp dụng giờ mới cho tất cả các ngày liên quan.
+                          Việc thay đổi giờ hoạt động có thể ảnh hưởng đến các
+                          lịch hẹn đã được đặt trước đó. Hệ thống sẽ áp dụng giờ
+                          mới cho tất cả các ngày liên quan.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -163,8 +190,11 @@ export function OperationalSettings({ initialData }: OperationalSettingsProps) {
             )}
           </div>
 
-          <TabsContent value="regular" forceMount={true} className="mt-6 space-y-4 data-[state=inactive]:hidden">
-
+          <TabsContent
+            value="regular"
+            forceMount={true}
+            className="mt-6 space-y-4 data-[state=inactive]:hidden"
+          >
             <div className="pt-2">
               <OperatingHoursForm
                 data={settings?.regular_operating_hours}
@@ -173,8 +203,11 @@ export function OperationalSettings({ initialData }: OperationalSettingsProps) {
             </div>
           </TabsContent>
 
-          <TabsContent value="exceptions" forceMount={true} className="mt-6 space-y-4 data-[state=inactive]:hidden">
-
+          <TabsContent
+            value="exceptions"
+            forceMount={true}
+            className="mt-6 space-y-4 data-[state=inactive]:hidden"
+          >
             <div className="pt-2">
               <ExceptionDatesManager
                 initialData={settings?.exception_dates}
@@ -186,5 +219,5 @@ export function OperationalSettings({ initialData }: OperationalSettingsProps) {
         </Tabs>
       </div>
     </div>
-  )
+  );
 }

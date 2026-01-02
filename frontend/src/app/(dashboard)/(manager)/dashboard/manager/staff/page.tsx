@@ -1,4 +1,8 @@
-import { getSchedulesAction, getShiftsAction, getStaffAction } from "@/features/staff/actions";
+import {
+  getSchedulesAction,
+  getShiftsAction,
+  getStaffAction,
+} from "@/features/staff/actions";
 import { SidebarTrigger } from "@/shared/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { endOfWeek, format, startOfWeek } from "date-fns";
@@ -7,17 +11,35 @@ import { Suspense } from "react";
 import StaffLoading from "./loading";
 
 // Lazy load components to optimize initial load
-const StaffTable = dynamic(() => import("@/features/staff/components/staff-table").then(mod => mod.StaffTable), {
-  loading: () => <StaffLoading />
-});
+const StaffTable = dynamic(
+  () =>
+    import("@/features/staff/components/staff-table").then(
+      (mod) => mod.StaffTable
+    ),
+  {
+    loading: () => <StaffLoading />,
+  }
+);
 
-const ShiftList = dynamic(() => import("@/features/staff/components/shift-list").then(mod => mod.ShiftList), {
-  loading: () => <StaffLoading />
-});
+const ShiftList = dynamic(
+  () =>
+    import("@/features/staff/components/shift-list").then(
+      (mod) => mod.ShiftList
+    ),
+  {
+    loading: () => <StaffLoading />,
+  }
+);
 
-const SchedulingGrid = dynamic(() => import("@/features/staff/components/scheduling-grid").then(mod => mod.SchedulingGrid), {
-  loading: () => <StaffLoading />
-});
+const SchedulingGrid = dynamic(
+  () =>
+    import("@/features/staff/components/scheduling-grid").then(
+      (mod) => mod.SchedulingGrid
+    ),
+  {
+    loading: () => <StaffLoading />,
+  }
+);
 
 // Next.js 16/15 props for Page
 interface PageProps {
@@ -42,7 +64,7 @@ export default async function StaffPage({ searchParams }: PageProps) {
   const [staff, shifts, schedules] = await Promise.all([
     getStaffAction(),
     getShiftsAction(),
-    getSchedulesAction(format(start, "yyyy-MM-dd"), format(end, "yyyy-MM-dd"))
+    getSchedulesAction(format(start, "yyyy-MM-dd"), format(end, "yyyy-MM-dd")),
   ]);
 
   return (
@@ -59,22 +81,34 @@ export default async function StaffPage({ searchParams }: PageProps) {
           <TabsTrigger value="schedule">Lịch biểu</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="technicians" forceMount={true} className="data-[state=inactive]:hidden focus-visible:outline-none mt-0">
+        <TabsContent
+          value="technicians"
+          forceMount={true}
+          className="data-[state=inactive]:hidden focus-visible:outline-none mt-0"
+        >
           <Suspense fallback={<StaffLoading />}>
             <StaffTable data={staff} />
           </Suspense>
         </TabsContent>
 
-        <TabsContent value="shifts" forceMount={true} className="data-[state=inactive]:hidden focus-visible:outline-none mt-0">
+        <TabsContent
+          value="shifts"
+          forceMount={true}
+          className="data-[state=inactive]:hidden focus-visible:outline-none mt-0"
+        >
           <Suspense fallback={<StaffLoading />}>
             <ShiftList shifts={shifts} />
           </Suspense>
         </TabsContent>
 
-        <TabsContent value="schedule" forceMount={true} className="data-[state=inactive]:hidden focus-visible:outline-none mt-0">
+        <TabsContent
+          value="schedule"
+          forceMount={true}
+          className="data-[state=inactive]:hidden focus-visible:outline-none mt-0"
+        >
           <Suspense fallback={<StaffLoading />}>
             <SchedulingGrid
-              staff={staff.filter(s => s.is_active)}
+              staff={staff.filter((s) => s.is_active)}
               shifts={shifts}
               schedules={schedules}
               currentDate={safeDate}

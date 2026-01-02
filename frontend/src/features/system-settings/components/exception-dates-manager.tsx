@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { format } from "date-fns"
-import { vi } from "date-fns/locale"
-import { AlertCircle, Plus, Trash2 } from "lucide-react"
-import * as React from "react"
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
+import { AlertCircle, Plus, Trash2 } from "lucide-react";
+import * as React from "react";
 
-import { DatePickerWithRange } from "@/shared/components/date-range-picker"
-import { TimePickerDropdown } from "@/shared/components/time-picker-dropdown"
-import { cn } from "@/shared/lib/utils"
-import { Badge } from "@/shared/ui/badge"
-import { Button } from "@/shared/ui/button"
+import { DatePickerWithRange } from "@/shared/components/date-range-picker";
+import { TimePickerDropdown } from "@/shared/components/time-picker-dropdown";
+import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/shared/ui/dialog"
+} from "@/shared/ui/dialog";
 import {
   Form,
   FormControl,
@@ -25,39 +25,43 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/shared/ui/form"
-import { Input } from "@/shared/ui/input"
-import { Switch } from "@/shared/ui/switch"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { eachDayOfInterval, getDay, isSameDay } from "date-fns"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { ExceptionDate, OperatingHour } from "../types"
+} from "@/shared/ui/form";
+import { Input } from "@/shared/ui/input";
+import { Switch } from "@/shared/ui/switch";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { eachDayOfInterval, getDay, isSameDay } from "date-fns";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { ExceptionDate, OperatingHour } from "../types";
 
-const exceptionDateSchema = z.object({
-  dateRange: z.object({
-    from: z.date(),
-    to: z.date().optional(),
-  }),
-  reason: z.string().min(1, "Vui lòng nhập lý do"),
-  is_closed: z.boolean(),
-  open_time: z.string().optional(),
-  close_time: z.string().optional(),
-})
-.refine((data) => {
-  if (data.is_closed) return true;
-  return !!(data.open_time && data.close_time);
-}, {
-  message: "Vui lòng chọn đầy đủ giờ mở và đóng cửa",
-  path: ["close_time"],
-});
+const exceptionDateSchema = z
+  .object({
+    dateRange: z.object({
+      from: z.date(),
+      to: z.date().optional(),
+    }),
+    reason: z.string().min(1, "Vui lòng nhập lý do"),
+    is_closed: z.boolean(),
+    open_time: z.string().optional(),
+    close_time: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.is_closed) return true;
+      return !!(data.open_time && data.close_time);
+    },
+    {
+      message: "Vui lòng chọn đầy đủ giờ mở và đóng cửa",
+      path: ["close_time"],
+    }
+  );
 
 type ExceptionDateFormValues = z.infer<typeof exceptionDateSchema>;
 
 interface ExceptionDatesManagerProps {
-  initialData?: ExceptionDate[]
-  regularHours?: OperatingHour[]
-  onChange: (data: ExceptionDate[]) => void
+  initialData?: ExceptionDate[];
+  regularHours?: OperatingHour[];
+  onChange: (data: ExceptionDate[]) => void;
 }
 
 export function ExceptionDatesManager({
@@ -66,14 +70,15 @@ export function ExceptionDatesManager({
   onChange,
 }: ExceptionDatesManagerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const [exceptions, setExceptions] = React.useState<ExceptionDate[]>(initialData);
+  const [exceptions, setExceptions] =
+    React.useState<ExceptionDate[]>(initialData);
 
   // Đồng bộ lại local state khi dữ liệu từ cha thay đổi
   React.useEffect(() => {
     // Đảm bảo data luôn có id (fallback sang date hoặc random nếu thiếu)
-    const sanitizedData = initialData.map(item => ({
+    const sanitizedData = initialData.map((item) => ({
       ...item,
-      id: item.id || item.date || crypto.randomUUID()
+      id: item.id || item.date || crypto.randomUUID(),
     }));
     setExceptions(sanitizedData);
   }, [initialData]);
@@ -94,27 +99,35 @@ export function ExceptionDatesManager({
 
   const onSubmit = (values: ExceptionDateFormValues) => {
     const dates = values.dateRange.to
-      ? eachDayOfInterval({ start: values.dateRange.from, end: values.dateRange.to })
+      ? eachDayOfInterval({
+          start: values.dateRange.from,
+          end: values.dateRange.to,
+        })
       : [values.dateRange.from];
 
-    const newExceptions: ExceptionDate[] = dates.map(date => ({
+    const newExceptions: ExceptionDate[] = dates.map((date) => ({
       id: crypto.randomUUID(),
       // Chỉ lấy phần ngày YYYY-MM-DD để khớp với kiểu date của Python
       date: format(date, "yyyy-MM-dd"),
       reason: values.reason,
       is_closed: values.is_closed,
       // Đảm bảo gửi null nếu không có giá trị
-      open_time: !values.is_closed && values.open_time ? values.open_time : undefined,
-      close_time: !values.is_closed && values.close_time ? values.close_time : undefined,
+      open_time:
+        !values.is_closed && values.open_time ? values.open_time : undefined,
+      close_time:
+        !values.is_closed && values.close_time ? values.close_time : undefined,
     }));
 
     // Tránh trùng lặp ngày nếu người dùng thêm lại ngày đã có
-    const filteredOld = exceptions.filter(old =>
-      !newExceptions.some(newExp => isSameDay(new Date(old.date), new Date(newExp.date)))
+    const filteredOld = exceptions.filter(
+      (old) =>
+        !newExceptions.some((newExp) =>
+          isSameDay(new Date(old.date), new Date(newExp.date))
+        )
     );
 
-    const updated = [...filteredOld, ...newExceptions].sort((a, b) =>
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+    const updated = [...filteredOld, ...newExceptions].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
 
     setExceptions(updated);
@@ -124,7 +137,7 @@ export function ExceptionDatesManager({
   };
 
   const removeException = (id: string) => {
-    const updated = exceptions.filter(e => e.id !== id);
+    const updated = exceptions.filter((e) => e.id !== id);
     setExceptions(updated);
     onChange(updated);
   };
@@ -132,7 +145,6 @@ export function ExceptionDatesManager({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
             <Button size="sm" variant="secondary">
@@ -145,7 +157,10 @@ export function ExceptionDatesManager({
               <DialogTitle>Thêm ngày ngoại lệ</DialogTitle>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4 pt-4"
+              >
                 <FormField
                   control={form.control}
                   name="dateRange"
@@ -228,14 +243,19 @@ export function ExceptionDatesManager({
                                 className="w-full"
                               />
                             </FormControl>
-                            {form.watch("open_time") && field.value && form.watch("open_time")! > field.value && (
-                              <div className="absolute top-full right-0 mt-1">
-                                <Badge variant="warning" className="h-6 px-2 text-[9px] gap-1 whitespace-nowrap">
-                                  <AlertCircle className="size-3" />
-                                  <span>Sáng hôm sau (+1)</span>
-                                </Badge>
-                              </div>
-                            )}
+                            {form.watch("open_time") &&
+                              field.value &&
+                              form.watch("open_time")! > field.value && (
+                                <div className="absolute top-full right-0 mt-1">
+                                  <Badge
+                                    variant="warning"
+                                    className="h-6 px-2 text-[9px] gap-1 whitespace-nowrap"
+                                  >
+                                    <AlertCircle className="size-3" />
+                                    <span>Sáng hôm sau (+1)</span>
+                                  </Badge>
+                                </div>
+                              )}
                           </div>
                           <FormMessage />
                         </FormItem>
@@ -261,34 +281,51 @@ export function ExceptionDatesManager({
         ) : (
           <div className="divide-y">
             {exceptions.map((item) => (
-              <div key={item.id} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+              <div
+                key={item.id}
+                className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
+              >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-sm">
-                      <span className="capitalize">{format(new Date(item.date), "EEEE", { locale: vi })}</span>,{" "}
-                      {format(new Date(item.date), "dd/MM/yyyy")}
+                      <span className="capitalize">
+                        {format(new Date(item.date), "EEEE", { locale: vi })}
+                      </span>
+                      , {format(new Date(item.date), "dd/MM/yyyy")}
                     </span>
-                    <span className={cn(
-                      "text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider flex items-center gap-1",
-                      item.is_closed
-                        ? "bg-destructive/10 text-destructive border border-destructive/20"
-                        : "bg-primary/10 text-primary border border-primary/20"
-                    )}>
-                      {item.is_closed ? "Đóng cửa" : (
+                    <span
+                      className={cn(
+                        "text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider flex items-center gap-1",
+                        item.is_closed
+                          ? "bg-destructive/10 text-destructive border border-destructive/20"
+                          : "bg-primary/10 text-primary border border-primary/20"
+                      )}
+                    >
+                      {item.is_closed ? (
+                        "Đóng cửa"
+                      ) : (
                         <>
                           {item.open_time} - {item.close_time}
-                          {!item.is_closed && item.open_time && item.close_time && item.open_time > item.close_time && (
-                            <Badge variant="warning" className="ml-1 h-5 px-1.5 text-[9px] uppercase tracking-tighter">
-                              (+1)
-                            </Badge>
-                          )}
+                          {!item.is_closed &&
+                            item.open_time &&
+                            item.close_time &&
+                            item.open_time > item.close_time && (
+                              <Badge
+                                variant="warning"
+                                className="ml-1 h-5 px-1.5 text-[9px] uppercase tracking-tighter"
+                              >
+                                (+1)
+                              </Badge>
+                            )}
                         </>
                       )}
                     </span>
                     {(() => {
                       const getOverrideInfo = (dateStr: string) => {
                         const dayOfWeek = getDay(new Date(dateStr));
-                        const regHour = regularHours.find(h => h.day_of_week === dayOfWeek);
+                        const regHour = regularHours.find(
+                          (h) => h.day_of_week === dayOfWeek
+                        );
                         if (regHour && !regHour.is_closed) {
                           return `(Ghi đè: ${regHour.open_time}-${regHour.close_time})`;
                         }
@@ -320,5 +357,5 @@ export function ExceptionDatesManager({
         )}
       </div>
     </div>
-  )
+  );
 }

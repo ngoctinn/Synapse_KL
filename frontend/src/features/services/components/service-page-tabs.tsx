@@ -4,7 +4,12 @@ import { SidebarTrigger } from "@/shared/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
-import type { ResourceGroupWithCount, Service, ServiceCategory, Skill } from "../types";
+import type {
+  ResourceGroupWithCount,
+  Service,
+  ServiceCategory,
+  Skill,
+} from "../types";
 import { CategoriesTab } from "./categories-tab";
 import { ResourcesTab } from "./resources-tab";
 import { ServicesTab } from "./services-tab";
