@@ -39,11 +39,11 @@ export function DataTableFilterRow<TData>({ table }: DataTableFilterRowProps<TDa
 
         // Không hiển thị filter cho cột checkbox/actions hoặc cột không hỗ trợ lọc
         if (header.id === 'select' || header.id === 'actions' || !column.getCanFilter()) {
-             return <TableCell key={`filter-${header.id}`} className="py-2.5 h-14 bg-transparent border-b border-neutral-20/80" />
+             return <TableCell key={`filter-${header.id}`} className="py-2.5 h-12 bg-transparent border-b border-neutral-10/50" />
         }
 
         return (
-          <TableCell key={`filter-${header.id}`} className="py-2.5 h-14 px-4 bg-transparent border-b border-neutral-20/80 align-middle overflow-visible">
+          <TableCell key={`filter-${header.id}`} className="py-2.5 h-12 px-4 bg-transparent border-b border-neutral-10/50 align-middle overflow-visible">
              <div data-slot="filter-container" className="relative flex items-center w-full group">
                 <div className="flex-1">
                    {filterOptions ? (
@@ -51,10 +51,10 @@ export function DataTableFilterRow<TData>({ table }: DataTableFilterRowProps<TDa
                             value={(column.getFilterValue() as string) ?? "all"}
                             onValueChange={(value: string) => column.setFilterValue(value === "all" ? undefined : value)}
                         >
-                            <SelectTrigger className="w-full h-9 text-[11px] sm:text-xs bg-background border-neutral-10/60 rounded-lg shadow-sm focus:ring-1 focus:ring-primary/20 transition-all hover:border-neutral-20 pr-8">
+                            <SelectTrigger className="w-full h-8 text-[11px] sm:text-xs bg-background border-border/60 rounded-md focus:ring-1 focus:ring-primary/20 hover:border-border pr-8">
                                 <SelectValue placeholder="Chọn..." />
                             </SelectTrigger>
-                            <SelectContent className="border-border/40 shadow-lg">
+                            <SelectContent className="border-border/40">
                                 <SelectItem value="all" className="text-xs">Tất cả</SelectItem>
                                 {filterOptions.map((opt) => (
                                     <SelectItem key={opt.value} value={opt.value} className="text-xs font-medium">
@@ -68,7 +68,7 @@ export function DataTableFilterRow<TData>({ table }: DataTableFilterRowProps<TDa
                             placeholder="Tìm kiếm..."
                             value={(column.getFilterValue() as string) ?? ""}
                             onChange={(event: React.ChangeEvent<HTMLInputElement>) => column.setFilterValue(event.target.value)}
-                            className="w-full h-9 text-[11px] sm:text-xs bg-background border-neutral-10/60 rounded-lg shadow-sm focus-visible:ring-1 focus-visible:ring-primary/20 transition-all hover:border-neutral-20 pr-8"
+                            className="w-full h-8 text-[11px] sm:text-xs bg-background border-border/60 rounded-md focus-visible:ring-1 focus-visible:ring-primary/20 hover:border-border pr-8"
                        />
                    )}
                 </div>

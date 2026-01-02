@@ -78,22 +78,22 @@ export function DataTable<TData, TValue>({
   })
 
   return (
-    <div data-slot="data-table" className="space-y-4 font-sans w-full max-w-full overflow-hidden">
+    <div data-slot="data-table" className="space-y-4 w-full max-w-full overflow-hidden">
       <div className={cn(
-        "relative w-full overflow-x-auto border-border",
-        variant === "default" && "rounded-xl border bg-background shadow-sm"
+        "relative w-full overflow-x-auto",
+        variant === "default" && "rounded-lg border border-border bg-background"
       )}>
         <Table>
           <TableHeader className={cn(
-            "sticky top-0 z-30 shadow-sm",
-            "bg-card/50 dark:bg-neutral-90/50 backdrop-blur-md",
+            "sticky top-0 z-30",
+            "bg-neutral-5/30 dark:bg-neutral-90/20",
             variant === "flat" ? "border-b-0" : "border-b"
           )}>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="hover:bg-transparent border-none">
+              <TableRow key={headerGroup.id} className="hover:bg-transparent border-b border-neutral-10/50">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} colSpan={header.colSpan} className="h-12 text-sm font-bold text-foreground bg-transparent px-4">
+                    <TableHead key={header.id} colSpan={header.colSpan} className="h-11 text-xs font-semibold text-neutral-60 bg-transparent px-4 uppercase tracking-wider">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -106,7 +106,6 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
 
-            {/* Hàng filter tích hợp trực tiếp vào Header */}
             <DataTableFilterRow table={table} />
 
           </TableHeader>
@@ -116,11 +115,11 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="group cursor-pointer transition-all duration-200 border-b border-neutral-20/50 last:border-0 h-16 hover:bg-neutral-5/20 dark:hover:bg-neutral-90/10 data-[state=selected]:bg-primary/5"
+                  className="group cursor-pointer border-b border-border/50 last:border-0 h-14 hover:bg-neutral-5/50 dark:hover:bg-neutral-90/20 data-[state=selected]:bg-primary/5"
                   onClick={() => onRowClick?.(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="py-2 px-4 text-xs sm:text-sm text-neutral-80 font-medium group-hover:text-neutral-100 transition-colors">
+                    <TableCell key={cell.id} className="py-2 px-4 text-sm text-neutral-80 font-medium group-hover:text-neutral-100 transition-none">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}

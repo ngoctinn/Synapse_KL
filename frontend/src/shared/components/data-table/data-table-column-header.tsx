@@ -40,19 +40,19 @@ export function DataTableColumnHeader<TData, TValue>({
         variant="ghost"
         size="sm"
         className={cn(
-          "h-8 px-3 gap-2 hover:bg-neutral-5/20 text-sm font-bold transition-colors",
-          isSorted ? "text-primary" : "text-neutral-80"
+          "h-8 px-3 gap-2 text-xs font-semibold",
+          isSorted ? "text-primary" : "text-neutral-60"
         )}
         onClick={() => column.toggleSorting()}
       >
         <span>{title}</span>
         <div className="flex flex-col">
            {isSorted === "asc" ? (
-             <ArrowUp className="h-3.5 w-3.5" />
+             <ArrowUp className="h-3 w-3" />
            ) : isSorted === "desc" ? (
-             <ArrowDown className="h-3.5 w-3.5" />
+             <ArrowDown className="h-3 w-3" />
            ) : (
-             <ArrowDownUp className="h-3.5 w-3.5 opacity-20 group-hover:opacity-100" />
+             <ArrowDownUp className="h-3 w-3" />
            )}
         </div>
       </Button>

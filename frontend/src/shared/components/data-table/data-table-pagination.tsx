@@ -56,7 +56,7 @@ export function DataTablePagination<TData>({
 
   return (
     <div data-slot="pagination" className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 py-4">
-      <div data-slot="pagination-selected" className="flex-1 text-xs sm:text-sm text-neutral-40 font-medium order-2 sm:order-1">
+      <div data-slot="pagination-selected" className="flex-1 text-xs sm:text-sm text-neutral-60 font-medium order-2 sm:order-1">
         Đã chọn <span className="text-neutral-80 font-bold">{table.getFilteredSelectedRowModel().rows.length}</span> trên{" "}
         <span className="text-neutral-80 font-bold">{table.getFilteredRowModel().rows.length}</span> dòng.
       </div>
@@ -70,10 +70,10 @@ export function DataTablePagination<TData>({
               table.setPageSize(Number(value))
             }}
           >
-            <SelectTrigger className="h-9 w-[75px] bg-background border-neutral-10/60 rounded-lg hover:border-neutral-20 transition-all font-bold text-xs">
+            <SelectTrigger className="h-8 w-[75px] bg-background border-neutral-10/50 rounded-md hover:border-neutral-20 font-bold text-xs">
               <SelectValue placeholder={table.getState().pagination.pageSize} />
             </SelectTrigger>
-            <SelectContent side="top" className="border-border/40 shadow-xl">
+            <SelectContent side="top" className="border-border/40">
               {[5, 10, 20, 30, 40, 50].map((pageSize) => (
                 <SelectItem key={pageSize} value={`${pageSize}`} className="text-xs">
                   {pageSize}
@@ -86,7 +86,7 @@ export function DataTablePagination<TData>({
         <div data-slot="pagination-actions" className="flex items-center gap-1 sm:gap-1.5">
           <Button
             variant="ghost"
-            className="h-9 w-9 p-0 hover:bg-neutral-5 rounded-lg text-neutral-40 disabled:opacity-30 transition-all"
+            className="h-8 w-8 p-0 hover:bg-neutral-5 rounded-md text-neutral-60 disabled:opacity-30"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
@@ -104,9 +104,9 @@ export function DataTablePagination<TData>({
                   <Button
                     variant={pageIndex === page ? "default" : "ghost"}
                     className={cn(
-                      "h-9 min-w-[36px] px-1.5 text-xs font-bold rounded-lg transition-all",
+                      "h-8 min-w-[32px] px-1 text-xs font-bold rounded-md",
                       pageIndex === page
-                        ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20 hover:bg-primary/90"
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
                         : "text-neutral-60 hover:bg-neutral-5 hover:text-neutral-100"
                     )}
                     onClick={() => table.setPageIndex(page as number)}
@@ -120,7 +120,7 @@ export function DataTablePagination<TData>({
 
           <Button
             variant="ghost"
-            className="h-9 w-9 p-0 hover:bg-neutral-5 rounded-lg text-neutral-40 disabled:opacity-30 transition-all"
+            className="h-8 w-8 p-0 hover:bg-neutral-5 rounded-md text-neutral-40 disabled:opacity-30"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >

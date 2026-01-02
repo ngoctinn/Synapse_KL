@@ -235,13 +235,11 @@ export function SharedComponentsShowcase() {
         <div className="space-y-3">
           <Label className="text-sm font-semibold">Smart Data Table</Label>
           <p className="text-xs text-muted-foreground">Advanced table with sorting, filtering, selection, and pagination</p>
-          <div className="border rounded-md">
-            <DataTable
-              columns={tableColumns}
-              data={tableData}
-              onRowClick={(row: typeof tableData[0]) => toast.info(`Clicked row: ${row.name}`)}
-            />
-          </div>
+          <DataTable
+            columns={tableColumns}
+            data={tableData}
+            onRowClick={(row: typeof tableData[0]) => toast.info(`Clicked row: ${row.name}`)}
+          />
         </div>
       </div>
     </section>
