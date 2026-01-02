@@ -4,6 +4,7 @@ import { ScheduleFormSheet } from "@/features/staff/components/schedule-form-she
 import { type GridCellCoords, useDragToSelect } from "@/features/staff/hooks/use-drag-select";
 import { useGridKeyboard } from "@/features/staff/hooks/use-grid-keyboard";
 import type { Shift, StaffProfile, StaffScheduleWithDetails } from "@/features/staff/types";
+import { CalendarToolbar } from "@/shared/components/calendar-toolbar";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -17,13 +18,11 @@ import {
   addDays,
   format,
   isSameDay,
-  startOfWeek,
-  subDays
+  startOfWeek
 } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
   AlertTriangle,
-  Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -33,6 +32,10 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+const MOBILE_DAYS_TO_SHOW = 3;
+const DESKTOP_DAYS_TO_SHOW = 7;
+const TOTAL_WEEK_DAYS = 7;
 
 interface SchedulingGridProps {
   staff: StaffProfile[];
@@ -46,26 +49,22 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedCells, setSelectedCells] = useState<GridCellCoords[]>([]);
-  const [isSelectMode, setIsSelectMode] = useState(false); // Touch-friendly selection mode
+  const [isSelectMode, setIsSelectMode] = useState(false);
 
   const start = startOfWeek(currentDate, { weekStartsOn: 1 });
 
-  // Mobile shows fewer days for better usability
-  const daysToShow = isMobile ? 3 : 7;
-  const allWeekDays = useMemo(() => [...Array(7)].map((_, i) => addDays(start, i)), [start]);
+  const daysToShow = isMobile ? MOBILE_DAYS_TO_SHOW : DESKTOP_DAYS_TO_SHOW;
+  const allWeekDays = useMemo(() => [...Array(TOTAL_WEEK_DAYS)].map((_, i) => addDays(start, i)), [start]);
 
-  // Calculate which days to show on mobile (centered around current day or start of selection)
   const [mobileStartIndex, setMobileStartIndex] = useState(0);
   const weekDays = useMemo(() => {
     if (!isMobile) return allWeekDays;
     return allWeekDays.slice(mobileStartIndex, mobileStartIndex + daysToShow);
   }, [isMobile, allWeekDays, mobileStartIndex, daysToShow]);
 
-  // --- Optimization: O(1) Lookup Map ---
   const scheduleMap = useMemo(() => {
     const map = new Map<string, StaffScheduleWithDetails[]>();
     schedules.forEach(s => {
-      // Create key: staffId_date(YYYY-MM-DD)
       const dateKey = format(new Date(s.work_date), "yyyy-MM-dd");
       const key = `${s.staff_id}_${dateKey}`;
 
@@ -84,14 +83,7 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
     selection
   } = useDragToSelect();
 
-  // Handle Selection Finalization Logic (Sync with hook state)
-  // We use the hook's returned state (selection) to drive visual feedback,
-  // but we need to compute the *actual* selected cells when drag ends.
-  // The hook provides `onSelectionComplete` but let's stick to the previous effect pattern
-  // if we want to batch computations, or refactor to be cleaner.
-  // Current pattern: Hook tracks "box", we compute "cells" on drag end.
-  // Handle Selection Finalization Logic
-  // Use useEffect instead of useMemo to avoid infinite render loops when updating state.
+
   useEffect(() => {
     if (!selection.isSelecting && selection.start && selection.end) {
         // Collect selected cells
@@ -172,7 +164,7 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
     focusCell,
   } = useGridKeyboard({
     totalRows: staff.length,
-    totalCols: 7,
+    totalCols: TOTAL_WEEK_DAYS,
     staff,
     weekDays,
     formatDate: formatDateForKeyboard,
@@ -186,18 +178,12 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
       setSelectedCells([]);
   }
 
-  const navigateWeek = (type: "prev" | "next" | "today") => {
-    let newDate = new Date(currentDate);
-    if (type === "prev") newDate = subDays(currentDate, 7);
-    if (type === "next") newDate = addDays(currentDate, 7);
-    if (type === "today") newDate = new Date();
-
-    // Update URL - This triggers Server Page re-render with new data
+  const handleNavigate = useCallback((newDate: Date) => {
     const dateStr = format(newDate, "yyyy-MM-dd");
     const params = new URLSearchParams(window.location.search);
     params.set("date", dateStr);
     router.push(`?${params.toString()}`);
-  };
+  }, [router]);
 
   // Empty state when no staff
   if (staff.length === 0) {
@@ -219,44 +205,25 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
   return (
     <div className={cn("space-y-4", selection.isSelecting && "cursor-crosshair")}>
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => navigateWeek("prev")} className="h-9 w-9">
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          <div className="flex items-center gap-2 px-3 h-9 border rounded-md bg-muted/20">
-            <CalendarIcon className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium whitespace-nowrap capitalize">
-              Tuần {format(start, "dd/MM/yyyy", { locale: vi })}
-            </span>
-          </div>
-          <Button variant="outline" size="icon" onClick={() => navigateWeek("next")} className="h-9 w-9">
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
+        <CalendarToolbar
+          currentDate={currentDate}
+          view="week"
+          onViewChange={() => {}}
+          onNavigate={handleNavigate}
+          showViewSwitcher={false}
+        />
 
-        <div className="flex items-center gap-2">
-          {/* Mobile: Select Mode Toggle */}
-          {isMobile && (
-            <Button
-              variant={isSelectMode ? "default" : "outline"}
-              size="sm"
-              onClick={() => setIsSelectMode(!isSelectMode)}
-              className="h-9 px-3 gap-2"
-            >
-              <MousePointerClick className="w-4 h-4" />
-              <span className="hidden sm:inline">{isSelectMode ? "Thoát chọn" : "Chọn ô"}</span>
-            </Button>
-          )}
-
+        {isMobile && (
           <Button
-            variant="secondary"
+            variant={isSelectMode ? "default" : "outline"}
             size="sm"
-            onClick={() => navigateWeek("today")}
-            className="h-9 px-4 font-medium"
+            onClick={() => setIsSelectMode(!isSelectMode)}
+            className="h-9 px-3 gap-2"
           >
-            HÔM NAY
+            <MousePointerClick className="w-4 h-4" />
+            <span className="hidden sm:inline">{isSelectMode ? "Thoát chọn" : "Chọn ô"}</span>
           </Button>
-        </div>
+        )}
       </div>
 
       {/* Mobile Day Navigation */}
@@ -272,13 +239,13 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
             <ChevronLeft className="w-4 h-4" />
           </Button>
           <span className="text-xs text-muted-foreground">
-            Đang xem {daysToShow}/{7} ngày - vuốt để xem thêm
+            Đang xem {daysToShow}/{TOTAL_WEEK_DAYS} ngày - vuốt để xem thêm
           </span>
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setMobileStartIndex(prev => Math.min(7 - daysToShow, prev + 1))}
-            disabled={mobileStartIndex >= 7 - daysToShow}
+            onClick={() => setMobileStartIndex(prev => Math.min(TOTAL_WEEK_DAYS - daysToShow, prev + 1))}
+            disabled={mobileStartIndex >= TOTAL_WEEK_DAYS - daysToShow}
             className="h-8 px-2"
           >
             <ChevronRight className="w-4 h-4" />
@@ -335,7 +302,6 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
                   {weekDays.map((day, colIndex) => {
                     const dateStr = format(day, "yyyy-MM-dd");
                     const key = `${s.user_id}_${dateStr}`;
-                    // O(1) Lookup
                     const daySchedules = scheduleMap.get(key) || [];
                     // Check selection: Either currently dragging OR finalized selection
                     const isSelected = isDragSelected(colIndex, rowIndex) || selectedKeys.has(`${rowIndex}_${colIndex}`);
@@ -485,28 +451,26 @@ export function SchedulingGrid({ staff, shifts, schedules, currentDate }: Schedu
   );
 }
 
-// Sub-component for better maintainability and performance
 function ScheduleBadge({ schedule: sch, shifts }: { schedule: StaffScheduleWithDetails, shifts: Shift[] }) {
     const shiftDetails = shifts.find(s => s.id === sch.shift_id);
     const startTime = shiftDetails?.start_time?.slice(0, 5) ?? "";
     const endTime = shiftDetails?.end_time?.slice(0, 5) ?? "";
-    const color = sch.shift_color || "#94a3b8"; // Default slate-400
-
-    // Check luminance to set text color? Simple contrast for now.
-    // Instead of complex inline color-mix, we use CSS vars or simple logic
+    const color = sch.shift_color || "#94a3b8";
     const isDraft = sch.status === 'DRAFT';
 
     return (
         <div
         className={cn(
             "w-full px-2 py-1.5 rounded-md text-[10px] sm:text-[11px] font-bold border shadow-sm flex flex-col gap-0.5 relative overflow-hidden group/badge",
+            "[--shift-color:var(--shift-color-value)]",
             isDraft && "border-dashed opacity-90 hover:opacity-100 bg-[image:repeating-linear-gradient(45deg,transparent,transparent_5px,rgba(0,0,0,0.03)_5px,rgba(0,0,0,0.03)_10px)]"
         )}
         style={{
-            backgroundColor: `${color}15`, // 15% opacity hex
-            borderColor: `${color}40`, // 40% opacity border
-            color: `color-mix(in srgb, ${color} 100%, black 40%)` // Darken text
-        }}
+            '--shift-color-value': color,
+            backgroundColor: `color-mix(in srgb, var(--shift-color) 15%, transparent)`,
+            borderColor: `color-mix(in srgb, var(--shift-color) 40%, transparent)`,
+            color: `color-mix(in srgb, var(--shift-color) 100%, black 40%)`
+        } as React.CSSProperties}
         >
         {isDraft && (
             <div className="absolute top-0 right-0 w-2 h-2 bg-amber-400 rounded-bl-md z-10" />

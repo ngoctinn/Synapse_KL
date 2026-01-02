@@ -2,16 +2,17 @@
 
 import { StaffFormSheet } from "@/features/staff/components/staff-form-sheet";
 import type { StaffProfileWithSkills } from "@/features/staff/types";
-import type { Column } from "@/shared/components/smart-data-table";
-import { DataTable } from "@/shared/components/smart-data-table";
+import { DataTable, DataTableColumnHeader } from "@/shared/components/smart-data-table";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { Checkbox } from "@/shared/ui/checkbox";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger
 } from "@/shared/ui/dropdown-menu";
+import { ColumnDef } from "@tanstack/react-table";
 import { Edit, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -41,51 +42,81 @@ export function StaffTable({ data }: StaffTableProps) {
     setIsSheetOpen(true);
   };
 
-  const columns: Column<StaffProfileWithSkills & { id: string }>[] = [
+  const columns: ColumnDef<StaffProfileWithSkills & { id: string }>[] = [
     {
-      key: "full_name",
-      label: "Họ tên",
-      render: (_, row) => (
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+          className="translate-y-[2px]"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+          className="translate-y-[2px]"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "full_name",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Họ tên" />,
+      cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <div
             className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center font-bold text-xs border bg-muted"
             style={{
-              backgroundColor: row.color_code ? `${row.color_code}20` : undefined,
-              color: row.color_code,
-              borderColor: row.color_code ? `${row.color_code}40` : undefined
+              backgroundColor: row.original.color_code ? `${row.original.color_code}20` : undefined,
+              color: row.original.color_code,
+              borderColor: row.original.color_code ? `${row.original.color_code}40` : undefined
             }}
           >
-            {row.full_name.charAt(0)}
+            {row.original.full_name.charAt(0)}
           </div>
           <div className="flex flex-col">
-             <span className="font-medium text-foreground text-sm">{row.full_name}</span>
-             <span className="text-[10px] text-muted-foreground uppercase">{row.user_id.slice(0, 8)}</span>
+             <span className="font-medium text-foreground text-sm">{row.original.full_name}</span>
+             <span className="text-[10px] text-muted-foreground uppercase">{row.original.user_id.slice(0, 8)}</span>
           </div>
         </div>
       )
     },
     {
-      key: "title",
-      label: "Chức danh",
-      render: (val) => <span className="text-sm font-medium">{val as string}</span>
+      accessorKey: "title",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Chức danh" />,
+      cell: ({ row }) => <span className="text-sm font-medium">{row.getValue("title")}</span>
     },
     {
-      key: "is_active",
-      label: "Trạng thái",
-      render: (_, row) => (
-        <Badge variant={row.is_active ? "success" : "secondary"} className="h-5 px-2 text-[10px]">
-          {row.is_active ? "Đang làm việc" : "Nghỉ việc"}
-        </Badge>
-      )
+      accessorKey: "is_active",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Trạng thái" />,
+      meta: {
+        filterOptions: [
+          { label: "Đang làm việc", value: "true" },
+          { label: "Nghỉ việc", value: "false" }
+        ]
+      },
+      cell: ({ row }) => {
+        const isActive = row.original.is_active;
+        return (
+          <Badge variant={isActive ? "success" : "secondary"} className="h-5 px-2 text-[10px]">
+             {isActive ? "Đang làm việc" : "Nghỉ việc"}
+          </Badge>
+        )
+      }
     },
     {
-      key: "skill_ids",
-      label: "Kỹ năng",
-      render: (_, row) => (
+      accessorKey: "skill_ids",
+      header: "Kỹ năng",
+      cell: ({ row }) => (
         <div className="flex flex-wrap gap-1">
-          {row.skill_ids.length > 0 ? (
+          {row.original.skill_ids.length > 0 ? (
             <Badge variant="outline" className="text-[10px] h-5 bg-background font-normal">
-              {row.skill_ids.length} kỹ năng
+              {row.original.skill_ids.length} kỹ năng
             </Badge>
           ) : (
             <span className="text-[10px] text-muted-foreground italic">--</span>
@@ -94,10 +125,8 @@ export function StaffTable({ data }: StaffTableProps) {
       )
     },
     {
-      key: "actions",
-      label: "",
-      width: "50px",
-      render: (_, row) => (
+      id: "actions",
+      cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
@@ -105,7 +134,7 @@ export function StaffTable({ data }: StaffTableProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[160px]">
-            <DropdownMenuItem onClick={() => handleEdit(row)} className="gap-2 cursor-pointer">
+            <DropdownMenuItem onClick={() => handleEdit(row.original)} className="gap-2 cursor-pointer">
               <Edit className="h-4 w-4 text-muted-foreground" />
               <span>Chỉnh sửa</span>
             </DropdownMenuItem>

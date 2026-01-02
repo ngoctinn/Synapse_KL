@@ -3,10 +3,10 @@
 import { Input } from "@/shared/ui/input";
 import { useEffect, useState } from "react";
 import type { ControllerRenderProps } from "react-hook-form";
+import type { ServiceCreateForm } from "../../schemas";
 
-// Explicitly typing the field to accept any react-hook-form field props
 interface PriceInputFieldProps {
-  field: ControllerRenderProps<any, any>;
+  field: ControllerRenderProps<ServiceCreateForm, "price">; // Explicitly typed for the price field
 }
 
 export function PriceInputField({ field }: PriceInputFieldProps) {

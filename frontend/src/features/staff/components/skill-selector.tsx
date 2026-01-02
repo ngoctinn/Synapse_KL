@@ -22,7 +22,9 @@ export function SkillSelector({ value, onChange, disabled }: SkillSelectorProps)
         const data = await getSkillsAction();
         setSkills(data);
       } catch (error) {
-        console.error("Failed to fetch skills", error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error("Failed to fetch skills", error);
+        }
       } finally {
         setIsLoading(false);
       }

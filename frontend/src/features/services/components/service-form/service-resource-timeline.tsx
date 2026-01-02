@@ -73,7 +73,7 @@ export function ServiceResourceTimeline({ resourceGroups }: ServiceResourceTimel
           className="absolute inset-y-0 right-0 bg-orange-500/[0.04] rounded-r-md overflow-hidden pointer-events-none"
           style={{ width: `${(buffer / total) * 100}%` }}
         >
-          <div className="w-full h-full opacity-10" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #f97316 0, #f97316 1px, transparent 0, transparent 4px)', backgroundSize: '6px 6px' }} />
+          <div className="w-full h-full opacity-10 bg-[image:repeating-linear-gradient(45deg,var(--color-orange-500)_0,var(--color-orange-500)_1px,transparent_0,transparent_4px)] [background-size:6px_6px]" />
         </div>
 
         {/* Requirements Rows */}
@@ -131,7 +131,7 @@ export function ServiceResourceTimeline({ resourceGroups }: ServiceResourceTimel
         </div>
         <div className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors">
           <div className="w-3 h-3 bg-orange-500/10 border border-orange-500/20 rounded-sm overflow-hidden relative">
-              <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #f97316 0, #f97316 1px, transparent 0, transparent 3px)', backgroundSize: '4px 4px' }} />
+              <div className="absolute inset-0 opacity-20 bg-[image:repeating-linear-gradient(45deg,var(--color-orange-500)_0,var(--color-orange-500)_1px,transparent_0,transparent_3px)] [background-size:4px_4px]" />
           </div> Nghỉ/Chuẩn bị
         </div>
       </div>

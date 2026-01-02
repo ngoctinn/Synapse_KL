@@ -2,18 +2,23 @@ import { AppSidebar } from "@/shared/components/app-sidebar"
 import { BottomNav } from "@/shared/components/bottom-nav"
 import { UserRole } from "@/shared/types"
 import {
-    SidebarInset,
-    SidebarProvider
+  SidebarInset,
+  SidebarProvider
 } from "@/shared/ui/sidebar"
+import { Metadata } from "next"
 import { cookies } from "next/headers"
 import React from "react"
+
+export const metadata: Metadata = {
+  title: "Dashboard | Synapse",
+  description: "Bảng điều khiển quản lý hệ thống Spa - Synapse CRM",
+}
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
-}) {
-  // Lấy role từ cookie (Server-side)
+}): Promise<React.JSX.Element> {
   const cookieStore = await cookies()
   const userRole = (cookieStore.get("user-role")?.value as UserRole) || "manager"
 

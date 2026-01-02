@@ -1,6 +1,6 @@
 "use client";
 
-import { DataTable, type Column } from "@/shared/components/smart-data-table";
+import { DataTable, DataTableColumnHeader } from "@/shared/components/smart-data-table";
 import { TabToolbar } from "@/shared/components/tab-toolbar";
 import {
     AlertDialog,
@@ -15,6 +15,7 @@ import {
 } from "@/shared/ui/alert-dialog";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { Checkbox } from "@/shared/ui/checkbox";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -23,6 +24,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
+import { ColumnDef } from "@tanstack/react-table";
 import { Bed, CalendarClock, MoreHorizontal, Plus, Trash2, Wrench } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -245,10 +247,6 @@ function ResourcesDataTable({
   onMaintenance: (r: Resource) => void;
   onDelete: (id: string) => void;
 }) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
-  const [sortConfig, setSortConfig] = useState<{ key: keyof Resource; dir: "asc" | "desc" } | null>(null);
-
   const processedData = useMemo(() => {
     let result = [...data];
 
@@ -259,47 +257,46 @@ function ResourcesDataTable({
         (res.code && res.code.toLowerCase().includes(searchLower))
       );
     }
-
-    if (sortConfig) {
-      result.sort((a, b) => {
-        const aValue = a[sortConfig.key];
-        const bValue = b[sortConfig.key];
-        if (aValue === bValue) return 0;
-        if (aValue === null || aValue === undefined) return 1;
-        if (typeof aValue === "string" && typeof bValue === "string") {
-          return sortConfig.dir === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-        }
-        return 0; // fallback
-      });
-    }
     return result;
-  }, [data, sortConfig, search]);
+  }, [data, search]);
 
-  const paginatedData = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return processedData.slice(start, start + pageSize);
-  }, [processedData, currentPage, pageSize]);
-
-  const columns: Column<Resource>[] = [
-    { key: "no", label: "No", width: "50px" },
-    { key: "selection", label: "", width: "40px" },
-    { key: "name", label: "Tên tài nguyên", sortable: true, render: (v) => <span className="font-medium">{v as string}</span> },
-    { key: "code", label: "Mã", sortable: true, render: (v) => <code className="text-xs bg-muted px-1 rounded">{v ? v as string : "-"}</code> },
+  const columns: ColumnDef<Resource>[] = [
     {
-      key: "status",
-      label: "Trạng thái",
-      sortable: true,
-      render: (v) => (
-        <Badge variant={v === "ACTIVE" ? "default" : "secondary"}>
-          {v as string}
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+          className="translate-y-[2px]"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+          className="translate-y-[2px]"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    { accessorKey: "name", header: ({ column }) => <DataTableColumnHeader column={column} title="Tên tài nguyên" />, cell: (row) => <span className="font-medium">{row.getValue() as string}</span> },
+    { accessorKey: "code", header: ({ column }) => <DataTableColumnHeader column={column} title="Mã" />, cell: (row) => <code className="text-xs bg-muted px-1 rounded">{row.getValue() ? row.getValue() as string : "-"}</code> },
+    {
+      accessorKey: "status",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Trạng thái" />,
+      cell: (row) => (
+        <Badge variant={row.getValue() === "ACTIVE" ? "default" : "secondary"}>
+          {row.getValue() as string}
         </Badge>
       )
     },
     {
-      key: "actions",
-      label: "Thao tác",
-      width: "80px",
-      render: (_, res) => (
+      id: "actions",
+      header: "Thao tác",
+      cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
@@ -309,7 +306,7 @@ function ResourcesDataTable({
           <DropdownMenuContent align="end" className="w-[180px]">
             <DropdownMenuLabel>Hành động</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => onMaintenance(res)}>
+            <DropdownMenuItem onClick={() => onMaintenance(row.original)}>
               <CalendarClock className="mr-2 h-4 w-4 text-warning" />
               Lên lịch bảo trì
             </DropdownMenuItem>
@@ -328,13 +325,13 @@ function ResourcesDataTable({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Xóa tài nguyên &quot;{res.name}&quot;? Hành động này không thể hoàn tác.
+                    Xóa tài nguyên &quot;{row.original.name}&quot;? Hành động này không thể hoàn tác.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Hủy</AlertDialogCancel>
                   <AlertDialogAction
-                    onClick={() => onDelete(res.id)}
+                    onClick={() => onDelete(row.original.id)}
                     className="bg-destructive"
                   >
                     Xóa
@@ -351,16 +348,7 @@ function ResourcesDataTable({
   return (
     <DataTable
       columns={columns}
-      data={paginatedData}
-      onSort={(key, dir) => setSortConfig({ key, dir })}
-      pagination={{
-        currentPage,
-        pageSize,
-        totalItems: processedData.length,
-        onPageChange: setCurrentPage,
-        pageSizeOptions: [5, 10, 20],
-        onPageSizeChange: (size) => { setPageSize(size); setCurrentPage(1); }
-      }}
+      data={processedData}
     />
   );
 }

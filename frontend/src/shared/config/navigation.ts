@@ -33,10 +33,8 @@ export const navigationConfig: Record<UserRole, NavConfig> = {
         title: "",
         items: [
           { title: "Trang chủ", href: "/dashboard/manager", icon: Home },
-          { title: "Lịch hẹn", href: "/dashboard/manager/calendar", icon: CalendarDays },
-          { title: "Khách hàng", href: "/dashboard/manager/patients", icon: Users },
+          { title: "Dịch vụ", href: "/dashboard/manager/services", icon: Package },
           { title: "Nhân viên", href: "/dashboard/manager/staff", icon: UserCircle },
-          { title: "Báo cáo", href: "/dashboard/manager/reports", icon: CreditCard },
           { title: "Cài đặt", href: "/dashboard/manager/settings", icon: Settings },
         ],
       },

@@ -1,44 +1,39 @@
 ---
 trigger: always_on
----
-
----
-trigger: always_on
 description: Ngữ cảnh nghiệp vụ Synapse - Hệ thống quản lý và chăm sóc khách hàng Spa.
 ---
 # DOMAIN_SYNAPSE_CONTEXT (v2025.12)
 
 ## 1. THÔNG TIN DỰ ÁN
-- **Đề tài**: Xây dựng hệ thống chăm sóc khách hàng trực tuyến cho Spa.
-- **Tên dự án**: Synapse.
-- **Mục tiêu**: Hiện đại hóa quản lý Spa, tối ưu hóa lập lịch (Scheduling) và cá nhân hóa trải nghiệm khách hàng (CRM).
+- **Đề tài**: Hệ thống CRM và Quản lý Spa trực tuyến Synapse.
+- **Mục tiêu**: Hiện đại hóa Spa, tối ưu hóa lập lịch (Scheduling) và cá nhân hóa trải nghiệm.
 
 ## 2. CORE ENGINE: SCHEDULING (RCPSP)
 - **Problem Model**: Resource-Constrained Project Scheduling Problem.
 - **Technology**: Google OR-Tools (CP-SAT Solver).
 - **Scheduling Logic**:
   - **Hard Constraints**:
-    - Zero Overlap ($R_i \cap R_j = \emptyset$) cho Nhân viên, Giường, Thiết bị.
-    - Skill-matching ($K_{req} \subseteq K_{staff}$): Kỹ thuật viên phải có đủ kỹ năng/chứng chỉ cho dịch vụ.
-  - **Soft Constraints (Optimization)**:
-    - Cân bằng tải (Load Balancing) nhân viên.
-    - Ưu tiên KTV khách yêu cầu (Preference).
-    - Giảm thiểu khoảng thời gian trống nhàn rỗi (Idle time).
+    - Không chồng chéo (Zero Overlap) cho Nhân viên, Giường, Thiết bị.
+    - Skill-matching: Kỹ thuật viên phải có chứng chỉ phù hợp với dịch vụ.
+  - **Soft Constraints**:
+    - Cân bằng tải nhân viên.
+    - Ưu tiên KTV theo yêu cầu của khách.
+    - Giảm thiểu khoảng thời gian trống (Idle time).
+  - **Granularity**: Lập lịch dựa trên 5-10 phút slot để tối ưu hóa không gian tìm kiếm của solver.
 
-## 3. RÀNG BUỘC TÀI NGUYÊN & THỜI GIAN
-- **Tài nguyên**: Kỹ thuật viên (theo ca), Giường chức năng, Máy móc chuyên dụng.
+## 3. RÀNG BUỘC TÀI NGUYÊN
+- **Tài nguyên**: Kỹ thuật viên (theo ca), Giường chức năng, Máy móc.
 - **Thời gian**:
-  - **Duration**: Thời gian thực hiện dịch vụ.
-  - **Recovery Time**: 10-15 phút nghỉ giữa các ca (vệ sinh, chuẩn bị dụng cụ).
-  - **Business Hours**: Tuân thủ khung giờ hoạt động của chi nhánh.
+  - **Recovery Time**: 10-15 phút nghỉ giữa các dịch vụ để vệ sinh/chuẩn bị.
+  - **Business Hours**: Tuân thủ khung giờ của chi nhánh.
 
-## 4. PHÂN QUYỀN & PHẠM VI (RBAC)
-- **MANAGER**: Quản trị nhân sự, cấu hình thuật toán lập lịch, báo cáo doanh thu/analytics.
-- **RECEPTIONIST**: Quản lý Booking Grid, thực hiện Check-in/out, POS, quản lý hàng chờ (Waitlist).
-- **TECHNICIAN**: Mobile-first UI. Theo dõi lịch làm việc cá nhân, cập nhật trạng thái liệu trình.
-- **CUSTOMER**: Đặt lịch online, theo dõi liệu trình (Package/Course), lịch sử sức khỏe và ưu đãi.
+## 4. PHÂN QUYỀN (RBAC)
+- **MANAGER**: Quản lý nhân sự, cấu hình thuật toán, báo cáo doanh thu.
+- **RECEPTIONIST**: Quản lý Booking Grid, Check-in/out, POS, Waitlist.
+- **TECHNICIAN**: Xem lịch làm việc, cập nhật trạng thái liệu trình. Mobile-first UI.
+- **CUSTOMER**: Đặt lịch online, theo dõi liệu trình (Course), lịch sử sức khỏe.
 
-## 5. NGHIỆP VỤ ĐẶC THÙ TRONG BÁO CÁO
-- **Liệu trình (Course)**: Quản lý dịch vụ nhiều buổi, tự động trừ số buổi khả dụng khi check-in.
-- **Hàng chờ (Waitlist)**: Tự động thông báo khi có lịch bị hủy khớp với nhu cầu khách.
-- **Data Privacy**: Mã hóa dữ liệu sức khỏe và thông tin cá nhân khách hàng.
+## 5. NGHIỆP VỤ ĐẶC THÙ
+- **Liệu trình (Course)**: Quản lý dịch vụ nhiều buổi, tự động trừ số buổi khi check-in.
+- **Hàng chờ (Waitlist)**: Tự động thông báo khi có slot trống phù hợp.
+- **Data Privacy**: Mã hóa dữ liệu sức khỏe và thông tin cá nhân khách hàng theo tiêu chuẩn.

@@ -1,5 +1,5 @@
 
-import { DataTable, type Column } from "@/shared/components/smart-data-table";
+import { DataTable, DataTableColumnHeader } from "@/shared/components/smart-data-table";
 import { TabToolbar } from "@/shared/components/tab-toolbar";
 import { cn } from "@/shared/lib/utils";
 import {
@@ -15,6 +15,7 @@ import {
 } from "@/shared/ui/alert-dialog";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { Checkbox } from "@/shared/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,7 +30,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared/ui/tooltip";
-import { Edit2, Plus, Power, PowerOff, Trash2 } from "lucide-react";
+import { ColumnDef } from "@tanstack/react-table";
+import { Edit2, MoreHorizontal, Power, PowerOff, Trash2 } from "lucide-react";
 import { useMemo, useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
@@ -81,14 +83,8 @@ export function ServicesTab({
     }
   );
 
-  // SmartDataTable State
-  const [sortConfig, setSortConfig] = useState<{ key: keyof Service; dir: "asc" | "desc" } | null>(null);
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  // Search state
   const [search, setSearch] = useState("");
-
-  // Client-side Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
 
   const getCategoryName = (id: string | null) =>
     categories.find((c) => c.id === id)?.name || "Chưa phân loại";
@@ -183,12 +179,11 @@ export function ServicesTab({
     });
   };
 
-  // --- Data Processing for SmartDataTable ---
-
+  // --- Data Processing for SmartDataTable (Search Only) ---
   const processedData = useMemo(() => {
     let result = [...optimisticServices]; // Use optimistic data
 
-    // 0. Search
+    // Search
     if (search) {
       const searchLower = search.toLowerCase();
       result = result.filter(item =>
@@ -197,82 +192,48 @@ export function ServicesTab({
       );
     }
 
-    // 1. Filter
-    if (Object.keys(filters).length > 0) {
-      result = result.filter((item) => {
-        return Object.entries(filters).every(([key, value]) => {
-          if (!value || value === "all") return true;
-          if (key === "category_id") return item.category_id === value;
-          if (key === "is_active") return String(item.is_active) === value;
-          return true;
-        });
-      });
-    }
-
-    // 2. Sort
-    if (sortConfig) {
-      result.sort((a, b) => {
-        const aValue = a[sortConfig.key];
-        const bValue = b[sortConfig.key];
-
-        if (aValue === bValue) return 0;
-
-        // Handle null/undefined
-        if (aValue === null || aValue === undefined) return 1;
-        if (bValue === null || bValue === undefined) return -1;
-
-        if (typeof aValue === "string" && typeof bValue === "string") {
-          return sortConfig.dir === "asc"
-            ? aValue.localeCompare(bValue)
-            : bValue.localeCompare(aValue);
-        }
-
-        // Number
-        if (aValue < bValue) return sortConfig.dir === "asc" ? -1 : 1;
-        if (aValue > bValue) return sortConfig.dir === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
-
     return result;
-  }, [optimisticServices, filters, sortConfig, search]);
-
-  // 3. Pagination Slice
-  const paginatedData = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return processedData.slice(start, start + pageSize);
-  }, [processedData, currentPage, pageSize]);
+  }, [optimisticServices, search]);
 
   // --- Column Definitions ---
-
-  const columns: Column<Service>[] = [
+  const columns: ColumnDef<Service>[] = [
     {
-      key: "no",
-      label: "No",
-      width: "50px",
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+          className="translate-y-[2px]"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+          className="translate-y-[2px]"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
     },
     {
-      key: "selection",
-      label: "",
-      width: "40px",
-    },
-    {
-      key: "name",
-      label: "Dịch vụ",
-      sortable: true,
-      render: (value, row) => (
+      accessorKey: "name",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Dịch vụ" />,
+      cell: ({ row }) => (
         <div className="max-w-xs">
-          <div className="font-medium truncate">{row.name}</div>
-          {row.description && (
+          <div className="font-medium truncate">{row.getValue("name")}</div>
+          {row.original.description && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="text-xs text-muted-foreground line-clamp-1 cursor-help">
-                    {row.description}
+                    {row.original.description}
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-[300px] break-words">
-                  <p>{row.description}</p>
+                  <p>{row.original.description}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -281,61 +242,59 @@ export function ServicesTab({
       ),
     },
     {
-      key: "category_id",
-      label: "Danh mục",
-      sortable: true,
-      filterable: true,
-      filterOptions: categories.map(c => ({ label: c.name, value: c.id })),
-      render: (value) => (
+      accessorKey: "category_id",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Danh mục" />,
+      meta: {
+        filterOptions: categories.map(c => ({ label: c.name, value: c.id })),
+      },
+      cell: ({ row }) => (
         <Badge variant="outline" className="font-normal">
-          {getCategoryName(value as string)}
+          {getCategoryName(row.getValue("category_id"))}
         </Badge>
       ),
     },
     {
-      key: "duration",
-      label: "Thời gian",
-      sortable: true,
-      render: (value, row) => (
+      accessorKey: "duration",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Thời gian" />,
+      cell: ({ row }) => (
         <div className="text-muted-foreground">
-          {row.duration}p <span className="text-xs opacity-70">(+{row.buffer_time}p nghỉ)</span>
+          {row.getValue("duration")}p <span className="text-xs opacity-70">(+{row.original.buffer_time}p nghỉ)</span>
         </div>
       ),
     },
     {
-      key: "price",
-      label: "Giá",
-      sortable: true,
-      render: (value) => (
+      accessorKey: "price",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Giá" />,
+      cell: ({ row }) => (
         <div className="font-medium text-primary">
-          {formatPrice(value as string)}
+          {formatPrice(row.getValue("price"))}
         </div>
       ),
     },
     {
-      key: "is_active",
-      label: "Trạng thái",
-      sortable: true,
-      filterable: true,
-      filterOptions: [
-        { label: "Hoạt động", value: "true" },
-        { label: "Tạm ngưng", value: "false" },
-      ],
-      render: (value, row) => (
+      accessorKey: "is_active",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Trạng thái" />,
+      meta: {
+        filterOptions: [
+          { label: "Hoạt động", value: "true" },
+          { label: "Tạm ngưng", value: "false" },
+        ],
+      },
+      cell: ({ row }) => (
         <Button
           variant="outline"
           size="sm"
           className={cn(
             "gap-1.5",
-            row.is_active ? "text-success border-success/30 bg-success/5" : "text-muted-foreground"
+            row.getValue("is_active") ? "text-success border-success/30 bg-success/5" : "text-muted-foreground"
           )}
           onClick={(e) => {
             e.stopPropagation();
-            handleToggleStatus(row.id);
+            handleToggleStatus(row.original.id);
           }}
           disabled={isPending}
         >
-          {row.is_active ? (
+          {row.getValue("is_active") ? (
             <><Power className="h-3 w-3" /> Hoạt động</>
           ) : (
             <><PowerOff className="h-3 w-3" /> Tạm ngưng</>
@@ -344,26 +303,24 @@ export function ServicesTab({
       ),
     },
     {
-      key: "actions",
-      label: "Thao tác",
-      width: "80px",
-      render: (_, row) => (
+      id: "actions",
+      header: "Thao tác",
+      cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
-              <Plus className="h-4 w-4 rotate-45" /> {/* Using Plus rotated as a fallback since MoreHorizontal is standard but let's see */}
-              {/* Wait, the design system uses MoreHorizontal. Let's use that. */}
+              <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[180px]">
             <DropdownMenuLabel>Hành động</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleEdit(row)}>
+            <DropdownMenuItem onClick={() => handleEdit(row.original)}>
               <Edit2 className="mr-2 h-4 w-4" />
               Chỉnh sửa
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleToggleStatus(row.id)}>
-              {row.is_active ? (
+            <DropdownMenuItem onClick={() => handleToggleStatus(row.original.id)}>
+              {row.original.is_active ? (
                 <>
                   <PowerOff className="mr-2 h-4 w-4 text-warning" />
                   Tạm ngưng
@@ -390,13 +347,13 @@ export function ServicesTab({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Xác nhận xóa?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Xóa dịch vụ &quot;{row.name}&quot;? Hành động này không thể hoàn tác.
+                    Xóa dịch vụ &quot;{row.original.name}&quot;? Hành động này không thể hoàn tác.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Hủy</AlertDialogCancel>
                             <AlertDialogAction
-                              onClick={() => handleDelete(row.id)}
+                              onClick={() => handleDelete(row.original.id)}
                               className="bg-destructive hover:bg-destructive/90"
                             >
                               Xóa vĩnh viễn
@@ -421,23 +378,7 @@ export function ServicesTab({
 
       <DataTable
         columns={columns}
-        data={paginatedData}
-        onSort={(key, dir) => setSortConfig({ key, dir })}
-        onFilterChange={(key, value) => {
-         setFilters(prev => ({ ...prev, [key]: value }));
-         setCurrentPage(1); // Reset page on filter
-        }}
-        pagination={{
-          currentPage,
-          pageSize,
-          totalItems: processedData.length,
-          onPageChange: setCurrentPage,
-          pageSizeOptions: [5, 10, 20, 50],
-          onPageSizeChange: (size) => {
-            setPageSize(size);
-            setCurrentPage(1);
-          }
-        }}
+        data={processedData}
       />
 
       <ServiceFormSheet

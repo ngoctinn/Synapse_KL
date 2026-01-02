@@ -5,61 +5,53 @@
 
 1.  **UNDERSTAND (Context Pinning):**
     *   Identify target files/components explicitly.
-    *   Search documentation (`docs/ai/`) & relevant code first.
-    *   *Rule:* List file paths you will read/write before acting.
+    *   **Mandatory:** Query @mcp:context7 for bất kỳ thư viện mới nào (Shadcn, SQLModel, Tailwind 4).
+    *   *Rule:* Liệt kê các đường dẫn tệp sẽ đọc/ghi trước khi hành động.
 
 2.  **PLAN (Pseudocode/Steps):**
-    *   For tasks > 30 lines or multiple files: Propose a step-by-step roadmap.
-    *   Wait for user confirmation if the change affects architecture or huge scope.
+    *   Đối với tác vụ > 30 dòng hoặc nhiều tệp: Đề xuất lộ trình từng bước.
+    *   Chờ xác nhận của người dùng nếu thay đổi ảnh hưởng đến kiến trúc hoặc logic cốt lõi.
 
 3.  **ACT (Atomic & Safe):**
-    *   Make **atomic changes** (one concern per commit/action).
-    *   **NO Placeholders:** Never use `// TODO` or `pass` unless explicitly asked.
-    *   **Conventions:** Follow Feature-Sliced Design (Frontend) & Modular Monolith (Backend).
+    *   Thực hiện các thay đổi **nguyên tử** (mỗi hành động một mối quan tâm).
+    *   **KP Placeholders:** Tuyệt đối không dùng // TODO hoặc pass.
+    *   **Conventions:** Tuân thủ FSD (Frontend) & Modular Monolith (Backend).
 
 4.  **VERIFY (Test-Driven):**
-    *   **Test-First:** Write/Update tests *before* or *alongside* implementation.
-    *   **Auto-Check:** Run linter/build after changes.
-    *   *Rule:* If a fix fails > 2 times, STOP and ask for direction.
+    *   **Test-First:** Viết/Cập nhật test song song với việc triển khai.
+    *   **Auto-Check:** Chạy linter/build sau khi thay đổi.
+    *   *Rule:* Nếu sửa lỗi thất bại > 2 lần, DỪNG LẠI và hỏi hướng giải quyết.
 
-## 2. CONTEXT MANAGEMENT
-*Minimize "Hallucinations" by anchoring to facts.*
+## 2. QUẢN LÝ NGỮ CẢNH
+*Giảm thiểu "ảo giác" bằng cách neo vào sự thật.*
 
-*   **System 2 Thinking:** If a request is vague, ask 3 clarifying questions (Input/Output/Constraints).
-*   **Source of Truth:**
-    *   Frontend: `next.config.ts`, `package.json`, `src/features/`
-    *   Backend: `pyproject.toml`, `app/modules/`, `alembic.ini`
-    *   Docs: Always check `docs/ai/` for architectural decisions.
-*   **External Libs:** Use `context7` tools to verify library versions/usage (e.g., Shadcn, SQLModel) instead of guessing.
+*   **Nguồn sự thật:**
+    *   Frontend: next.config.ts, package.json, src/features/
+    *   Backend: pyproject.toml, app/modules/, alembic/
+    *   Docs: Luôn kiểm tra docs/ai/ và @mcp:next-devtools_nextjs_docs.
+*   **Thư viện ngoài:** Sử dụng context7 để xác minh tài liệu. Từ chối cú pháp dựa trên trí nhớ nếu không chắc chắn.
 
 ## 3. TECH STACK MANDATES
 
 ### Frontend (Next.js 16 + React 19)
-*   **Server Components:** Default to Server Components. Use `'use client'` only for interactivity.
-*   **Data Fetching:** Use Server Actions for mutations. Use `fetch` with tags/cache for queries.
-*   **UI:** Tailwind CSS + Shadcn UI. No custom CSS classes unless necessary.
-*   **Forms:** `react-hook-form` + `zod`.
+*   **Async APIs:** params, searchParams, cookies, headers BẮT BUỘC phải await.
+*   **Action Hooks:** Ưu tiên useActionState và useOptimistic để quản lý trạng thái action.
+*   **UI:** Tailwind CSS 4 (CSS-First). Tất cả biến theme phải nằm trong tệp CSS (index.css).
 
 ### Backend (FastAPI + SQLModel)
-*   **Async:** All DB operations must be `async/await`.
-*   **Structure:** Modules (`app/modules/`) must operate independently where possible.
-*   **Database:** NO raw SQL. Use `SQLModel` statements.
-*   **Migration:** Always generate Alembic migrations for schema changes.
+*   **Async:** Tất cả thao tác DB phải dùng async/await.
+*   **Database:** Sử dụng SQLModel với expire_on_commit=False cho async sessions.
+*   **Migration:** Bắt buộc có Alembic migration cho mọi thay đổi schema.
 
-## 4. SECURITY & SAFETY
-*   **Secrets:** NEVER output or hardcode API Keys/Secrets. Use `.env`.
-*   **Config:** Do NOT modify `next.config.ts`, `pyproject.toml`, or Docker files without explicit permission.
-*   **Data:** Be careful with `DELETE`/`DROP` operations. Confirm with user.
+## 4. AN NINH & AN TOÀN
+*   **Secrets:** KHÔNG BAO GIỜ xuất hoặc ghi cứng API Key. Sử dụng .env.
+*   **Dữ liệu:** Xác nhận trước khi thực hiện các thao tác DELETE/DROP.
 
-## 5. QUALITY GATES
-*   **Linting:** Code must pass `eslint` (Frontend) and `ruff` (Backend).
-*   **Types:** No `any` (TS) or untyped functions (Python).
-*   **Tests:**
-    *   Frontend: Unit tests for utils/hooks. Integration tests for critical flows.
-    *   Backend: `pytest` coverage for all Services/routers.
+## 5. TIÊU CHUẨN CHẤT LƯỢNG
+*   **Types:** Không dùng any (TS) hoặc hàm không định kiểu (Python).
+*   **Linting:** Không chấp nhận cảnh báo linter từ eslint & ruff.
 
-## 6. LANGUAGE STANDARDS
-*   **Communication:** Vietnamese (Tiếng Việt).
-*   **Documentation:** Vietnamese.
-*   **Code Comments:** Vietnamese (Consistent with existing codebase).
-*   **Naming:** English (Variables, Functions, Classes, DB Tables).
+## 6. TIÊU CHUẨN NGÔN NGỮ
+*   **Giao tiếp:** Tiếng Việt.
+*   **Tài liệu & Comment:** Tiếng Việt (Giải thích lý do "Tại sao").
+*   **Đặt tên:** Tiếng Anh (Biến, Hàm, Lớp, Tệp).
