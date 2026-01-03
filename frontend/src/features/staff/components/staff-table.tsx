@@ -97,7 +97,7 @@ export function StaffTable({ data }: StaffTableProps) {
             <span className="font-medium text-foreground text-sm">
               {row.original.full_name}
             </span>
-            <span className="text-[10px] text-muted-foreground uppercase">
+            <span className="text-xs text-muted-foreground uppercase">
               {row.original.user_id.slice(0, 8)}
             </span>
           </div>
@@ -129,7 +129,7 @@ export function StaffTable({ data }: StaffTableProps) {
         return (
           <Badge
             variant={isActive ? "success" : "secondary"}
-            className="h-5 px-2 text-[10px]"
+            className="h-5 px-2 text-xs"
           >
             {isActive ? "Đang làm việc" : "Nghỉ việc"}
           </Badge>
@@ -144,12 +144,12 @@ export function StaffTable({ data }: StaffTableProps) {
           {row.original.skill_ids.length > 0 ? (
             <Badge
               variant="outline"
-              className="text-[10px] h-5 bg-background font-normal"
+              className="text-xs h-5 bg-background font-normal"
             >
               {row.original.skill_ids.length} kỹ năng
             </Badge>
           ) : (
-            <span className="text-[10px] text-muted-foreground italic">--</span>
+            <span className="text-xs text-muted-foreground italic">--</span>
           )}
         </div>
       ),

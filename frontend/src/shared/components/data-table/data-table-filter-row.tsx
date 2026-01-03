@@ -51,7 +51,7 @@ export function DataTableFilterRow<TData>({ table }: DataTableFilterRowProps<TDa
                             value={(column.getFilterValue() as string) ?? "all"}
                             onValueChange={(value: string) => column.setFilterValue(value === "all" ? undefined : value)}
                         >
-                            <SelectTrigger className="w-full h-8 text-[11px] sm:text-xs bg-background border-border/60 rounded-md focus:ring-1 focus:ring-primary/20 hover:border-border pr-8">
+                            <SelectTrigger className="w-full h-8 text-xs bg-background border-border/60 rounded-md focus:ring-1 focus:ring-primary/20 hover:border-border pr-8">
                                 <SelectValue placeholder="Chọn..." />
                             </SelectTrigger>
                             <SelectContent className="border-border/40">
@@ -68,7 +68,7 @@ export function DataTableFilterRow<TData>({ table }: DataTableFilterRowProps<TDa
                             placeholder="Tìm kiếm..."
                             value={(column.getFilterValue() as string) ?? ""}
                             onChange={(event: React.ChangeEvent<HTMLInputElement>) => column.setFilterValue(event.target.value)}
-                            className="w-full h-8 text-[11px] sm:text-xs bg-background border-border/60 rounded-md focus-visible:ring-1 focus-visible:ring-primary/20 hover:border-border pr-8"
+                            className="w-full h-8 text-xs bg-background border-border/60 rounded-md focus-visible:ring-1 focus-visible:ring-primary/20 hover:border-border pr-8"
                        />
                    )}
                 </div>

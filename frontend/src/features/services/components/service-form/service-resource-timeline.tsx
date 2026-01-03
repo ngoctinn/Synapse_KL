@@ -41,7 +41,7 @@ export function ServiceResourceTimeline({ resourceGroups }: ServiceResourceTimel
             className="absolute top-0 flex flex-col items-center -translate-x-1/2"
             style={{ left: `${(time / total) * 100}%` }}
           >
-            <span className="text-[9px] font-bold text-muted-foreground/80 tabular-nums">
+            <span className="text-xs font-semibold text-muted-foreground/80 tabular-nums">
               {time}m
             </span>
             <div className="h-1 w-px bg-border/60 mt-0.5" />
@@ -89,7 +89,7 @@ export function ServiceResourceTimeline({ resourceGroups }: ServiceResourceTimel
             return (
               <div key={index} className="relative h-8 flex items-center group/row">
                 {/* Row Label (Visible on hover or if space permits) */}
-                <div className="absolute -left-1 opacity-0 group-hover/row:opacity-100 transition-opacity bg-background/90 px-2 py-0.5 rounded border text-[10px] font-medium z-30 pointer-events-none whitespace-nowrap shadow-sm">
+                <div className="absolute -left-1 opacity-0 group-hover/row:opacity-100 transition-opacity bg-background/90 px-2 py-0.5 rounded border text-xs font-medium z-30 pointer-events-none whitespace-nowrap shadow-sm">
                   {groupName} ({usage}p)
                 </div>
 
@@ -107,7 +107,7 @@ export function ServiceResourceTimeline({ resourceGroups }: ServiceResourceTimel
                   }}
                   title={`${groupName}: Bắt đầu sau ${start}p, Dùng trong ${usage}p`}
                 >
-                  <span className="text-[9px] font-bold text-primary-foreground leading-none truncate select-none">
+                  <span className="text-xs font-semibold text-primary-foreground leading-none truncate select-none">
                     {groupName}
                   </span>
                 </div>
@@ -116,13 +116,13 @@ export function ServiceResourceTimeline({ resourceGroups }: ServiceResourceTimel
           })
         ) : (
           <div className="h-8 flex items-center justify-center border border-dashed rounded-lg bg-muted/5">
-             <span className="text-[11px] text-muted-foreground italic">Chưa cấu hình tài nguyên</span>
+             <span className="text-xs text-muted-foreground italic">Chưa cấu hình tài nguyên</span>
           </div>
         )}
       </div>
 
       {/* Chú thích các thành phần trên Timeline */}
-      <div className="flex items-center justify-center gap-6 text-[10px] font-semibold text-muted-foreground/70 pt-2 border-t border-border/40">
+      <div className="flex items-center justify-center gap-6 text-xs font-semibold text-muted-foreground/70 pt-2 border-t border-border/40">
         <div className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors">
           <div className="w-3 h-3 bg-primary border border-primary/30 rounded-full shadow-sm" /> Tài nguyên sử dụng
         </div>

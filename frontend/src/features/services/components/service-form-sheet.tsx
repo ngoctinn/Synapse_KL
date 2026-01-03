@@ -263,10 +263,10 @@ export function ServiceFormSheet({
     <>
       <Sheet open={open} onOpenChange={handleOpenChange}>
         <SheetContent
-          className="sm:max-w-xl w-full flex flex-col p-0 gap-0"
+          className="sm:max-w-xl w-full flex flex-col"
           {...contentProps}
         >
-          <SheetHeader className="p-6 pb-2 shrink-0">
+          <SheetHeader>
             <SheetTitle>
               {isEdit ? "Cập nhật dịch vụ" : "Thêm dịch vụ mới"}
             </SheetTitle>

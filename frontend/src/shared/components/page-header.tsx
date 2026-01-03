@@ -34,7 +34,7 @@ export function PageHeader({
     <div className={cn("flex flex-col gap-4 md:flex-row md:items-start md:justify-between mb-8", className)}>
       {/* Khối Tiêu đề */}
       <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           {title}
         </h1>
         {subtitle && (

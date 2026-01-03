@@ -41,7 +41,7 @@ export function ServiceGeneralTab({ categories, onAddCategory }: ServiceGeneralT
           <FormItem>
             <FormLabel required>Tên dịch vụ</FormLabel>
             <FormControl>
-              <Input placeholder="VD: Massage Body Đá nóng" className="h-11" {...field} />
+              <Input placeholder="VD: Massage Body Đá nóng" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -62,7 +62,7 @@ export function ServiceGeneralTab({ categories, onAddCategory }: ServiceGeneralT
                   value={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger className="w-full h-11">
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Chọn danh mục..." />
                     </SelectTrigger>
                   </FormControl>
@@ -81,8 +81,8 @@ export function ServiceGeneralTab({ categories, onAddCategory }: ServiceGeneralT
               <Button
                 type="button"
                 variant="outline"
-                size="icon"
-                className="h-11 w-11 shrink-0"
+                size="icon-sm"
+                className="shrink-0"
                 onClick={onAddCategory}
               >
                 <Plus className="h-4 w-4" />

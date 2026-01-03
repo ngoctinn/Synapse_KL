@@ -160,7 +160,7 @@ export function SkillFormSheet({
                   <FormControl>
                     <Textarea
                       placeholder="Mô tả ngắn gọn về kỹ năng..."
-                      className="resize-none"
+                      className="resize-none min-h-[100px]"
                       {...field}
                     />
                   </FormControl>

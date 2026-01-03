@@ -37,7 +37,7 @@ export default function CustomerDashboardPage() {
             <button
               key={r}
               onClick={() => switchRole(r)}
-              className="text-[10px] px-2 py-1 border rounded hover:bg-muted"
+              className="text-xs px-2 py-1 border rounded hover:bg-muted"
             >
               Back to {r}
             </button>

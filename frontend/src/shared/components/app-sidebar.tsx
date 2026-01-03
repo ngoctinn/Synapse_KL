@@ -118,7 +118,7 @@ export function AppSidebar({ role = "manager" }: AppSidebarProps) {
                 </Avatar>
                 <div className="flex flex-col items-start overflow-hidden group-data-[collapsible=icon]:hidden">
                   <span className="text-sm font-semibold text-foreground truncate w-full tracking-tight">Admin Synapse</span>
-                  <span className="text-[11px] text-muted-foreground uppercase font-semibold tracking-wider">{role}</span>
+                  <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider">{role}</span>
                 </div>
                 <ChevronRight className="w-4 h-4 ml-auto text-muted-foreground/40 group-data-[collapsible=icon]:hidden" />
               </div>

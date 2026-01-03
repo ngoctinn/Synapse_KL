@@ -86,10 +86,10 @@ export function ShiftList({ shifts }: ShiftListProps) {
                 </Button>
               </div>
               <div className="space-y-1 mb-4">
-                <h4 className="text-lg font-bold truncate text-foreground">
+                <h4 className="text-base font-semibold truncate text-foreground">
                   {shift.name}
                 </h4>
-                <p className="font-medium text-[10px] uppercase tracking-wider text-muted-foreground opacity-70">
+                <p className="font-medium text-xs uppercase tracking-wider text-muted-foreground opacity-70">
                   Khung giờ cố định
                 </p>
               </div>

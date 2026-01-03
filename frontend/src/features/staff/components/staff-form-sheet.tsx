@@ -44,7 +44,7 @@ import {
 } from "@/shared/ui/sheet";
 import { Textarea } from "@/shared/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Save } from "lucide-react";
+
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -151,23 +151,20 @@ export function StaffFormSheet({ open, onOpenChange, staff, onSuccess }: StaffFo
   return (
     <>
       <Sheet open={open} onOpenChange={handleOpenChange}>
-        <SheetContent className="sm:max-w-xl w-full flex flex-col p-0 gap-0" {...contentProps}>
-          <div className="bg-primary/5 p-8 border-b border-primary/10">
-            <SheetHeader className="text-left space-y-1">
-              <SheetTitle className="text-2xl font-bold tracking-tight text-primary">
-                {isEdit ? "Cập nhật hồ sơ" : "Mời nhân viên mới"}
-              </SheetTitle>
-              <SheetDescription className="text-muted-foreground font-medium">
-                {isEdit
-                  ? "Chỉnh sửa thông tin chuyên môn của nhân viên."
-                  : "Gửi email mời nhân viên tham gia hệ thống."}
-              </SheetDescription>
-            </SheetHeader>
-          </div>
+        <SheetContent className="sm:max-w-xl w-full overflow-y-auto" {...contentProps}>
+          <SheetHeader>
+            <SheetTitle>
+              {isEdit ? "Cập nhật hồ sơ" : "Mời nhân viên mới"}
+            </SheetTitle>
+            <SheetDescription>
+              {isEdit
+                ? "Chỉnh sửa thông tin chuyên môn của nhân viên."
+                : "Gửi email mời nhân viên tham gia hệ thống."}
+            </SheetDescription>
+          </SheetHeader>
 
-          <div className="flex-1 overflow-y-auto p-8">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
 
                 {/* Invite specific fields */}
                 {!isEdit && (
@@ -176,9 +173,9 @@ export function StaffFormSheet({ open, onOpenChange, staff, onSuccess }: StaffFo
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-foreground/80 font-semibold tracking-tight">Email</FormLabel>
+                        <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input placeholder="staff@synapse.com" {...field} className="h-12 rounded-xl" />
+                          <Input placeholder="staff@synapse.com" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -191,9 +188,9 @@ export function StaffFormSheet({ open, onOpenChange, staff, onSuccess }: StaffFo
                   name="full_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-foreground/80 font-semibold tracking-tight">Họ và tên</FormLabel>
+                      <FormLabel>Họ và tên</FormLabel>
                       <FormControl>
-                        <Input placeholder="Nguyễn Văn A" {...field} className="h-12 rounded-xl" />
+                        <Input placeholder="Nguyễn Văn A" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -206,7 +203,7 @@ export function StaffFormSheet({ open, onOpenChange, staff, onSuccess }: StaffFo
                     name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-foreground/80 font-semibold tracking-tight">Chức danh</FormLabel>
+                        <FormLabel>Chức danh</FormLabel>
                         <FormControl>
                           <Input placeholder="Kỹ thuật viên" {...field} />
                         </FormControl>
@@ -221,7 +218,7 @@ export function StaffFormSheet({ open, onOpenChange, staff, onSuccess }: StaffFo
                       name="role"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-foreground/80 font-semibold tracking-tight">Vai trò</FormLabel>
+                          <FormLabel>Vai trò</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -244,7 +241,7 @@ export function StaffFormSheet({ open, onOpenChange, staff, onSuccess }: StaffFo
                       name="color_code"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-foreground/80 font-semibold tracking-tight">Mã màu</FormLabel>
+                          <FormLabel>Mã màu</FormLabel>
                           <FormControl>
                             <div className="flex gap-2">
                               <Input type="color" {...field} className="w-16 p-1 cursor-pointer" />
@@ -262,7 +259,7 @@ export function StaffFormSheet({ open, onOpenChange, staff, onSuccess }: StaffFo
                 {isEdit && (
                   <>
                     <FormItem>
-                      <FormLabel className="text-foreground/80 font-semibold tracking-tight">Kỹ năng chuyên môn</FormLabel>
+                      <FormLabel>Kỹ năng chuyên môn</FormLabel>
                       <SkillSelector value={skillIds} onChange={setSkillIds} />
                     </FormItem>
 
@@ -271,11 +268,11 @@ export function StaffFormSheet({ open, onOpenChange, staff, onSuccess }: StaffFo
                       name="bio"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-foreground/80 font-semibold tracking-tight">Mô tả / Giới thiệu</FormLabel>
+                          <FormLabel>Mô tả / Giới thiệu</FormLabel>
                           <FormControl>
                             <Textarea
                               placeholder="Kinh nghiệm 5 năm..."
-                              className="min-h-[100px] resize-none"
+                              className="resize-none min-h-[100px]"
                               {...field}
                               value={field.value || ""}
                             />
@@ -287,31 +284,20 @@ export function StaffFormSheet({ open, onOpenChange, staff, onSuccess }: StaffFo
                   </>
                 )}
 
-                <div className="pt-6 flex gap-3">
+                <div className="flex justify-end gap-3 pt-4">
                   <Button
                     type="button"
                     variant="ghost"
-                    className="flex-1"
                     onClick={() => handleOpenChange(false)}
                   >
-                    Hủy bỏ
+                    Hủy
                   </Button>
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 shadow-lg shadow-primary/20"
-                  >
-                    {isSubmitting ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <Save className="w-4 h-4 mr-2" />
-                    )}
-                    {isEdit ? "Lưu thay đổi" : "Gửi lời mời"}
+                  <Button type="submit" loading={isSubmitting}>
+                    {isEdit ? "Cập nhật" : "Gửi lời mời"}
                   </Button>
                 </div>
               </form>
             </Form>
-          </div>
         </SheetContent>
       </Sheet>
 

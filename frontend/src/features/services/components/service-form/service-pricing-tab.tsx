@@ -34,7 +34,8 @@ export function ServicePricingTab() {
                         key={p}
                         type="button"
                         variant="outline"
-                        className="font-medium text-muted-foreground hover:text-primary h-11 px-4"
+                        size="sm"
+                        className="font-medium text-muted-foreground hover:text-primary"
                         onClick={() => field.onChange(p)}
                       >
                         {new Intl.NumberFormat('vi-VN', { notation: 'compact' }).format(p)}
@@ -43,7 +44,8 @@ export function ServicePricingTab() {
                     <Button
                       type="button"
                       variant="ghost"
-                      className="h-11 text-alert-warning-foreground hover:bg-alert-warning/10 font-normal px-4"
+                      size="sm"
+                      className="text-alert-warning-foreground hover:bg-alert-warning/10 font-normal"
                       onClick={() => field.onChange(0)}
                     >
                       Xóa trắng
@@ -70,7 +72,6 @@ export function ServicePricingTab() {
                   onValueChange={field.onChange}
                   step={15}
                   max={240}
-                  className="h-11"
                 />
               </FormControl>
               <FormMessage />
@@ -91,7 +92,6 @@ export function ServicePricingTab() {
                   step={5}
                   max={60}
                   placeholder="Không nghỉ"
-                  className="h-11"
                 />
               </FormControl>
               <FormMessage />

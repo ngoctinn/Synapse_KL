@@ -168,7 +168,7 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
           </p>
           <div className="flex flex-wrap justify-center gap-2">
             <Button size="sm" onClick={handleAddGroup}>
-              <Plus className="w-4 h-4 mr-1 stroke-2" /> Tạo nhóm mới
+              <Plus className="h-4 w-4 mr-1" /> Tạo nhóm mới
             </Button>
             <Button
               size="sm"
@@ -207,7 +207,7 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
                       <div className="flex items-center gap-2">
                         <Badge
                           variant="outline"
-                          className="text-[10px] font-semibold uppercase tracking-wider py-0 px-1.5 rounded-md border-neutral-20/50 bg-neutral-5/10"
+                          className="text-xs font-semibold uppercase tracking-wider py-0 px-1.5 rounded-md border-neutral-20/50 bg-neutral-5/10"
                         >
                           {group.type}
                         </Badge>
@@ -241,7 +241,7 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
                       className="h-9 w-9 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5"
                       onClick={() => handleAddResource(group)}
                     >
-                      <Plus className="h-5 w-5 stroke-2" />
+                      <Plus className="h-4 w-4" />
                     </Button>
                     <DeleteDialog
                       title="Xác nhận xóa?"
@@ -259,7 +259,7 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
                               : "Xóa nhóm"
                           }
                         >
-                          <Trash2 className="h-5 w-5 stroke-2" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       }
                     />
@@ -411,15 +411,6 @@ function ResourcesDataTable({
               title="Xác nhận xóa?"
               description={`Xóa tài nguyên "${row.original.name}"? Hành động này không thể hoàn tác.`}
               onConfirm={() => onDelete(row.original.id)}
-              trigger={
-                <div
-                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none transition-colors hover:bg-destructive/10 text-destructive gap-2"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  <span>Xóa tài nguyên</span>
-                </div>
-              }
             />
           </DropdownMenuContent>
         </DropdownMenu>

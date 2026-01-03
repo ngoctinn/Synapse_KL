@@ -315,7 +315,7 @@ export function SchedulingGrid({
                       )}
                     >
                       <div className="flex flex-col items-center gap-0.5">
-                        <span className="text-[10px] uppercase font-bold tracking-tight text-muted-foreground">
+                        <span className="text-xs uppercase font-semibold tracking-tight text-muted-foreground">
                           {format(day, "EEEE", { locale: vi })}
                         </span>
                         <span
@@ -341,15 +341,15 @@ export function SchedulingGrid({
                   <td className="p-3 border-b border-r border-border sticky left-0 z-20 bg-card group-hover:bg-muted/5 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
-                        <span className="text-[10px] font-bold text-primary">
+                        <span className="text-xs font-semibold text-primary">
                           {s.full_name.charAt(0)}
                         </span>
                       </div>
                       <div className="flex flex-col">
-                        <span className="font-bold text-sm text-foreground leading-tight">
+                        <span className="font-semibold text-sm text-foreground leading-tight">
                           {s.full_name}
                         </span>
-                        <span className="text-[10px] text-muted-foreground font-medium uppercase mt-0.5">
+                        <span className="text-xs text-muted-foreground font-medium uppercase mt-0.5">
                           {s.title}
                         </span>
                       </div>
@@ -473,7 +473,7 @@ export function SchedulingGrid({
                 {hasConflict && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="text-[10px] bg-destructive/10 text-destructive px-1.5 py-0.5 rounded font-bold uppercase tracking-wider cursor-help flex items-center gap-1">
+                      <span className="text-xs bg-destructive/10 text-destructive px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider cursor-help flex items-center gap-1">
                         <AlertTriangle className="w-3 h-3" />
                         {conflictDetails.length} trùng lặp
                       </span>
@@ -564,7 +564,7 @@ function ScheduleBadge({
   return (
     <div
       className={cn(
-        "w-full px-2 py-1.5 rounded-md text-[10px] sm:text-[11px] font-bold border shadow-sm flex flex-col gap-0.5 relative overflow-hidden group/badge",
+        "w-full px-2 py-1.5 rounded-md text-xs font-semibold border shadow-sm flex flex-col gap-0.5 relative overflow-hidden group/badge",
         "[--shift-color:var(--shift-color-value)]",
         isDraft &&
           "border-dashed opacity-90 hover:opacity-100 bg-[image:repeating-linear-gradient(45deg,transparent,transparent_5px,rgba(0,0,0,0.03)_5px,rgba(0,0,0,0.03)_10px)]"
@@ -588,7 +588,7 @@ function ScheduleBadge({
       </div>
 
       {(startTime || endTime) && (
-        <div className="text-[9px] opacity-70 font-medium pl-4 leading-none">
+        <div className="text-xs opacity-70 font-medium pl-4 leading-none">
           {startTime} - {endTime}
         </div>
       )}

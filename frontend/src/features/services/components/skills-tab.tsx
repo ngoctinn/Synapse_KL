@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Edit2, MoreHorizontal, Trash2 } from "lucide-react";
+import { Edit2, MoreHorizontal } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { deleteSkillAction } from "../actions";
@@ -139,15 +139,6 @@ export function SkillsTab({ skills }: SkillsTabProps) {
               title="Xác nhận xóa?"
               description={`Hành động này không thể hoàn tác. Kỹ năng "${row.original.name}" sẽ bị xóa vĩnh viễn khỏi hệ thống.`}
               onConfirm={() => handleDelete(row.original.id)}
-              trigger={
-                <div
-                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none transition-colors hover:bg-destructive/10 text-destructive gap-2"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  <span>Xóa kỹ năng</span>
-                </div>
-              }
             />
           </DropdownMenuContent>
         </DropdownMenu>

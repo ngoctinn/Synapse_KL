@@ -451,7 +451,7 @@ export function OperatingHoursForm({
                       <div className="flex h-10 items-center">
                         <Badge
                           variant="outline"
-                          className="text-muted-foreground font-normal border-dashed uppercase text-[9px] tracking-wider px-3 py-1"
+                          className="text-muted-foreground font-normal border-dashed uppercase text-xs tracking-wider px-3 py-1"
                         >
                           Đóng cửa
                         </Badge>
@@ -499,7 +499,7 @@ export function OperatingHoursForm({
                               <div className="absolute top-full right-0 mt-1 z-10">
                                 <Badge
                                   variant="warning"
-                                  className="gap-1 px-1.5 py-0 font-medium text-[9px] whitespace-nowrap"
+                                  className="gap-1 px-1.5 py-0 font-medium text-xs whitespace-nowrap"
                                 >
                                   <AlertCircle className="size-3 stroke-2" />
                                   <span>Sáng hôm sau (+1)</span>
@@ -521,7 +521,7 @@ export function OperatingHoursForm({
                             size="sm"
                             onClick={() => setAllDay(index)}
                             className={cn(
-                              "h-8 px-3 text-[10px] font-medium transition-all flex-1 sm:flex-none",
+                              "h-8 px-3 text-xs font-medium transition-all flex-1 sm:flex-none",
                               watchedValues[index].open_time === "00:00" &&
                                 watchedValues[index].close_time === "00:00"
                                 ? "bg-primary text-primary-foreground"
@@ -558,7 +558,7 @@ export function OperatingHoursForm({
                               return (
                                 <Badge
                                   variant="error"
-                                  className="h-8 px-2 text-[9px] gap-1 shrink-0"
+                                  className="h-8 px-2 text-xs gap-1 shrink-0"
                                 >
                                   <AlertCircle className="size-3 stroke-2" />
                                   Xung đột

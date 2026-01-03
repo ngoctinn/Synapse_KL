@@ -22,7 +22,7 @@ const badgeVariants = cva(
         info: "border-[hsl(var(--alert-info-border))] bg-[hsl(var(--alert-info))] text-[hsl(var(--alert-info-foreground))] hover:bg-[hsl(var(--alert-info))]/80",
       },
       size: {
-        sm: "h-5 px-2 text-[10px]",
+        sm: "h-5 px-2 text-xs",
         default: "h-6 px-2.5 text-xs",
         lg: "h-7 px-3 text-sm",
       },

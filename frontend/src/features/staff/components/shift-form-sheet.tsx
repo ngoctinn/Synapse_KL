@@ -29,7 +29,7 @@ import {
     SheetTitle,
 } from "@/shared/ui/sheet";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Save } from "lucide-react";
+
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -119,29 +119,26 @@ export function ShiftFormSheet({ open, onOpenChange, shift, onSuccess }: ShiftFo
   return (
     <>
       <Sheet open={open} onOpenChange={handleOpenChange}>
-        <SheetContent className="sm:max-w-md w-full flex flex-col p-0 gap-0" {...contentProps}>
-          <div className="bg-primary/5 p-8 border-b border-primary/10">
-            <SheetHeader className="text-left space-y-1">
-              <SheetTitle className="text-2xl font-bold tracking-tight text-primary">
-                {isEdit ? "Sửa ca làm việc" : "Thêm ca làm việc"}
-              </SheetTitle>
-              <SheetDescription className="text-muted-foreground font-medium">
-                Định nghĩa khung giờ làm việc tiêu chuẩn.
-              </SheetDescription>
-            </SheetHeader>
-          </div>
+        <SheetContent className="sm:max-w-md w-full overflow-y-auto" {...contentProps}>
+          <SheetHeader>
+            <SheetTitle>
+              {isEdit ? "Sửa ca làm việc" : "Thêm ca làm việc"}
+            </SheetTitle>
+            <SheetDescription>
+              Định nghĩa khung giờ làm việc tiêu chuẩn.
+            </SheetDescription>
+          </SheetHeader>
 
-          <div className="flex-1 overflow-y-auto p-8">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
                 <FormField
                   control={form.control}
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-foreground/80 font-semibold tracking-tight">Tên ca</FormLabel>
+                      <FormLabel>Tên ca</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ca Sáng" {...field} className="h-12 rounded-xl border-muted-foreground/20" />
+                        <Input placeholder="Ca Sáng" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -154,9 +151,9 @@ export function ShiftFormSheet({ open, onOpenChange, shift, onSuccess }: ShiftFo
                     name="start_time"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-foreground/80 font-semibold tracking-tight">Giờ bắt đầu</FormLabel>
+                        <FormLabel>Giờ bắt đầu</FormLabel>
                         <FormControl>
-                          <Input type="time" {...field} className="h-12 rounded-xl" />
+                          <Input type="time" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -167,9 +164,9 @@ export function ShiftFormSheet({ open, onOpenChange, shift, onSuccess }: ShiftFo
                     name="end_time"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-foreground/80 font-semibold tracking-tight">Giờ kết thúc</FormLabel>
+                        <FormLabel>Giờ kết thúc</FormLabel>
                         <FormControl>
-                          <Input type="time" {...field} className="h-12 rounded-xl" />
+                          <Input type="time" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -182,11 +179,11 @@ export function ShiftFormSheet({ open, onOpenChange, shift, onSuccess }: ShiftFo
                   name="color_code"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-foreground/80 font-semibold tracking-tight">Màu sắc hiển thị</FormLabel>
+                      <FormLabel>Màu sắc hiển thị</FormLabel>
                       <FormControl>
                         <div className="flex gap-2">
-                          <Input type="color" {...field} value={field.value || "#10B981"} className="w-16 h-12 p-1 cursor-pointer rounded-xl" />
-                          <Input {...field} value={field.value || "#10B981"} placeholder="#10B981" className="h-12 rounded-xl" />
+                          <Input type="color" {...field} value={field.value || "#10B981"} className="w-16 h-9 p-1 cursor-pointer" />
+                          <Input {...field} value={field.value || "#10B981"} placeholder="#10B981" />
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -194,31 +191,20 @@ export function ShiftFormSheet({ open, onOpenChange, shift, onSuccess }: ShiftFo
                   )}
                 />
 
-                <div className="pt-6 flex gap-3">
+                <div className="flex justify-end gap-3 pt-4">
                   <Button
                     type="button"
                     variant="ghost"
-                    className="flex-1"
                     onClick={() => handleOpenChange(false)}
                   >
-                    Hủy bỏ
+                    Hủy
                   </Button>
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 shadow-lg shadow-primary/20"
-                  >
-                    {isSubmitting ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <Save className="w-4 h-4 mr-2" />
-                    )}
-                    {isEdit ? "Lưu thay đổi" : "Tạo ca làm"}
+                  <Button type="submit" loading={isSubmitting}>
+                    {isEdit ? "Cập nhật" : "Tạo mới"}
                   </Button>
                 </div>
               </form>
             </Form>
-          </div>
         </SheetContent>
       </Sheet>
 

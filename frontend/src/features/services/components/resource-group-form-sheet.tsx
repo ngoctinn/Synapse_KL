@@ -176,7 +176,7 @@ export function ResourceGroupFormSheet({
                   <FormControl>
                     <Textarea
                       placeholder="Mô tả về nhóm tài nguyên này..."
-                      className="resize-none"
+                      className="resize-none min-h-[100px]"
                       {...field}
                     />
                   </FormControl>

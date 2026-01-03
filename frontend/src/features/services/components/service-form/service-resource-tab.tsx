@@ -69,9 +69,9 @@ export function ServiceResourceTab({
               <Button
                 type="button"
                 variant="outline"
-                size="icon"
+                size="icon-sm"
                 onClick={onAddSkill}
-                className="shrink-0 h-11 w-11"
+                className="shrink-0"
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -85,7 +85,7 @@ export function ServiceResourceTab({
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <FormLabel>Yêu cầu tài nguyên</FormLabel>
-            <p className="text-[10px] text-muted-foreground italic">
+            <p className="text-xs text-muted-foreground italic">
               Xem timeline sử dụng bên dưới
             </p>
           </div>
@@ -98,7 +98,7 @@ export function ServiceResourceTab({
             }
             className="h-8 text-primary hover:text-primary hover:bg-primary/10 -mr-2"
           >
-            <Plus className="w-3.5 h-3.5 mr-1" /> Thêm tài nguyên
+            <Plus className="h-4 w-4 mr-1" /> Thêm tài nguyên
           </Button>
         </div>
 
@@ -116,7 +116,7 @@ export function ServiceResourceTab({
                   name={`resource_requirements.${index}.group_id`}
                   render={({ field }) => (
                     <FormItem className="flex-1 space-y-0 mb-0">
-                      <FormLabel className="text-[11px] font-normal text-muted-foreground">
+                      <FormLabel className="text-xs font-normal text-muted-foreground">
                         Loại tài nguyên
                       </FormLabel>
                       <Select
@@ -176,7 +176,7 @@ export function ServiceResourceTab({
 
                     return (
                       <FormItem className="w-24 space-y-0 mb-0">
-                        <FormLabel className="text-[11px] font-normal text-muted-foreground">
+                        <FormLabel className="text-xs font-normal text-muted-foreground">
                           Số lượng
                         </FormLabel>
                         <FormControl>
@@ -197,7 +197,7 @@ export function ServiceResourceTab({
                         {group && (
                           <p
                             className={cn(
-                              "text-[10px] absolute -bottom-4 left-0 whitespace-nowrap",
+                              "text-xs absolute -bottom-4 left-0 whitespace-nowrap",
                               isOverLimit
                                 ? "text-destructive font-medium"
                                 : "text-muted-foreground"
@@ -219,7 +219,7 @@ export function ServiceResourceTab({
                   className="h-9 w-9 mt-5 text-muted-foreground hover:text-destructive transition-colors"
                   onClick={() => remove(index)}
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
 
@@ -231,7 +231,7 @@ export function ServiceResourceTab({
                   render={({ field }) => (
                     <FormItem className="space-y-0">
                       <div className="flex justify-between items-center mb-1">
-                        <FormLabel className="text-[10px] text-muted-foreground font-normal">
+                        <FormLabel className="text-xs text-muted-foreground font-normal">
                           Sử dụng sau (phút)
                         </FormLabel>
                       </div>
@@ -262,7 +262,7 @@ export function ServiceResourceTab({
                     return (
                       <FormItem className="space-y-0">
                         <div className="flex justify-between items-center mb-1">
-                          <FormLabel className="text-[10px] text-muted-foreground font-normal">
+                          <FormLabel className="text-xs text-muted-foreground font-normal">
                             Thời lượng dùng
                           </FormLabel>
                         </div>

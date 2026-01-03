@@ -30,7 +30,6 @@ import {
   MoreHorizontal,
   Power,
   PowerOff,
-  Trash2,
 } from "lucide-react";
 import NextImage from "next/image";
 import { useRouter } from "next/navigation";
@@ -426,15 +425,6 @@ export function ServicesTab({
               title="Xác nhận xóa?"
               description={`Xóa dịch vụ "${row.original.name}"? Hành động này không thể hoàn tác.`}
               onConfirm={() => handleDelete(row.original.id)}
-              trigger={
-                <div
-                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none transition-colors hover:bg-destructive/10 text-destructive gap-2"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  <span>Xóa dịch vụ</span>
-                </div>
-              }
             />
           </DropdownMenuContent>
         </DropdownMenu>

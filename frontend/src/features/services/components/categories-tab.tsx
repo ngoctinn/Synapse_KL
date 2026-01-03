@@ -38,7 +38,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Edit2, GripVertical, MoreHorizontal, Trash2 } from "lucide-react";
+import { Edit2, GripVertical, MoreHorizontal } from "lucide-react";
 import React, {
   useEffect,
   useId,
@@ -334,15 +334,6 @@ const SortableCategoryRow = React.memo(
                 title="Xác nhận xóa?"
                 description={`Danh mục "${category.name}" sẽ bị xóa. Bạn không thể xóa nếu danh mục này đang chứa dịch vụ.`}
                 onConfirm={() => onDelete(category.id)}
-                trigger={
-                  <div
-                    className="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none transition-colors hover:bg-destructive/10  text-destructive gap-2"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span>Xóa danh mục</span>
-                  </div>
-                }
               />
             </DropdownMenuContent>
           </DropdownMenu>

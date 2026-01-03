@@ -29,7 +29,7 @@ import {
 } from "@/shared/ui/sheet";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { Loader2, Save, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -181,32 +181,30 @@ export function ScheduleFormSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md w-full flex flex-col p-0 gap-0">
-        <div className="bg-primary/5 p-8 border-b border-primary/10">
-          <SheetHeader className="text-left space-y-1">
-            <SheetTitle className="text-2xl font-bold tracking-tight text-primary">
-              Phân ca làm việc
-            </SheetTitle>
-            <SheetDescription className="text-muted-foreground font-medium">
-               Phân ca cho {activeStaffIds.length} nhân viên trong {uniqueDates.length} ngày.
-            </SheetDescription>
-          </SheetHeader>
-        </div>
+      <SheetContent className="sm:max-w-md w-full overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle>
+            Phân ca làm việc
+          </SheetTitle>
+          <SheetDescription>
+             Phân ca cho {activeStaffIds.length} nhân viên trong {uniqueDates.length} ngày.
+          </SheetDescription>
+        </SheetHeader>
 
-        <div className="flex-1 p-8">
-            <div className="p-3 bg-muted/50 rounded-lg text-sm space-y-2 mb-6">
+        <div className="py-4">
+            <div className="p-3 bg-muted/50 rounded-lg text-sm space-y-2 mb-4">
                 <div className="flex flex-col gap-2">
                     <span className="text-muted-foreground">Nhân viên ({activeStaffIds.length}):</span>
                     <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto content-start p-1">
                         {activeStaffIds.map(id => {
                             const staff = staffList.find(s => s.user_id === id);
                             return (
-                                <Badge key={id} variant="secondary" className="flex items-center gap-1 pr-1 pl-2 h-7 font-normal bg-background border shadow-sm">
+                                <Badge key={id} variant="secondary" className="flex items-center gap-1 pr-1 pl-2">
                                     {staff?.full_name}
                                     <button
                                         type="button"
                                         onClick={() => handleRemoveStaff(id)}
-                                        className="hover:bg-muted-foreground/20 rounded-full p-0.5 ml-1 transition-colors"
+                                        className="hover:bg-muted rounded-full p-0.5 ml-1"
                                     >
                                         <X className="w-3 h-3 text-muted-foreground" />
                                     </button>
@@ -227,20 +225,20 @@ export function ScheduleFormSheet({
             </div>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormItem>
-                <FormLabel className="text-foreground/80 font-semibold tracking-tight">Ca làm việc</FormLabel>
+                <FormLabel>Ca làm việc</FormLabel>
                 <FormField
                   control={form.control}
                   name="shift_id"
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="h-12 rounded-xl border-muted-foreground/20">
+                        <SelectTrigger>
                           <SelectValue placeholder="Chọn ca..." />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="rounded-xl">
+                      <SelectContent>
                         {shifts.map((s) => (
                           <SelectItem key={s.id} value={s.id}>
                             <div className="flex items-center gap-2">
@@ -257,25 +255,15 @@ export function ScheduleFormSheet({
                 <FormMessage />
               </FormItem>
 
-              <div className="pt-6 flex gap-3">
+              <div className="flex justify-end gap-3 pt-4">
                 <Button
                   type="button"
                   variant="ghost"
-                  className="flex-1"
                   onClick={() => onOpenChange(false)}
                 >
-                  Hủy bỏ
+                  Hủy
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={isPending}
-                  className="flex-1 shadow-lg shadow-primary/20"
-                >
-                  {isPending ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4 mr-2" />
-                  )}
+                <Button type="submit" loading={isPending}>
                   Lưu lịch biểu
                 </Button>
               </div>

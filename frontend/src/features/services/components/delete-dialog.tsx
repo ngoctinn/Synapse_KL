@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
+import { DropdownMenuItem } from "@/shared/ui/dropdown-menu";
 import { Trash2 } from "lucide-react";
 import React from "react";
 
@@ -33,13 +34,13 @@ export function DeleteDialog({
     <AlertDialog>
       <AlertDialogTrigger asChild>
         {trigger || (
-          <div
-            className="relative flex cursor-default select-none items-center rounded-sm px-2 py-2.5 text-sm outline-none transition-colors hover:bg-destructive/10 text-destructive gap-2 w-full"
-            onClick={(e) => e.stopPropagation()}
+          <DropdownMenuItem
+            onSelect={(e) => e.preventDefault()}
+            className="text-destructive focus:text-destructive focus:bg-destructive/10"
           >
             <Trash2 className="h-4 w-4" />
-            <span>Xóa</span>
-          </div>
+            Xóa
+          </DropdownMenuItem>
         )}
       </AlertDialogTrigger>
       <AlertDialogContent onClick={(e) => e.stopPropagation()}>

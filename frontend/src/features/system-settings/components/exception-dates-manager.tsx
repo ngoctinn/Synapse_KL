@@ -287,7 +287,7 @@ export function ExceptionDatesManager({
                                 <div className="absolute top-full right-0 mt-1">
                                   <Badge
                                     variant="warning"
-                                    className="h-6 px-2 text-[9px] gap-1 whitespace-nowrap"
+                                    className="h-6 px-2 text-xs gap-1 whitespace-nowrap"
                                   >
                                     <AlertCircle className="size-3" />
                                     <span>Sáng hôm sau (+1)</span>
@@ -333,7 +333,7 @@ export function ExceptionDatesManager({
                     </span>
                     <span
                       className={cn(
-                        "text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider flex items-center gap-1",
+                        "text-xs px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider flex items-center gap-1",
                         item.is_closed
                           ? "bg-destructive/10 text-destructive border border-destructive/20"
                           : "bg-primary/10 text-primary border border-primary/20"
@@ -350,7 +350,7 @@ export function ExceptionDatesManager({
                             item.open_time > item.close_time && (
                               <Badge
                                 variant="warning"
-                                className="ml-1 h-5 px-1.5 text-[9px] uppercase tracking-tighter"
+                                className="ml-1 h-5 px-1.5 text-xs uppercase tracking-tighter"
                               >
                                 (+1)
                               </Badge>
@@ -372,7 +372,7 @@ export function ExceptionDatesManager({
 
                       const overrideText = getOverrideInfo(item.date);
                       return overrideText ? (
-                        <span className="text-[10px] text-muted-foreground italic">
+                        <span className="text-xs text-muted-foreground italic">
                           {overrideText}
                         </span>
                       ) : null;
