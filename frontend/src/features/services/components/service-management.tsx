@@ -1,20 +1,20 @@
 import {
-  getCategoriesAction,
-  getResourceGroupsAction,
-  getResourcesAction,
-  getServicesAction,
-  getSkillsAction,
-} from "../actions";
+    getCategories,
+    getResourceGroups,
+    getResources,
+    getServices,
+    getSkills,
+} from "../api";
 import { ServicePageTabs } from "./service-page-tabs";
 
 export async function ServiceManagement() {
   const [skills, categories, resourceGroups, resources, servicesResponse] =
     await Promise.all([
-      getSkillsAction(),
-      getCategoriesAction(),
-      getResourceGroupsAction(),
-      getResourcesAction(),
-      getServicesAction(),
+      getSkills(),
+      getCategories(),
+      getResourceGroups(),
+      getResources(),
+      getServices(),
     ]);
 
   const groupsWithCount = resourceGroups.map((group) => {

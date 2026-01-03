@@ -22,6 +22,7 @@ from app.modules.scheduling.schemas import (
     StaffScheduleBatchCreate,
     StaffScheduleCreate,
 )
+from app.modules.staff.models import StaffProfile
 
 # --- Shift Service ---
 
@@ -98,7 +99,7 @@ async def get_schedules_by_date_range(
         )
     ).options(
         selectinload(StaffSchedule.shift),
-        selectinload(StaffSchedule.staff)
+        selectinload(StaffSchedule.staff).selectinload(StaffProfile.profile)
     )
 
     if staff_id:

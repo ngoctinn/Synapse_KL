@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import type { GridCellCoords } from "./use-drag-select";
 
 interface UseGridKeyboardProps {
@@ -64,23 +64,31 @@ export function useGridKeyboard({
     };
   }, [staff, weekDays, totalRows, totalCols, formatDate]);
 
-  // Get all selected cells as GridCellCoords array
-  const getSelectedCoordsArray = useCallback((): GridCellCoords[] => {
+  // Helper to convert Set to coords array
+  const getCoordsFromSet = useCallback((set: Set<string>): GridCellCoords[] => {
     const coords: GridCellCoords[] = [];
-    selectedCells.forEach(key => {
+    set.forEach((key) => {
       const [row, col] = key.split("_").map(Number);
       const coord = toCoords(row, col);
       if (coord) coords.push(coord);
     });
     return coords;
-  }, [selectedCells, toCoords]);
+  }, [toCoords]);
 
-  // Notify parent of selection changes
-  useEffect(() => {
-    if (onSelectionChange) {
-      onSelectionChange(getSelectedCoordsArray());
+  // Public getter that returns current selection as array
+  const getSelectedCoordsArray = useCallback(() => {
+    return getCoordsFromSet(selectedCells);
+  }, [selectedCells, getCoordsFromSet]);
+
+  // Unified selection update handler
+  const updateSelection = useCallback((newSet: Set<string>, notify: boolean = true) => {
+    setSelectedCells(newSet);
+    if (notify && onSelectionChange) {
+      onSelectionChange(getCoordsFromSet(newSet));
     }
-  }, [selectedCells, onSelectionChange, getSelectedCoordsArray]);
+  }, [onSelectionChange, getCoordsFromSet]);
+
+
 
   // Move focus with bounds checking
   const moveFocus = useCallback((deltaRow: number, deltaCol: number, extend: boolean) => {
@@ -103,34 +111,33 @@ export function useGridKeyboard({
             newSelection.add(getCellKey(r, c));
           }
         }
-        setSelectedCells(newSelection);
+        updateSelection(newSelection, true);
       }
 
       return { rowIndex: newRow, colIndex: newCol };
     });
-  }, [totalRows, totalCols, selectionAnchor, getCellKey]);
+  }, [totalRows, totalCols, selectionAnchor, getCellKey, updateSelection]);
 
   // Toggle single cell selection
   const toggleCellSelection = useCallback((rowIndex: number, colIndex: number) => {
     const key = getCellKey(rowIndex, colIndex);
-    setSelectedCells(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(key)) {
-        newSet.delete(key);
-      } else {
-        newSet.add(key);
-      }
-      return newSet;
-    });
+    const newSet = new Set(selectedCells);
+    if (newSet.has(key)) {
+      newSet.delete(key);
+    } else {
+      newSet.add(key);
+    }
+
     // Set anchor for shift+arrow selection
     setSelectionAnchor({ rowIndex, colIndex });
-  }, [getCellKey]);
+    updateSelection(newSet, true);
+  }, [getCellKey, selectedCells, updateSelection]);
 
   // Clear all selection
   const clearSelection = useCallback(() => {
-    setSelectedCells(new Set());
     setSelectionAnchor(null);
-  }, []);
+    updateSelection(new Set(), true);
+  }, [updateSelection]);
 
   // Select all cells
   const selectAll = useCallback(() => {
@@ -140,8 +147,8 @@ export function useGridKeyboard({
         allKeys.add(getCellKey(r, c));
       }
     }
-    setSelectedCells(allKeys);
-  }, [totalRows, totalCols, getCellKey]);
+    updateSelection(allKeys, true);
+  }, [totalRows, totalCols, getCellKey, updateSelection]);
 
   // Keyboard event handler
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -203,14 +210,15 @@ export function useGridKeyboard({
   }, []);
 
   // Set selected cells from external source (e.g., drag selection)
+  // CRITICAL: notify=false to prevent infinite loop
   const setKeyboardSelection = useCallback((cells: GridCellCoords[]) => {
     const newSet = new Set<string>();
     cells.forEach(c => newSet.add(getCellKey(c.rowIndex, c.colIndex)));
-    setSelectedCells(newSet);
+    updateSelection(newSet, false);
     if (cells.length > 0) {
       setSelectionAnchor({ rowIndex: cells[0].rowIndex, colIndex: cells[0].colIndex });
     }
-  }, [getCellKey]);
+  }, [getCellKey, updateSelection]);
 
   return {
     focusedCell,

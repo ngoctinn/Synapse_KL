@@ -94,7 +94,11 @@ async def list_schedules(
         item = StaffScheduleReadWithDetails.model_validate(sch)
         item.shift_name = sch.shift.name if sch.shift else None
         item.shift_color = sch.shift.color_code if sch.shift else None
-        item.staff_name = sch.staff.full_name if sch.staff else None
+        item.staff_name = (
+            sch.staff.profile.full_name
+            if sch.staff and sch.staff.profile
+            else None
+        )
         result.append(item)
     return result
 

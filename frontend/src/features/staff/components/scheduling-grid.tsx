@@ -93,6 +93,30 @@ export function SchedulingGrid({
     selection,
   } = useDragToSelect();
 
+  // Keyboard navigation
+  const gridRef = useRef<HTMLTableElement>(null);
+  const formatDateForKeyboard = useCallback(
+    (date: Date) => format(date, "yyyy-MM-dd"),
+    []
+  );
+
+  const {
+    handleKeyDown,
+    isCellFocused,
+    focusCell,
+    setKeyboardSelection,
+    clearSelection: clearKeyboardSelection,
+    focusedCell,
+  } = useGridKeyboard({
+    totalRows: staff.length,
+    totalCols: TOTAL_WEEK_DAYS,
+    staff,
+    weekDays,
+    formatDate: formatDateForKeyboard,
+    onSelectionChange: setSelectedCells,
+    enabled: !isSheetOpen,
+  });
+
   useEffect(() => {
     if (!selection.isSelecting && selection.start && selection.end) {
       // Collect selected cells
@@ -118,6 +142,7 @@ export function SchedulingGrid({
 
       if (cells.length > 0) {
         setSelectedCells(cells);
+        setKeyboardSelection(cells);
       }
 
       // CRITICAL: Clear the drag selection to prevent this effect from running again immediately
@@ -131,6 +156,7 @@ export function SchedulingGrid({
     staff,
     weekDays,
     clearSelection,
+    setKeyboardSelection,
   ]);
 
   // Optimize selection lookup for rendering
@@ -174,25 +200,23 @@ export function SchedulingGrid({
 
   const hasConflict = conflictDetails.length > 0;
 
-  // Keyboard navigation
-  const gridRef = useRef<HTMLTableElement>(null);
-  const formatDateForKeyboard = useCallback(
-    (date: Date) => format(date, "yyyy-MM-dd"),
-    []
-  );
 
-  const { handleKeyDown, isCellFocused, focusCell } = useGridKeyboard({
-    totalRows: staff.length,
-    totalCols: TOTAL_WEEK_DAYS,
-    staff,
-    weekDays,
-    formatDate: formatDateForKeyboard,
-    enabled: !isSheetOpen,
-  });
+  // Sync DOM focus when focusedCell changes
+  useEffect(() => {
+    if (focusedCell && gridRef.current) {
+      const cell = gridRef.current.querySelector(
+        `[data-row="${focusedCell.rowIndex}"][data-col="${focusedCell.colIndex}"]`
+      ) as HTMLElement;
+      if (cell) {
+        cell.focus();
+      }
+    }
+  }, [focusedCell]);
 
   const handleSheetSuccess = () => {
     router.refresh(); // Refresh Server Data
     clearSelection();
+    clearKeyboardSelection();
     setSelectedCells([]);
   };
 
@@ -243,19 +267,55 @@ export function SchedulingGrid({
           showViewSwitcher={false}
         />
 
-        {isMobile && (
-          <Button
-            variant={isSelectMode ? "default" : "outline"}
-            size="sm"
-            onClick={() => setIsSelectMode(!isSelectMode)}
-            className="h-9 px-3 gap-2"
-          >
-            <MousePointerClick className="w-4 h-4" />
-            <span className="hidden sm:inline">
-              {isSelectMode ? "Thoát chọn" : "Chọn ô"}
-            </span>
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {isMobile && (
+            <Button
+              variant={isSelectMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsSelectMode(!isSelectMode)}
+              className="h-9 px-3 gap-2"
+            >
+              <MousePointerClick className="w-4 h-4" />
+              <span className="hidden sm:inline">
+                {isSelectMode ? "Thoát chọn" : "Chọn ô"}
+              </span>
+            </Button>
+          )}
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="icon" className="h-9 w-9">
+                  <span className="text-xs font-bold">?</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="w-64 p-3 selection:bg-primary/10">
+                <div className="space-y-2">
+                  <p className="font-bold text-xs uppercase text-primary tracking-wider">Phím tắt & Thao tác</p>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11px]">
+                    <span className="text-muted-foreground italic">Di chuyển:</span>
+                    <span className="font-medium">Phím mũi tên</span>
+
+                    <span className="text-muted-foreground italic">Chọn dải ô:</span>
+                    <span className="font-medium">Shift + Mũi tên</span>
+
+                    <span className="text-muted-foreground italic">Chọn tất cả:</span>
+                    <span className="font-medium">Ctrl + A</span>
+
+                    <span className="text-muted-foreground italic">Mở phân ca:</span>
+                    <span className="font-medium">Enter / Space</span>
+
+                    <span className="text-muted-foreground italic">Hủy chọn:</span>
+                    <span className="font-medium">Esc / Click ngoài</span>
+
+                    <span className="text-muted-foreground italic">Chọn nhanh:</span>
+                    <span className="font-medium">Kéo chuột (Drag)</span>
+                  </div>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </div>
 
       {/* Mobile Day Navigation */}
@@ -296,7 +356,7 @@ export function SchedulingGrid({
         {" "}
         {/* Catch pointer up bubble */}
         <div className="w-full overflow-x-auto relative scrollbar-hide">
-          <table className="w-full border-collapse">
+          <table ref={gridRef} className="w-full border-collapse">
             <thead>
               <tr className="bg-muted/30 border-b border-border">
                 <th className="p-4 text-left border-r border-border min-w-[200px] sticky left-0 z-20 bg-background shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
@@ -358,12 +418,12 @@ export function SchedulingGrid({
                   {weekDays.map((day, colIndex) => {
                     const dateStr = format(day, "yyyy-MM-dd");
                     const key = `${s.user_id}_${dateStr}`;
-                    const daySchedules = scheduleMap.get(key) || [];
-                    // Check selection: Either currently dragging OR finalized selection
+                    const cellSchedules = scheduleMap.get(key) || [];
                     const isSelected =
                       isDragSelected(colIndex, rowIndex) ||
                       selectedKeys.has(`${rowIndex}_${colIndex}`);
                     const isToday = isSameDay(day, new Date());
+                    const hasCellConflict = isSelected && cellSchedules.length > 0;
 
                     const cellCoords = {
                       staffId: s.user_id,
@@ -377,17 +437,21 @@ export function SchedulingGrid({
                         key={key}
                         tabIndex={0}
                         role="gridcell"
+                        data-row={rowIndex}
+                        data-col={colIndex}
                         aria-selected={isSelected}
                         className={cn(
-                          "p-1.5 border-b border-r border-border/50 last:border-r-0 cursor-pointer relative select-none transition-colors outline-none",
+                          "p-1.5 border-b border-r border-border/50 last:border-r-0 cursor-pointer relative select-none transition-all outline-none",
                           // Allow touch scroll except when in select mode
                           !isSelectMode && "touch-auto",
                           isSelectMode && "touch-none",
                           isToday && "bg-primary/5",
-                          isSelected &&
-                            "bg-primary/20 ring-inset ring-1 ring-primary/30",
+                          isSelected && !hasCellConflict &&
+                            "bg-primary/15 ring-inset ring-1 ring-primary/40 shadow-[inset_0_0_10px_rgba(var(--primary-rgb),0.05)]",
+                          isSelected && hasCellConflict &&
+                            "bg-destructive/15 ring-inset ring-1 ring-destructive/40",
                           isCellFocused(rowIndex, colIndex) &&
-                            "ring-2 ring-primary ring-offset-1",
+                            "ring-2 ring-primary ring-offset-0 z-10 scale-[1.02] shadow-lg",
                           // Visual hint when select mode is active on mobile
                           isSelectMode &&
                             !isSelected &&
@@ -422,8 +486,8 @@ export function SchedulingGrid({
                         onKeyDown={handleKeyDown}
                       >
                         <div className="min-h-[64px] h-full flex flex-col gap-1 w-full justify-center">
-                          {daySchedules.length > 0 ? (
-                            daySchedules.map((sch) => (
+                          {cellSchedules.length > 0 ? (
+                            cellSchedules.map((sch) => (
                               <ScheduleBadge
                                 key={sch.id}
                                 schedule={sch}

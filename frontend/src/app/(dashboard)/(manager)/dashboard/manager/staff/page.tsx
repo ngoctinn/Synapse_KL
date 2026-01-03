@@ -1,8 +1,8 @@
 import {
-  getSchedulesAction,
-  getShiftsAction,
-  getStaffAction,
-} from "@/features/staff/actions";
+    getSchedules,
+    getShifts,
+    getStaff,
+} from "@/features/staff/api";
 import { SidebarTrigger } from "@/shared/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { endOfWeek, format, startOfWeek } from "date-fns";
@@ -62,9 +62,9 @@ export default async function StaffPage({ searchParams }: PageProps) {
 
   // 3. Parallel Data Fetching
   const [staff, shifts, schedules] = await Promise.all([
-    getStaffAction(),
-    getShiftsAction(),
-    getSchedulesAction(format(start, "yyyy-MM-dd"), format(end, "yyyy-MM-dd")),
+    getStaff(),
+    getShifts(),
+    getSchedules(format(start, "yyyy-MM-dd"), format(end, "yyyy-MM-dd")),
   ]);
 
   return (

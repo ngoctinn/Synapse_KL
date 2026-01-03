@@ -70,20 +70,25 @@ async def invite_staff(
         return {"success": True, "message": "Yêu cầu mời đã được gửi thành công"}
 
     except Exception as e:
-        error_str = str(e)
+        error_str = str(e).lower()
         detail = "Lỗi không xác định khi mời nhân viên"
 
-        if "already registered" in error_str.lower():
-            detail = "Email này đã được đăng ký hoặc mời trước đó"
-        elif "rate limit" in error_str.lower():
-            detail = "Bạn đã gửi quá nhiều yêu cầu, vui lòng thử lại sau"
-        elif "smtp" in error_str.lower():
-            detail = "Lỗi kết nối máy chủ email (SMTP). Vui lòng kiểm tra lại cấu hình"
+        if "already registered" in error_str or "already_invited" in error_str:
+            detail = "Email này đã được đăng ký hoặc mời tham gia hệ thống trước đó"
+        elif "rate limit" in error_str:
+            detail = "Bạn đã gửi quá nhiều yêu cầu mời. Vui lòng nghỉ ngơi và thử lại sau ít phút"
+        elif "smtp" in error_str or "email provider" in error_str:
+            detail = "Không thể gửi email mời (lỗi máy chủ SMTP). Vui lòng liên hệ kỹ thuật để kiểm tra cấu hình"
+        elif "invalid email" in error_str:
+            detail = "Địa chỉ email không hợp lệ"
         else:
-            detail = f"Lỗi: {error_str}"
+            detail = f"Không thể gửi lời mời: {str(e)}"
 
-        print(f"DEBUG - Supabase Invite Error: {error_str}")
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
+        print(f"DEBUG - Staff Invite Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=detail
+        )
 
 
 @router.get("/", response_model=list[StaffProfileReadWithSkills])
