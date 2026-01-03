@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # ==============================================================================
-# Synapse Dev Runner
+# Synapse Dev Runner (v2026.01.1)
 # Description: Chạy đồng thời Backend (FastAPI) và Frontend (Next.js)
 # ==============================================================================
 
 # Hàm xử lý khi nhấn Ctrl+C để tắt cả 2 server
 cleanup() {
     echo ""
-    echo "Stopping Synapse dev servers..."
+    echo "🛑 Đang dừng các máy chủ Synapse..."
     # Giết tất cả các task chạy ngầm của script này
     kill $(jobs -p) 2>/dev/null
     exit
@@ -18,26 +18,40 @@ cleanup() {
 trap cleanup SIGINT SIGTERM
 
 echo "----------------------------------------------------"
-echo "🚀 Starting Synapse Project in Development Mode"
+echo "🚀 KHỞI ĐỘNG DỰ ÁN SYNAPSE (CHẾ ĐỘ PHÁT TRIỂN)"
 echo "----------------------------------------------------"
 
-# 1. Chạy Backend
-echo "📦 [1/2] Launching Backend (Uvicorn)..."
-(cd backend && python -m uv run uvicorn app.main:app --reload) &
+# Kiểm tra thư mục frontend
+if [ ! -d "frontend" ]; then
+    echo "❌ Lỗi: Không tìm thấy thư mục 'frontend'."
+    exit 1
+fi
+
+# Kiểm tra thư mục backend
+if [ ! -d "backend" ]; then
+    echo "❌ Lỗi: Không tìm thấy thư mục 'backend'."
+    exit 1
+fi
+
+# 1. Chạy Backend (Sử dụng uv run uvicorn)
+echo "📦 [1/2] Đang khởi động Backend (FastAPI)..."
+(cd backend && uv run uvicorn app.main:app --reload --port 8000) &
 
 # Đợi một chút để Backend khởi động trước
-sleep 2
+sleep 3
 
 # 2. Chạy Frontend
-echo "💻 [2/2] Launching Frontend (Next.js)..."
+echo "💻 [2/2] Đang khởi động Frontend (Next.js)..."
+echo "💡 Lưu ý: Nếu báo lỗi cổng 3000 đang bận, hãy tắt các trình chạy Next.js cũ."
 (cd frontend && npm run dev) &
 
 echo ""
-echo "✨ All systems are running!"
-echo "📍 Backend: http://localhost:8000"
-echo "📍 Frontend: http://localhost:3000"
+echo "✨ Hệ thống đã sẵn sàng!"
+echo "📍 Backend API: http://localhost:8000"
+echo "📍 Frontend UI: http://localhost:3000"
+echo "📍 Showcase:    http://localhost:3000/showcase"
 echo "----------------------------------------------------"
-echo "Press Ctrl+C to stop both servers."
+echo "Nhấn Ctrl+C để dừng cả hai máy chủ."
 
 # Giữ script chạy để đợi các background jobs
 wait

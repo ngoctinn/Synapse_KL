@@ -1,0 +1,102 @@
+:root {
+  --background: oklch(0.98 0 195);
+  --foreground: oklch(0.21 0.02 195);
+
+  --card: oklch(1.00 0 195);
+  --card-foreground: oklch(0.21 0.02 195);
+
+  --popover: oklch(1.00 0 195);
+  --popover-foreground: oklch(0.21 0.02 195);
+
+  --primary: oklch(0.48 0.075 195);
+  --primary-foreground: oklch(1.00 0 0);
+
+  --secondary: oklch(0.97 0 195);
+  --secondary-foreground: oklch(0.37 0.02 195);
+
+  --muted: oklch(0.97 0 195);
+  --muted-foreground: oklch(0.55 0.015 195);
+
+  --accent: oklch(0.96 0.02 195);
+  --accent-foreground: oklch(0.48 0.075 195);
+
+  --destructive: oklch(0.58 0.22 27.29);
+
+  --border: oklch(0.93 0.01 195);
+  --input: oklch(0.93 0.01 195);
+  --ring: oklch(0.48 0.075 195);
+
+  --chart-1: oklch(0.48 0.075 195);
+  --chart-2: oklch(0.56 0.085 195);
+  --chart-3: oklch(0.40 0.065 195);
+  --chart-4: oklch(0.43 0.065 195);
+  --chart-5: oklch(0.29 0.04 195);
+
+  --sidebar: oklch(0.97 0 195);
+  --sidebar-foreground: oklch(0.21 0.02 195);
+  --sidebar-primary: oklch(0.48 0.075 195);
+  --sidebar-primary-foreground: oklch(1.00 0 0);
+  --sidebar-accent: oklch(0.96 0.02 195);
+  --sidebar-accent-foreground: oklch(0.48 0.075 195);
+  --sidebar-border: oklch(0.93 0.01 195);
+  --sidebar-ring: oklch(0.48 0.075 195);
+
+  --font-sans: "Be Vietnam Pro", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-serif: "Merriweather", serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  --radius: 0.625rem;
+
+  --shadow-2xs: 0 1px 3px 0px oklch(0 0 0 / 0.05);
+  --shadow-xs: 0 1px 3px 0px oklch(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0px oklch(0 0 0 / 0.10), 0 1px 2px -1px oklch(0 0 0 / 0.10);
+  --shadow: 0 1px 3px 0px oklch(0 0 0 / 0.10), 0 1px 2px -1px oklch(0 0 0 / 0.10);
+  --shadow-md: 0 1px 3px 0px oklch(0 0 0 / 0.10), 0 2px 4px -1px oklch(0 0 0 / 0.10);
+  --shadow-lg: 0 1px 3px 0px oklch(0 0 0 / 0.10), 0 4px 6px -1px oklch(0 0 0 / 0.10);
+  --shadow-xl: 0 1px 3px 0px oklch(0 0 0 / 0.10), 0 8px 10px -1px oklch(0 0 0 / 0.10);
+  --shadow-2xl: 0 1px 3px 0px oklch(0 0 0 / 0.25);
+}
+
+.dark {
+  --background: oklch(0.26 0.02 195);
+  --foreground: oklch(0.93 0.01 195);
+
+  --card: oklch(0.30 0.02 195);
+  --card-foreground: oklch(0.93 0.01 195);
+
+  --popover: oklch(0.30 0.02 195);
+  --popover-foreground: oklch(0.93 0.01 195);
+
+  --primary: oklch(0.56 0.085 195);
+  --primary-foreground: oklch(1.00 0 0);
+
+  --secondary: oklch(0.35 0.03 195);
+  --secondary-foreground: oklch(0.93 0.01 195);
+
+  --muted: oklch(0.30 0.02 195);
+  --muted-foreground: oklch(0.71 0.015 195);
+
+  --accent: oklch(0.36 0.02 195);
+  --accent-foreground: oklch(0.93 0.01 195);
+
+  --destructive: oklch(0.64 0.21 25.39);
+
+  --border: oklch(0.35 0.03 195);
+  --input: oklch(0.35 0.03 195);
+  --ring: oklch(0.56 0.085 195);
+
+  --chart-1: oklch(0.56 0.085 195);
+  --chart-2: oklch(0.48 0.075 195);
+  --chart-3: oklch(0.69 0.065 195);
+  --chart-4: oklch(0.43 0.055 195);
+  --chart-5: oklch(0.29 0.04 195);
+
+  --sidebar: oklch(0.26 0.02 195);
+  --sidebar-foreground: oklch(0.93 0.01 195);
+  --sidebar-primary: oklch(0.56 0.085 195);
+  --sidebar-primary-foreground: oklch(1.00 0 0);
+  --sidebar-accent: oklch(0.36 0.02 195);
+  --sidebar-accent-foreground: oklch(0.93 0.01 195);
+  --sidebar-border: oklch(0.35 0.03 195);
+  --sidebar-ring: oklch(0.56 0.085 195);
+}
