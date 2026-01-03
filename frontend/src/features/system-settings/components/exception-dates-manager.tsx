@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { AlertCircle, Plus, Trash2 } from "lucide-react";
+import { AlertCircle, Calendar, Plus, Trash2 } from "lucide-react";
 import * as React from "react";
 
 import { DatePickerWithRange } from "@/shared/components/date-range-picker";
@@ -10,6 +10,17 @@ import { TimePickerDropdown } from "@/shared/components/time-picker-dropdown";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/shared/ui/alert-dialog";
 import {
   Dialog,
   DialogContent,
@@ -142,13 +153,40 @@ export function ExceptionDatesManager({
     onChange(updated);
   };
 
+  // Summary cho ngày ngoại lệ
+  const summary = React.useMemo(() => {
+    const closedDays = exceptions.filter((e) => e.is_closed).length;
+    const adjustedDays = exceptions.filter((e) => !e.is_closed).length;
+    return { closedDays, adjustedDays, total: exceptions.length };
+  }, [exceptions]);
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      {/* Summary Bar */}
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          {summary.total > 0 ? (
+            <>
+              <span className="flex items-center gap-1.5">
+                <Calendar className="h-4 w-4" />
+                <span className="font-medium text-foreground">{summary.total}</span> ngày ngoại lệ
+              </span>
+              {summary.closedDays > 0 && (
+                <span>• {summary.closedDays} ngày nghỉ</span>
+              )}
+              {summary.adjustedDays > 0 && (
+                <span>• {summary.adjustedDays} ngày điều chỉnh giờ</span>
+              )}
+            </>
+          ) : (
+            <span className="text-muted-foreground">Chưa có ngày ngoại lệ</span>
+          )}
+        </div>
+
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" variant="secondary">
-              <Plus className="mr-2 h-4 w-4" />
+            <Button size="sm" variant="secondary" className="h-8 text-xs">
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
               Thêm ngày
             </Button>
           </DialogTrigger>
@@ -343,14 +381,35 @@ export function ExceptionDatesManager({
                   <p className="text-xs text-muted-foreground">{item.reason}</p>
                 </div>
 
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                  onClick={() => removeException(item.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Xóa ngày ngoại lệ?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Bạn có chắc muốn xóa ngày ngoại lệ &ldquo;{item.reason}&rdquo; ({format(new Date(item.date), "dd/MM/yyyy", { locale: vi })})? 
+                        Thao tác này không thể hoàn tác.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Hủy</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => removeException(item.id)}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Xóa
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             ))}
           </div>

@@ -34,7 +34,7 @@ async def root():
     Endpoint kiểm tra trạng thái hoạt động của API.
     """
     return {
-        "message": "Welcome to Synapse Spa API",
+        "message": "Chào mừng bạn đến với Synapse Spa API",
         "status": "online"
     }
 

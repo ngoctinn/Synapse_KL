@@ -56,8 +56,38 @@ export function OperationalSettings({ initialData }: OperationalSettingsProps) {
       .finally(() => setIsLoading(false));
   }, [initialData]);
 
+  // Shallow compare để tránh JSON.stringify trong useMemo (theo FRONTEND_CHEATSHEET)
   const isDirty = React.useMemo(() => {
-    return JSON.stringify(settings) !== JSON.stringify(originalSettings);
+    if (!settings || !originalSettings) return false;
+    
+    // So sánh regular_operating_hours
+    const hoursChanged = 
+      settings.regular_operating_hours.length !== originalSettings.regular_operating_hours.length ||
+      settings.regular_operating_hours.some((h, i) => {
+        const orig = originalSettings.regular_operating_hours[i];
+        return (
+          h.day_of_week !== orig.day_of_week ||
+          h.open_time !== orig.open_time ||
+          h.close_time !== orig.close_time ||
+          h.is_closed !== orig.is_closed
+        );
+      });
+    
+    // So sánh exception_dates
+    const exceptionsChanged =
+      settings.exception_dates.length !== originalSettings.exception_dates.length ||
+      settings.exception_dates.some((e, i) => {
+        const orig = originalSettings.exception_dates[i];
+        return (
+          e.date !== orig.date ||
+          e.reason !== orig.reason ||
+          e.is_closed !== orig.is_closed ||
+          e.open_time !== orig.open_time ||
+          e.close_time !== orig.close_time
+        );
+      });
+    
+    return hoursChanged || exceptionsChanged;
   }, [settings, originalSettings]);
 
   // Browser Guard (Reuse hook just for browser protection)
@@ -137,87 +167,81 @@ export function OperationalSettings({ initialData }: OperationalSettingsProps) {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
-        <Tabs defaultValue="regular" className="w-full">
-          <div className="flex items-center justify-between">
-            <TabsList className="grid w-full max-w-md grid-cols-2">
-              <TabsTrigger value="regular">Giờ định kỳ</TabsTrigger>
-              <TabsTrigger value="exceptions">Ngày ngoại lệ</TabsTrigger>
-            </TabsList>
+      <Tabs defaultValue="regular" className="w-full space-y-6">
+        <div className="flex items-center justify-between">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="regular">Giờ định kỳ</TabsTrigger>
+            <TabsTrigger value="exceptions">Ngày ngoại lệ</TabsTrigger>
+          </TabsList>
 
-            {isDirty && (
-              <div className="flex items-center gap-4 animate-in fade-in slide-in-from-right-4">
-                <div className="hidden items-center gap-2 md:flex">
-                  <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
-                  <p className="text-sm font-medium text-orange-600">
-                    Bạn có thay đổi chưa lưu
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={handleReset}
-                    disabled={isSaving}
-                  >
-                    Hủy
-                  </Button>
-
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button disabled={isSaving} className="shadow-md">
-                        {isSaving ? "Đang lưu..." : "Lưu cài đặt"}
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Xác nhận thay đổi?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Việc thay đổi giờ hoạt động có thể ảnh hưởng đến các
-                          lịch hẹn đã được đặt trước đó. Hệ thống sẽ áp dụng giờ
-                          mới cho tất cả các ngày liên quan.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Kiểm tra lại</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleSave}>
-                          Tiếp tục lưu
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
+          {isDirty && (
+            <div className="flex items-center gap-4 animate-in fade-in slide-in-from-right-4">
+              <div className="hidden items-center gap-2 md:flex">
+                <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
+                <p className="text-sm font-medium text-orange-600">
+                  Bạn có thay đổi chưa lưu
+                </p>
               </div>
-            )}
-          </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleReset}
+                  disabled={isSaving}
+                >
+                  Hủy
+                </Button>
 
-          <TabsContent
-            value="regular"
-            forceMount={true}
-            className="mt-6 space-y-4 data-[state=inactive]:hidden"
-          >
-            <div className="pt-2">
-              <OperatingHoursForm
-                data={settings?.regular_operating_hours}
-                onChange={handleOperatingHoursChange}
-              />
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button disabled={isSaving} className="shadow-md">
+                      {isSaving ? "Đang lưu..." : "Lưu cài đặt"}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Xác nhận thay đổi?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Việc thay đổi giờ hoạt động có thể ảnh hưởng đến các
+                        lịch hẹn đã được đặt trước đó. Hệ thống sẽ áp dụng giờ
+                        mới cho tất cả các ngày liên quan.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Kiểm tra lại</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleSave}>
+                        Tiếp tục lưu
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
-          </TabsContent>
+          )}
+        </div>
 
-          <TabsContent
-            value="exceptions"
-            forceMount={true}
-            className="mt-6 space-y-4 data-[state=inactive]:hidden"
-          >
-            <div className="pt-2">
-              <ExceptionDatesManager
-                initialData={settings?.exception_dates}
-                regularHours={settings?.regular_operating_hours}
-                onChange={handleExceptionDatesChange}
-              />
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+        <TabsContent
+          value="regular"
+          forceMount={true}
+          className="mt-0 data-[state=inactive]:hidden"
+        >
+          <OperatingHoursForm
+            data={settings?.regular_operating_hours}
+            onChange={handleOperatingHoursChange}
+          />
+        </TabsContent>
+
+        <TabsContent
+          value="exceptions"
+          forceMount={true}
+          className="mt-0 data-[state=inactive]:hidden"
+        >
+          <ExceptionDatesManager
+            initialData={settings?.exception_dates}
+            regularHours={settings?.regular_operating_hours}
+            onChange={handleExceptionDatesChange}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

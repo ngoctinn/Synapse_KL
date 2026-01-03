@@ -30,7 +30,7 @@ export async function getOperationalSettingsAction() {
 
     // Chuẩn hóa định dạng thời gian từ HH:mm:ss sang HH:mm để khớp với UI dropdown
     if (data.regular_operating_hours) {
-      data.regular_operating_hours = data.regular_operating_hours.map((h: any) => ({
+      data.regular_operating_hours = data.regular_operating_hours.map((h: OperatingHour) => ({
         ...h,
         open_time: h.open_time?.slice(0, 5) || "08:00",
         close_time: h.close_time?.slice(0, 5) || "20:00",
@@ -38,7 +38,7 @@ export async function getOperationalSettingsAction() {
     }
 
     if (data.exception_dates) {
-      data.exception_dates = data.exception_dates.map((d: any, index: number) => ({
+      data.exception_dates = data.exception_dates.map((d: ExceptionDate, index: number) => ({
         ...d,
         // Đảm bảo luôn có ID duy nhất. Nếu Backend không trả về id, dùng date + index
         id: d.id || `${d.date}-${index}`,
@@ -91,7 +91,7 @@ export async function updateOperationalSettingsAction(settings: OperationalSetti
     }
 
     if (data.exception_dates) {
-      data.exception_dates = data.exception_dates.map((d: ExceptionDate, index: number) => ({
+      data.exception_dates = data.exception_dates.map((d: ExceptionDate) => ({
         ...d,
         id: d.id || crypto.randomUUID(),
         open_time: d.open_time?.slice(0, 5) || undefined,

@@ -3,20 +3,29 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AlertCircle,
+  Calendar,
   Check,
-  ClipboardPaste,
+  ChevronDown,
   Clock,
   Copy,
-  X,
+  Sparkles,
 } from "lucide-react";
 import * as React from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import * as z from "zod";
 
 import { TimePickerDropdown } from "@/shared/components/time-picker-dropdown";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
 import {
   Form,
   FormControl,
@@ -25,7 +34,73 @@ import {
   FormMessage,
 } from "@/shared/ui/form";
 import { Switch } from "@/shared/ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/ui/tooltip";
 import { DayOfWeek, DAYS_OF_WEEK, OperatingHour } from "../types";
+
+// Preset templates cho ngành Spa
+const PRESETS = {
+  spa_standard: {
+    label: "Spa tiêu chuẩn",
+    description: "T2-CN: 09:00-21:00",
+    hours: [1, 2, 3, 4, 5, 6, 0].map((day) => ({
+      day_of_week: day as DayOfWeek,
+      open_time: "09:00",
+      close_time: "21:00",
+      is_closed: false,
+    })),
+  },
+  spa_extended: {
+    label: "Giờ mở rộng",
+    description: "T2-CN: 08:00-22:00",
+    hours: [1, 2, 3, 4, 5, 6, 0].map((day) => ({
+      day_of_week: day as DayOfWeek,
+      open_time: "08:00",
+      close_time: "22:00",
+      is_closed: false,
+    })),
+  },
+  spa_weekend_extended: {
+    label: "Cuối tuần mở rộng",
+    description: "T2-T6: 09:00-20:00, T7-CN: 08:00-22:00",
+    hours: [
+      ...[1, 2, 3, 4, 5].map((day) => ({
+        day_of_week: day as DayOfWeek,
+        open_time: "09:00",
+        close_time: "20:00",
+        is_closed: false,
+      })),
+      ...[6, 0].map((day) => ({
+        day_of_week: day as DayOfWeek,
+        open_time: "08:00",
+        close_time: "22:00",
+        is_closed: false,
+      })),
+    ],
+  },
+  spa_weekday_focus: {
+    label: "Nghỉ Chủ nhật",
+    description: "T2-T7: 09:00-21:00, CN nghỉ",
+    hours: [
+      ...[1, 2, 3, 4, 5, 6].map((day) => ({
+        day_of_week: day as DayOfWeek,
+        open_time: "09:00",
+        close_time: "21:00",
+        is_closed: false,
+      })),
+      {
+        day_of_week: 0 as DayOfWeek,
+        open_time: "09:00",
+        close_time: "21:00",
+        is_closed: true,
+      },
+    ],
+  },
+};
 
 const operatingHourSchema = z.object({
   day_of_week: z.union([
@@ -57,8 +132,8 @@ const DEFAULT_HOURS: OperatingHour[] = (
   [1, 2, 3, 4, 5, 6, 0] as DayOfWeek[]
 ).map((day) => ({
   day_of_week: day,
-  open_time: "08:00",
-  close_time: "20:00",
+  open_time: "09:00",
+  close_time: "21:00",
   is_closed: false,
 }));
 
@@ -88,21 +163,31 @@ export function OperatingHoursForm({
   };
 
   const isResetting = React.useRef(false);
+  const isInitialMount = React.useRef(true);
+
+  // Sử dụng useWatch thay vì form.watch() để tương thích với React Compiler
+  const watchedHours = useWatch({
+    control: form.control,
+    name: "regular_operating_hours",
+  });
 
   React.useEffect(() => {
-    const subscription = form.watch((value, { name, type }) => {
-      // Nếu đang trong quá trình reset, không đẩy ngược lên cha
-      if (isResetting.current) return;
+    // Skip initial mount và quá trình reset
+    if (isInitialMount.current || isResetting.current) return;
 
-      // Chỉ gửi update lên cha nếu thực sự có thay đổi từ user interaction (change/blur)
-      // hoặc khi giá trị mảng thay đổi
-      if (value.regular_operating_hours) {
-        // Clone mảng để break reference mutation, đảm bảo component cha nhận diện thay đổi state
-        onChange([...value.regular_operating_hours] as OperatingHour[]);
-      }
+    // Chỉ gửi update lên cha nếu thực sự có thay đổi từ user interaction
+    if (watchedHours) {
+      // Clone mảng để break reference mutation, đảm bảo component cha nhận diện thay đổi state
+      onChange([...watchedHours] as OperatingHour[]);
+    }
+  }, [watchedHours, onChange]);
+
+  // Mark initial mount complete sau 1 tick
+  React.useEffect(() => {
+    requestAnimationFrame(() => {
+      isInitialMount.current = false;
     });
-    return () => subscription.unsubscribe();
-  }, [form.watch, onChange]);
+  }, []);
 
   // Cập nhật lại form nếu data từ cha thay đổi (ví dụ: khi nhấn Hủy/Reset)
   React.useEffect(() => {
@@ -114,8 +199,6 @@ export function OperatingHoursForm({
       if (hasChanged) {
         isResetting.current = true;
         form.reset({ regular_operating_hours: data });
-        setLastCopiedIndex(null);
-        setPastedIndices(new Set());
         // Trả lại trạng thái sau khi reset hoàn tất trong tick tiếp theo
         setTimeout(() => {
           isResetting.current = false;
@@ -129,60 +212,75 @@ export function OperatingHoursForm({
     control: form.control,
   });
 
-  const [clipboard, setClipboard] = React.useState<{
-    open_time: string;
-    close_time: string;
-    is_closed: boolean;
-    index: number | null;
-  } | null>(null);
+  // Tính toán summary
+  const summary = React.useMemo(() => {
+    const openDays = watchedValues.filter((d) => !d.is_closed).length;
+    const closedDays = watchedValues.filter((d) => d.is_closed).length;
+    
+    // Tìm giờ phổ biến nhất
+    const timePatterns = watchedValues
+      .filter((d) => !d.is_closed)
+      .map((d) => `${d.open_time}-${d.close_time}`);
+    const mostCommon = timePatterns.sort(
+      (a, b) =>
+        timePatterns.filter((v) => v === b).length -
+        timePatterns.filter((v) => v === a).length
+    )[0];
+    
+    return { openDays, closedDays, mostCommon };
+  }, [watchedValues]);
 
-  const [lastCopiedIndex, setLastCopiedIndex] = React.useState<number | null>(
-    null
-  );
-  const [pastedIndices, setPastedIndices] = React.useState<Set<number>>(
-    new Set()
-  );
-
-  const copyHours = (index: number) => {
-    const values = form.getValues(`regular_operating_hours.${index}`);
-    setClipboard({
-      open_time: values.open_time,
-      close_time: values.close_time,
-      is_closed: values.is_closed,
-      index,
+  // Quick Actions
+  const applyToWeekdays = (sourceIndex: number) => {
+    const source = form.getValues(`regular_operating_hours.${sourceIndex}`);
+    const weekdayIndices = fields
+      .map((f, i) => ({ index: i, day: f.day_of_week }))
+      .filter((f) => f.day >= 1 && f.day <= 5) // T2-T6
+      .map((f) => f.index);
+    
+    weekdayIndices.forEach((i) => {
+      form.setValue(`regular_operating_hours.${i}.open_time`, source.open_time);
+      form.setValue(`regular_operating_hours.${i}.close_time`, source.close_time);
+      form.setValue(`regular_operating_hours.${i}.is_closed`, source.is_closed);
     });
-    setLastCopiedIndex(index);
-    setTimeout(() => setLastCopiedIndex(null), 2000);
+    onChange([...(form.getValues("regular_operating_hours") as OperatingHour[])]);
   };
 
-  const setAllDay = (index: number) => {
-    form.setValue(`regular_operating_hours.${index}.open_time`, "00:00");
-    form.setValue(`regular_operating_hours.${index}.close_time`, "00:00");
-    form.setValue(`regular_operating_hours.${index}.is_closed`, false);
+  const applyToWeekend = (sourceIndex: number) => {
+    const source = form.getValues(`regular_operating_hours.${sourceIndex}`);
+    const weekendIndices = fields
+      .map((f, i) => ({ index: i, day: f.day_of_week }))
+      .filter((f) => f.day === 0 || f.day === 6) // CN, T7
+      .map((f) => f.index);
+    
+    weekendIndices.forEach((i) => {
+      form.setValue(`regular_operating_hours.${i}.open_time`, source.open_time);
+      form.setValue(`regular_operating_hours.${i}.close_time`, source.close_time);
+      form.setValue(`regular_operating_hours.${i}.is_closed`, source.is_closed);
+    });
+    onChange([...(form.getValues("regular_operating_hours") as OperatingHour[])]);
   };
 
-  const pasteHours = (index: number) => {
-    if (!clipboard) return;
-    form.setValue(
-      `regular_operating_hours.${index}.open_time`,
-      clipboard.open_time
-    );
-    form.setValue(
-      `regular_operating_hours.${index}.close_time`,
-      clipboard.close_time
-    );
-    form.setValue(
-      `regular_operating_hours.${index}.is_closed`,
-      clipboard.is_closed
-    );
+  const openAllDays = () => {
+    fields.forEach((_, i) => {
+      form.setValue(`regular_operating_hours.${i}.is_closed`, false);
+    });
+    onChange([...(form.getValues("regular_operating_hours") as OperatingHour[])]);
+  };
 
-    setPastedIndices((prev) => new Set(prev).add(index));
-
-    // Notify parent
-    // Notify parent with clones
-    onChange([
-      ...(form.getValues("regular_operating_hours") as OperatingHour[]),
-    ]);
+  const applyPreset = (presetKey: keyof typeof PRESETS) => {
+    const preset = PRESETS[presetKey];
+    preset.hours.forEach((hour) => {
+      const fieldIndex = fields.findIndex(
+        (f) => f.day_of_week === hour.day_of_week
+      );
+      if (fieldIndex !== -1) {
+        form.setValue(`regular_operating_hours.${fieldIndex}.open_time`, hour.open_time);
+        form.setValue(`regular_operating_hours.${fieldIndex}.close_time`, hour.close_time);
+        form.setValue(`regular_operating_hours.${fieldIndex}.is_closed`, hour.is_closed);
+      }
+    });
+    onChange([...(form.getValues("regular_operating_hours") as OperatingHour[])]);
   };
 
   const copyToAll = (index: number) => {
@@ -194,27 +292,124 @@ export function OperatingHoursForm({
       ) as DayOfWeek,
     }));
     form.setValue("regular_operating_hours", updatedHours);
-    setPastedIndices(new Set(fields.map((_, i) => i)));
     onChange([...updatedHours]);
+  };
+
+  const setAllDay = (index: number) => {
+    form.setValue(`regular_operating_hours.${index}.open_time`, "00:00");
+    form.setValue(`regular_operating_hours.${index}.close_time`, "00:00");
+    form.setValue(`regular_operating_hours.${index}.is_closed`, false);
   };
 
   return (
     <Form {...form}>
-      <form className="space-y-6">
+      <form className="space-y-4">
+        {/* Summary Bar */}
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <Calendar className="h-4 w-4" />
+              <span className="font-medium text-foreground">{summary.openDays}</span> ngày mở
+            </span>
+            {summary.closedDays > 0 && (
+              <span>• {summary.closedDays} ngày nghỉ</span>
+            )}
+            {summary.mostCommon && (
+              <span className="hidden sm:inline">• Phổ biến: {summary.mostCommon}</span>
+            )}
+          </div>
+          
+          {/* Quick Actions */}
+          <div className="flex items-center gap-2">
+            {/* Preset Dropdown */}
+            <DropdownMenu>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs gap-1.5"
+                      >
+                        <Sparkles className="h-3.5 w-3.5" />
+                        Mẫu nhanh
+                        <ChevronDown className="h-3.5 w-3.5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Áp dụng cấu hình có sẵn cho spa</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Chọn mẫu cấu hình</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {Object.entries(PRESETS).map(([key, preset]) => (
+                  <DropdownMenuItem
+                    key={key}
+                    onClick={() => applyPreset(key as keyof typeof PRESETS)}
+                    className="flex flex-col items-start gap-0.5 py-2"
+                  >
+                    <span className="font-medium">{preset.label}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {preset.description}
+                    </span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Open All Days */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={openAllDays}
+                    className="h-8 text-xs"
+                  >
+                    Mở cả tuần
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Mở cửa tất cả các ngày trong tuần</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </div>
+
         <div className="rounded-xl border bg-card text-card-foreground shadow-sm px-6">
-          <div className="space-y-4">
-            {fields.map((field, index) => {
+          <div className="divide-y">
+            {/* Sắp xếp theo thứ tự T2→CN (1,2,3,4,5,6,0) */}
+            {[...fields]
+              .map((field, originalIndex) => ({ field, originalIndex }))
+              .sort((a, b) => {
+                const orderA = a.field.day_of_week === 0 ? 7 : a.field.day_of_week;
+                const orderB = b.field.day_of_week === 0 ? 7 : b.field.day_of_week;
+                return orderA - orderB;
+              })
+              .map(({ field, originalIndex: index }) => {
               const isClosed = form.watch(
                 `regular_operating_hours.${index}.is_closed`
               );
               const dayInfo = DAYS_OF_WEEK.find(
                 (d) => d.value === field.day_of_week
               );
+              const isWeekend = field.day_of_week === 0 || field.day_of_week === 6;
 
               return (
                 <div
                   key={field.id}
-                  className="flex flex-col gap-4 py-5 sm:grid sm:grid-cols-[160px_1fr_auto] sm:items-center sm:gap-4 border-b last:border-0"
+                  className={cn(
+                    "flex flex-col gap-4 py-5 sm:grid sm:grid-cols-[180px_1fr_auto] sm:items-center sm:gap-4",
+                    isWeekend && "bg-muted/30 -mx-6 px-6"
+                  )}
                 >
                   {/* Cột 1: Trạng thái & Ngày */}
                   <div className="flex items-center justify-between sm:justify-start gap-3">
@@ -247,39 +442,6 @@ export function OperatingHoursForm({
                       >
                         {dayInfo?.label}
                       </label>
-                    </div>
-
-                    {/* Nút Action hiện ở mobile trên cùng hàng với tên ngày */}
-                    <div className="flex sm:hidden items-center gap-1">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => copyHours(index)}
-                        className={cn(
-                          lastCopiedIndex === index
-                            ? "text-primary bg-primary/10"
-                            : "text-muted-foreground"
-                        )}
-                      >
-                        {lastCopiedIndex === index ? (
-                          <Check className="h-4 w-4" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </Button>
-                      {clipboard && (
-                        <Button
-                          type="button"
-                          variant={
-                            pastedIndices.has(index) ? "default" : "secondary"
-                          }
-                          size="icon"
-                          onClick={() => pasteHours(index)}
-                        >
-                          <ClipboardPaste className="h-4 w-4" />
-                        </Button>
-                      )}
                     </div>
                   </div>
 
@@ -370,7 +532,7 @@ export function OperatingHoursForm({
                             Cả ngày
                           </Button>
 
-                          {/* Overlap warning - visible on mobile too */}
+                          {/* Overlap warning */}
                           {(() => {
                             const getOverlapError = (idx: number) => {
                               const prevIdx =
@@ -410,84 +572,34 @@ export function OperatingHoursForm({
                     )}
                   </div>
 
-                  {/* Cột 3: Actions row-level (Chỉ hiện ở Desktop) */}
-                  <div className="hidden sm:flex items-center justify-end gap-1 min-w-[150px]">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => copyHours(index)}
-                      className={cn(
-                        "transition-colors",
-                        lastCopiedIndex === index
-                          ? "text-primary bg-primary/10"
-                          : "text-muted-foreground"
-                      )}
-                      title="Sao chép giờ"
-                    >
-                      {lastCopiedIndex === index ? (
-                        <Check className="h-5 w-5 stroke-2" />
-                      ) : (
-                        <Copy className="h-5 w-5 stroke-2" />
-                      )}
-                    </Button>
-                    {clipboard && (
-                      <>
-                        <Button
-                          type="button"
-                          variant={
-                            pastedIndices.has(index) ? "default" : "secondary"
-                          }
-                          size="icon"
-                          onClick={() => pasteHours(index)}
-                          className={cn(
-                            "transition-all",
-                            pastedIndices.has(index)
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-secondary text-primary border-primary/20 shadow-sm"
-                          )}
-                          title="Dán giờ"
-                        >
-                          <ClipboardPaste className="h-5 w-5 stroke-2" />
-                        </Button>
+                  {/* Cột 3: Actions Dropdown */}
+                  <div className="flex items-center justify-end gap-1">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
                         <Button
                           type="button"
                           variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            setClipboard(null);
-                            setLastCopiedIndex(null);
-                            setPastedIndices(new Set());
-                          }}
-                          className="text-muted-foreground/30"
-                          title="Hủy sao chép"
+                          size="sm"
+                          className="h-8 px-2 text-muted-foreground hover:text-foreground"
                         >
-                          <X className="h-4 w-4 stroke-2" />
+                          <Copy className="h-4 w-4 mr-1.5" />
+                          <span className="text-xs">Sao chép</span>
                         </Button>
-                      </>
-                    )}
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => copyToAll(index)}
-                      className="text-[10px] text-muted-foreground h-8 px-2 ml-1 border-dashed"
-                    >
-                      Tất cả
-                    </Button>
-                  </div>
-
-                  {/* Nút "Áp dụng tất cả" Mobile */}
-                  <div className="flex sm:hidden">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => copyToAll(index)}
-                      className="w-full text-xs text-muted-foreground h-9 border-dashed"
-                    >
-                      Sao chép cho tất cả các ngày
-                    </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem onClick={() => copyToAll(index)}>
+                          <Check className="mr-2 h-4 w-4" />
+                          Áp dụng cho tất cả
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => applyToWeekdays(index)}>
+                          Áp dụng T2 → T6
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => applyToWeekend(index)}>
+                          Áp dụng T7 & CN
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               );

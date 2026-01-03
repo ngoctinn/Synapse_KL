@@ -21,7 +21,10 @@ from app.modules.staff.schemas import (
 async def get_all_staff(session: AsyncSession) -> Sequence[StaffProfile]:
     """Lấy danh sách tất cả nhân viên."""
     result = await session.execute(
-        select(StaffProfile).options(selectinload(StaffProfile.skills))
+        select(StaffProfile).options(
+            selectinload(StaffProfile.skills),
+            selectinload(StaffProfile.profile)
+        )
     )
     return result.scalars().all()
 
@@ -30,7 +33,10 @@ async def get_staff_by_id(session: AsyncSession, user_id: UUID) -> StaffProfile 
     """Lấy thông tin chi tiết một nhân viên."""
     result = await session.execute(
         select(StaffProfile)
-        .options(selectinload(StaffProfile.skills))
+        .options(
+            selectinload(StaffProfile.skills),
+            selectinload(StaffProfile.profile)
+        )
         .where(StaffProfile.user_id == user_id)
     )
     return result.scalars().first()
@@ -55,13 +61,29 @@ async def update_staff_profile(
     if not staff:
         raise StaffNotFoundException()
 
+    # Separate profile data and staff data
     update_data = staff_in.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
+
+    # Profile fields
+    profile_fields = {"full_name", "is_active"}
+    profile_update = {k: v for k, v in update_data.items() if k in profile_fields}
+
+    if profile_update and staff.profile:
+        for key, value in profile_update.items():
+            setattr(staff.profile, key, value)
+        session.add(staff.profile)
+
+    # Staff fields
+    staff_fields = {"title", "bio", "color_code"}
+    staff_update = {k: v for k, v in update_data.items() if k in staff_fields}
+
+    for key, value in staff_update.items():
         setattr(staff, key, value)
 
     session.add(staff)
     await session.commit()
     await session.refresh(staff)
+    await session.refresh(staff.profile)
     return staff
 
 

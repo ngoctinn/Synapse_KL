@@ -1,31 +1,6 @@
 "use client";
 
-import { Button } from "@/shared/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/shared/ui/form";
-import { Input } from "@/shared/ui/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/shared/ui/sheet";
-import { Textarea } from "@/shared/ui/textarea";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { createMaintenanceAction } from "../actions";
-import { maintenanceCreateSchema, type MaintenanceCreateForm } from "../schemas";
-import type { Resource } from "../types";
-
+import { DateTimePicker } from "@/shared/components/date-time-picker";
 import { useFormGuard } from "@/shared/hooks/use-form-guard";
 import {
   AlertDialog,
@@ -37,7 +12,30 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/shared/ui/alert-dialog";
-import { useEffect } from "react";
+import { Button } from "@/shared/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/shared/ui/form";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/shared/ui/sheet";
+import { Textarea } from "@/shared/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { createMaintenanceAction } from "../actions";
+import { maintenanceCreateSchema, type MaintenanceCreateForm } from "../schemas";
+import type { Resource } from "../types";
 
 interface MaintenanceSheetProps {
   open: boolean;
@@ -89,14 +87,8 @@ export function MaintenanceSheet({
 
     startTransition(async () => {
       try {
-        // Convert local datetime-local string to UTC ISO string
-        const payload = {
-          ...data,
-          start_time: new Date(data.start_time).toISOString(),
-          end_time: new Date(data.end_time).toISOString(),
-        };
-
-        await createMaintenanceAction(resource.id, payload);
+        // DateTimePicker đã return ISO string, không cần convert
+        await createMaintenanceAction(resource.id, data);
         toast.success("Đã lên lịch bảo trì thành công");
         onOpenChange(false);
         form.reset();
@@ -133,7 +125,7 @@ export function MaintenanceSheet({
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 py-4 flex-1"
             >
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <FormField
                   control={form.control}
                   name="start_time"
@@ -141,7 +133,11 @@ export function MaintenanceSheet({
                     <FormItem>
                       <FormLabel required>Bắt đầu</FormLabel>
                       <FormControl>
-                        <Input type="datetime-local" {...field} />
+                        <DateTimePicker
+                          date={field.value ? new Date(field.value) : undefined}
+                          onChange={(date: Date | undefined) => field.onChange(date?.toISOString() || "")}
+                          placeholder="Chọn thời gian bắt đầu"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -155,7 +151,11 @@ export function MaintenanceSheet({
                     <FormItem>
                       <FormLabel required>Kết thúc</FormLabel>
                       <FormControl>
-                        <Input type="datetime-local" {...field} />
+                        <DateTimePicker
+                          date={field.value ? new Date(field.value) : undefined}
+                          onChange={(date: Date | undefined) => field.onChange(date?.toISOString() || "")}
+                          placeholder="Chọn thời gian kết thúc"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

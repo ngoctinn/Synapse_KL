@@ -2,8 +2,8 @@
 
 import { SidebarTrigger } from "@/shared/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback } from "react";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 import type {
   ResourceGroupWithCount,
   Service,
@@ -28,22 +28,11 @@ export function ServicePageTabs({
   resourceGroups,
   services,
 }: ServicePageTabsProps) {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-
-  // Get active tab from URL or default to "services"
-  const activeTab = searchParams.get("view") || "services";
-
-  const handleTabChange = useCallback(
-    (value: string) => {
-      // Update URL without full reload
-      const params = new URLSearchParams(searchParams);
-      params.set("view", value);
-      router.push(`${pathname}?${params.toString()}`);
-    },
-    [pathname, router, searchParams]
-  );
+  
+  // Lấy tab từ URL lúc mount, sau đó dùng local state để tránh re-fetch server component
+  const initialTab = searchParams.get("view") || "services";
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   return (
     <div className="space-y-6">
@@ -55,7 +44,7 @@ export function ServicePageTabs({
 
       <Tabs
         value={activeTab}
-        onValueChange={handleTabChange}
+        onValueChange={setActiveTab}
         className="w-full space-y-6"
       >
         <TabsList>

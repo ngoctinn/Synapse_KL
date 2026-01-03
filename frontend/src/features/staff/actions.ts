@@ -6,6 +6,7 @@ import type {
     Shift,
     ShiftCreateInput,
     ShiftUpdateInput,
+    StaffInviteInput,
     StaffProfileCreateInput,
     StaffProfileUpdateInput,
     StaffProfileWithSkills,
@@ -22,6 +23,26 @@ interface APIErrorResponse {
 }
 
 // ========== Staff Actions ==========
+
+export async function inviteStaffAction(data: StaffInviteInput) {
+  try {
+    const res = await fetch(`${API_BASE_URL}${STAFF_PATH}/invite`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const err = (await res.json()) as APIErrorResponse;
+      return { success: false, message: err.detail || "Không thể gửi lời mời" };
+    }
+
+    revalidatePath("/dashboard/manager/staff");
+    return { success: true, message: `Đã gửi lời mời đến ${data.email}` };
+  } catch (e) {
+    return { success: false, message: "Lỗi kết nối máy chủ" };
+  }
+}
 
 export async function getStaffAction(): Promise<StaffProfileWithSkills[]> {
   const res = await fetch(`${API_BASE_URL}${STAFF_PATH}`, {

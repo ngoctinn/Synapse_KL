@@ -16,18 +16,16 @@ if TYPE_CHECKING:
     from app.modules.scheduling.models import StaffSchedule
 
 
-class StaffProfile(SQLModel, table=True):
-    """
-    Hồ sơ nhân viên. Primary Key là user_id từ Supabase Auth.
-    Liên kết 1-1 với bảng users (không tạo bảng users riêng, dùng Auth của Supabase).
-    """
-    __tablename__ = "staff_profiles"
 
-    user_id: UUID = Field(primary_key=True)
-    full_name: str = Field(max_length=100)
-    title: str = Field(max_length=100, default="Kỹ thuật viên")
-    bio: str | None = None
-    color_code: str = Field(max_length=7, default="#6366F1")
+class UserProfile(SQLModel, table=True):
+    __tablename__ = "profiles"
+
+    id: UUID = Field(primary_key=True)
+    email: str | None = None
+    full_name: str | None = None
+    phone_number: str | None = None
+    avatar_url: str | None = None
+    role: str = Field(default="customer")  # Should be ENUM but string is sufficient for now
     is_active: bool = Field(default=True)
     created_at: datetime = Field(
         sa_type=DateTime(timezone=True),
@@ -37,6 +35,31 @@ class StaffProfile(SQLModel, table=True):
         sa_type=DateTime(timezone=True),
         default_factory=lambda: datetime.now(timezone.utc)
     )
+
+class StaffProfile(SQLModel, table=True):
+    """
+    Hồ sơ nhân viên. Primary Key là user_id từ Supabase Auth.
+    Liên kết 1-1 với bảng profiles.
+    """
+    __tablename__ = "staff_profiles"
+
+    user_id: UUID = Field(primary_key=True, foreign_key="profiles.id")  # FK to public.profiles(id)
+    title: str = Field(max_length=100, default="Kỹ thuật viên")
+    bio: str | None = None
+    color_code: str = Field(max_length=7, default="#6366F1")
+    created_at: datetime = Field(
+        sa_type=DateTime(timezone=True),
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: datetime = Field(
+        sa_type=DateTime(timezone=True),
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
+
+    # Note: email, role, is_active are now in public.profiles table
+    # We can access them via join if needed.
+
+    profile: UserProfile = Relationship()
 
     # Relationship M-N với Skills
     skills: list[Skill] = Relationship(

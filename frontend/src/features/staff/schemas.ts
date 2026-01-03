@@ -6,6 +6,14 @@ export const staffProfileSchema = z.object({
   title: z.string().min(1, "Chức danh không được để trống").max(100, "Chức danh quá dài"),
   bio: z.string().nullable().optional(),
   color_code: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Mã màu không hợp lệ"),
+  is_active: z.boolean().optional(),
+});
+
+export const staffInviteSchema = z.object({
+  email: z.string().email("Email không hợp lệ"),
+  full_name: z.string().min(1, "Họ tên không được để trống"),
+  title: z.string().min(1, "Chức danh không được để trống").default("Kỹ thuật viên"),
+  role: z.enum(["manager", "receptionist", "technician", "customer"]).default("technician"),
 });
 
 export const shiftSchema = z.object({

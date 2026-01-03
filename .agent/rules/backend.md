@@ -4,7 +4,7 @@ trigger: always_on
 
 # BE_RULES_FASTAPI_SQLMODEL (v2025.12)
 - **Docs**: BẮT BUỘC kiểm tra tài liệu FastAPI, SQLModel, Pydantic v2 mới nhất. KHÔNG dùng cú pháp cũ.
-- **Stack**: Python 3.12+, FastAPI, SQLModel, Pydantic v2, Alembic, PostgreSQL (asyncpg), uv/poetry.
+- **Stack**: Python 3.12+, FastAPI, SQLModel, Pydantic v2, Alembic, PostgreSQL (asyncpg), uv
 
 ## 1. KIẾN TRÚC (3-LAYER)
 - **Flow**: Router -> Service -> Model. KHÔNG có import vòng hoặc import ngược.

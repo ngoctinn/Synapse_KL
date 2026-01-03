@@ -58,6 +58,12 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
 
+    # Supabase Integration
+    SUPABASE_URL: str = ""
+    SUPABASE_KEY: str = "" # Anon Key
+    SUPABASE_SERVICE_ROLE_KEY: str = "" # Admin Key (Backend only)
+    FRONTEND_URL: str = "http://localhost:3000"
+
     model_config = ConfigDict(
         case_sensitive=True,
         env_file=".env",

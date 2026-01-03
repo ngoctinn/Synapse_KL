@@ -42,6 +42,13 @@ export interface StaffScheduleWithDetails extends StaffSchedule {
   staff_name?: string;
 }
 
+export interface StaffInviteInput {
+  email: string;
+  full_name: string;
+  title?: string;
+  role: 'manager' | 'receptionist' | 'technician' | 'customer';
+}
+
 export interface StaffProfileCreateInput {
   user_id: string;
   full_name: string;

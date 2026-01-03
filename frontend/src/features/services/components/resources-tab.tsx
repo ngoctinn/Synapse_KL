@@ -133,6 +133,16 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
     }
   };
 
+  // Reload resources cho một group cụ thể (dùng sau khi create/update resource)
+  const reloadResourcesForGroup = async (groupId: string) => {
+    try {
+      const resources = await getResourcesAction(groupId);
+      setResourcesByGroup((prev) => ({ ...prev, [groupId]: resources }));
+    } catch {
+      toast.error("Không thể tải danh sách tài nguyên");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <TabToolbar
@@ -292,6 +302,12 @@ export function ResourcesTab({ groups }: ResourcesTabProps) {
         groupId={activeGroupId}
         groupName={activeGroupName}
         resource={selectedResource}
+        onSuccess={() => {
+          // Reload resources cho group hiện tại sau khi tạo mới thành công
+          if (activeGroupId) {
+            reloadResourcesForGroup(activeGroupId);
+          }
+        }}
       />
 
       <MaintenanceSheet

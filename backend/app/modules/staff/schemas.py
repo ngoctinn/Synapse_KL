@@ -47,6 +47,7 @@ class StaffInviteRequest(SQLModel):
     email: EmailStr
     full_name: str
     title: str = "Kỹ thuật viên"
+    role: str = "technician"
 
 
 class StaffSkillsUpdate(SQLModel):
