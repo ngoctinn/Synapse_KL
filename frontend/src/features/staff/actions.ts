@@ -1,6 +1,12 @@
 "use server";
 
-import { API_BASE_URL } from "@/shared/api";
+import {
+  apiClient,
+  API_ENDPOINTS,
+  createSuccessResponse,
+  createErrorResponse,
+  type ActionResponse,
+} from "@/shared/api";
 import { revalidatePath } from "next/cache";
 import type {
     Shift,
@@ -15,186 +21,144 @@ import type {
     StaffSkillsUpdate,
 } from "./types";
 
-const STAFF_PATH = "/api/v1/staff";
-const SCHEDULING_PATH = "/api/v1/scheduling";
-
-interface APIErrorResponse {
-  detail?: string;
-}
-
 // ========== Staff Actions ==========
 
-export async function inviteStaffAction(data: StaffInviteInput) {
-  try {
-    const res = await fetch(`${API_BASE_URL}${STAFF_PATH}/invite`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
+export async function inviteStaffAction(data: StaffInviteInput): Promise<ActionResponse> {
+  const result = await apiClient.fetch(API_ENDPOINTS.STAFF_INVITE, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 
-    if (!res.ok) {
-      const err = (await res.json()) as APIErrorResponse;
-      return { success: false, message: err.detail || "Không thể gửi lời mời" };
-    }
-
-    revalidatePath("/dashboard/manager/staff");
-    return { success: true, message: `Đã gửi lời mời đến ${data.email}` };
-  } catch (e) {
-    return { success: false, message: "Lỗi kết nối máy chủ" };
+  if (!result.success) {
+    return createErrorResponse(result.error?.message || "Không thể gửi lời mời", result.error);
   }
+
+  revalidatePath("/dashboard/manager/staff");
+  return createSuccessResponse(`Đã gửi lời mời đến ${data.email}`);
 }
 
 export async function getStaffAction(): Promise<StaffProfileWithSkills[]> {
-  const res = await fetch(`${API_BASE_URL}${STAFF_PATH}`, {
+  const result = await apiClient.fetch<StaffProfileWithSkills[]>(API_ENDPOINTS.STAFF, {
     next: { revalidate: 60, tags: ["staff"] },
   });
-  if (!res.ok) throw new Error("Không thể tải danh sách nhân viên");
-  return res.json();
+  if (!result.success) throw new Error(result.error?.message || "Không thể tải danh sách nhân viên");
+  return result.data!;
 }
 
-export async function createStaffProfileAction(data: StaffProfileCreateInput) {
-  try {
-    const res = await fetch(`${API_BASE_URL}${STAFF_PATH}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) {
-      const err = (await res.json()) as APIErrorResponse;
-      return { success: false, message: err.detail || "Không thể tạo hồ sơ nhân viên" };
-    }
-    revalidatePath("/dashboard/manager/staff");
-    return { success: true, message: "Tạo hồ sơ nhân viên thành công" };
-  } catch (e) {
-    return { success: false, message: "Lỗi kết nối máy chủ" };
+export async function createStaffProfileAction(data: StaffProfileCreateInput): Promise<ActionResponse<StaffProfileWithSkills>> {
+  const result = await apiClient.fetch<StaffProfileWithSkills>(API_ENDPOINTS.STAFF, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+
+  if (!result.success) {
+    return createErrorResponse(result.error?.message || "Không thể tạo hồ sơ nhân viên", result.error);
   }
+
+  revalidatePath("/dashboard/manager/staff");
+  return createSuccessResponse("Tạo hồ sơ nhân viên thành công", result.data);
 }
 
-export async function updateStaffProfileAction(id: string, data: StaffProfileUpdateInput) {
-  try {
-    const res = await fetch(`${API_BASE_URL}${STAFF_PATH}/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) {
-      const err = (await res.json()) as APIErrorResponse;
-      return { success: false, message: err.detail || "Không thể cập nhật hồ sơ" };
-    }
-    revalidatePath("/dashboard/manager/staff");
-    return { success: true, message: "Cập nhật hồ sơ thành công" };
-  } catch (e) {
-    return { success: false, message: "Lỗi kết nối máy chủ" };
+export async function updateStaffProfileAction(id: string, data: StaffProfileUpdateInput): Promise<ActionResponse> {
+  const result = await apiClient.fetch(`${API_ENDPOINTS.STAFF}/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+
+  if (!result.success) {
+    return createErrorResponse(result.error?.message || "Không thể cập nhật hồ sơ", result.error);
   }
+
+  revalidatePath("/dashboard/manager/staff");
+  return createSuccessResponse("Cập nhật hồ sơ thành công");
 }
 
-export async function updateStaffSkillsAction(id: string, data: StaffSkillsUpdate) {
-  try {
-    const res = await fetch(`${API_BASE_URL}${STAFF_PATH}/${id}/skills`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) {
-      const err = (await res.json()) as APIErrorResponse;
-      return { success: false, message: err.detail || "Không thể cập nhật kỹ năng" };
-    }
-    revalidatePath("/dashboard/manager/staff");
-    return { success: true, message: "Cập nhật kỹ năng thành công" };
-  } catch (error) {
-    return { success: false, message: "Lỗi kết nối máy chủ" };
+export async function updateStaffSkillsAction(id: string, data: StaffSkillsUpdate): Promise<ActionResponse> {
+  const result = await apiClient.fetch(`${API_ENDPOINTS.STAFF}/${id}/skills`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+
+  if (!result.success) {
+    return createErrorResponse(result.error?.message || "Không thể cập nhật kỹ năng", result.error);
   }
+
+  revalidatePath("/dashboard/manager/staff");
+  return createSuccessResponse("Cập nhật kỹ năng thành công");
 }
 
 export async function updateStaffWithSkillsAction(
   id: string,
   profileData: StaffProfileUpdateInput,
   skillsData: StaffSkillsUpdate
-) {
-  try {
-    // Run sequentially to ensure profile exists/is valid before skills, though usually parallel is fine for updates.
-    // Sequential better for error reporting order.
+): Promise<ActionResponse> {
+  // Chạy tuần tự vì nếu profile update fail thì skills không nên update
+  // Profile phải tồn tại/hợp lệ trước khi update skills
+  
+  const profileResult = await apiClient.fetch(`${API_ENDPOINTS.STAFF}/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(profileData),
+  });
 
-    // 1. Update Profile
-    const profileRes = await fetch(`${API_BASE_URL}${STAFF_PATH}/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(profileData),
-    });
-
-    if (!profileRes.ok) {
-       const err = await profileRes.json() as APIErrorResponse;
-       return { success: false, message: err.detail || "Lỗi cập nhật thông tin chung" };
-    }
-
-    // 2. Update Skills
-    const skillsRes = await fetch(`${API_BASE_URL}${STAFF_PATH}/${id}/skills`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(skillsData),
-    });
-
-    if (!skillsRes.ok) {
-       // Profile updated but skills failed.
-       const err = await skillsRes.json() as APIErrorResponse;
-       return { success: true, message: `Thông tin đã lưu, nhưng lỗi kỹ năng: ${err.detail}` };
-    }
-
-    revalidatePath("/dashboard/manager/staff");
-    return { success: true, message: "Cập nhật nhân viên thành công" };
-
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error("Update Staff Error:", error);
-    }
-    return { success: false, message: "Lỗi hệ thống khi cập nhật" };
+  if (!profileResult.success) {
+    return createErrorResponse(
+      profileResult.error?.message || "Lỗi cập nhật thông tin chung",
+      profileResult.error
+    );
   }
+
+  const skillsResult = await apiClient.fetch(`${API_ENDPOINTS.STAFF}/${id}/skills`, {
+    method: "PUT",
+    body: JSON.stringify(skillsData),
+  });
+
+  if (!skillsResult.success) {
+    // Profile đã update nhưng skills fail - vẫn return success với warning
+    return createSuccessResponse(
+      `Thông tin đã lưu, nhưng lỗi kỹ năng: ${skillsResult.error?.message || "Unknown"}`
+    );
+  }
+
+  revalidatePath("/dashboard/manager/staff");
+  return createSuccessResponse("Cập nhật nhân viên thành công");
 }
 
 // ========== Scheduling Actions ==========
 
 export async function getShiftsAction(): Promise<Shift[]> {
-  const res = await fetch(`${API_BASE_URL}${SCHEDULING_PATH}/shifts`, {
+  const result = await apiClient.fetch<Shift[]>(API_ENDPOINTS.SHIFTS, {
     next: { revalidate: 600, tags: ["shifts"] },
   });
-  if (!res.ok) throw new Error("Không thể tải danh sách ca làm việc");
-  return res.json();
+  if (!result.success) throw new Error(result.error?.message || "Không thể tải danh sách ca làm việc");
+  return result.data!;
 }
 
-export async function createShiftAction(data: ShiftCreateInput) {
-  try {
-    const res = await fetch(`${API_BASE_URL}${SCHEDULING_PATH}/shifts`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) {
-      const err = (await res.json()) as APIErrorResponse;
-      return { success: false, message: err.detail || "Thao tác thất bại" };
-    }
-    revalidatePath("/dashboard/manager/staff");
-    return { success: true, message: "Tạo ca làm việc thành công" };
-  } catch (e) {
-    return { success: false, message: "Lỗi kết nối máy chủ" };
+export async function createShiftAction(data: ShiftCreateInput): Promise<ActionResponse<Shift>> {
+  const result = await apiClient.fetch<Shift>(API_ENDPOINTS.SHIFTS, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+
+  if (!result.success) {
+    return createErrorResponse(result.error?.message || "Không thể tạo ca làm việc", result.error);
   }
+
+  revalidatePath("/dashboard/manager/staff");
+  return createSuccessResponse("Tạo ca làm việc thành công", result.data);
 }
 
-export async function updateShiftAction(id: string, data: ShiftUpdateInput) {
-  try {
-    const res = await fetch(`${API_BASE_URL}${SCHEDULING_PATH}/shifts/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) {
-      const err = (await res.json()) as APIErrorResponse;
-      return { success: false, message: err.detail || "Không thể cập nhật ca làm việc" };
-    }
-    revalidatePath("/dashboard/manager/staff");
-    return { success: true, message: "Cập nhật ca làm việc thành công" };
-  } catch (e) {
-    return { success: false, message: "Lỗi kết nối máy chủ" };
+export async function updateShiftAction(id: string, data: ShiftUpdateInput): Promise<ActionResponse> {
+  const result = await apiClient.fetch(`${API_ENDPOINTS.SHIFTS}/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+
+  if (!result.success) {
+    return createErrorResponse(result.error?.message || "Không thể cập nhật ca làm việc", result.error);
   }
+
+  revalidatePath("/dashboard/manager/staff");
+  return createSuccessResponse("Cập nhật ca làm việc thành công");
 }
 
 export async function getSchedulesAction(startDate: string, endDate: string, staffId?: string): Promise<StaffScheduleWithDetails[]> {
@@ -204,107 +168,116 @@ export async function getSchedulesAction(startDate: string, endDate: string, sta
   });
   if (staffId) params.append("staff_id", staffId);
 
-  const res = await fetch(`${API_BASE_URL}${SCHEDULING_PATH}/schedules?${params.toString()}`, {
+  const endpoint = `${API_ENDPOINTS.SCHEDULES}?${params.toString()}`;
+  const result = await apiClient.fetch<StaffScheduleWithDetails[]>(endpoint, {
     cache: "no-store",
   });
-  if (!res.ok) throw new Error("Không thể tải lịch làm việc");
-  return res.json();
+  
+  if (!result.success) throw new Error(result.error?.message || "Không thể tải lịch làm việc");
+  return result.data!;
 }
 
-export async function batchCreateSchedulesAction(data: StaffScheduleBatchCreateInput) {
-  try {
-    const res = await fetch(`${API_BASE_URL}${SCHEDULING_PATH}/schedules/batch`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) {
-      const err = (await res.json()) as APIErrorResponse;
-      return { success: false, message: err.detail || "Không thể phân ca làm việc" };
-    }
-    revalidatePath("/dashboard/manager/staff");
-    return { success: true, message: "Phân ca làm việc thành công" };
-  } catch (error) {
-    console.error("Batch Create Schedules Error:", error);
-    return { success: false, message: "Lỗi kết nối máy chủ" };
+export async function batchCreateSchedulesAction(data: StaffScheduleBatchCreateInput): Promise<ActionResponse> {
+  const result = await apiClient.fetch(`${API_ENDPOINTS.SCHEDULES}/batch`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+
+  if (!result.success) {
+    return createErrorResponse(result.error?.message || "Không thể phân ca làm việc", result.error);
   }
+
+  revalidatePath("/dashboard/manager/staff");
+  return createSuccessResponse("Phân ca làm việc thành công");
 }
 
 export async function bulkCreateSchedulesAction(items: StaffScheduleBatchCreateInput[]) {
-  try {
-    // Parallelize requests on the server side (low latency to backend)
-    const responses = await Promise.all(
-      items.map(item =>
-        fetch(`${API_BASE_URL}${SCHEDULING_PATH}/schedules/batch`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(item),
-        }).then(async res => {
-          if (!res.ok) {
-            const err = (await res.json()) as APIErrorResponse;
-            throw new Error(err.detail || `Lỗi với nhân viên ${item.staff_id}`);
-          }
-          // Parse response to get created schedule IDs
-          const data = await res.json();
-          // API returns array of created schedules with IDs
-          return data as { id: string }[];
-        })
-      )
-    );
+  // Chạy parallel requests - server có low latency đến backend
+  const results = await Promise.allSettled(
+    items.map(item =>
+      apiClient.fetch<{ id: string }[]>(`${API_ENDPOINTS.SCHEDULES}/batch`, {
+        method: "POST",
+        body: JSON.stringify(item),
+      })
+    )
+  );
 
-    // Flatten all created schedule IDs
-    const createdIds = responses.flat().map(s => s.id).filter(Boolean);
+  const successfulResults = results
+    .filter((r): r is PromiseFulfilledResult<{ success: true; data: { id: string }[] }> => 
+      r.status === "fulfilled" && r.value.success
+    )
+    .map(r => r.value.data!)
+    .flat();
 
-    revalidatePath("/dashboard/manager/staff");
+  const failedCount = results.filter(r => r.status === "rejected" || !("success" in r.value) || !r.value.success).length;
+
+  const createdIds = successfulResults.map(s => s.id).filter(Boolean);
+
+  revalidatePath("/dashboard/manager/staff");
+
+  if (failedCount === 0) {
     return {
       success: true,
       message: `Đã phân ca cho ${items.length} nhân viên`,
-      createdIds
+      createdIds,
     };
-  } catch (error: unknown) {
-    console.error("Bulk Create Schedules Error:", error);
-    const message = error instanceof Error ? error.message : "Lỗi khi xử lý hàng loạt";
-    return { success: false, message, createdIds: [] };
   }
+
+  if (createdIds.length === 0) {
+    return {
+      success: false,
+      message: `Không thể phân ca cho bất kỳ nhân viên nào (${failedCount} thất bại)`,
+      createdIds: [],
+    };
+  }
+
+  return {
+    success: true,
+    message: `Đã phân ca cho ${createdIds.length}/${items.length} nhân viên (${failedCount} thất bại)`,
+    createdIds,
+  };
 }
 
-export async function deleteScheduleAction(id: string) {
-  try {
-    const res = await fetch(`${API_BASE_URL}${SCHEDULING_PATH}/schedules/${id}`, {
-      method: "DELETE",
-    });
-    if (!res.ok) {
-      const err = (await res.json()) as APIErrorResponse;
-      return { success: false, message: err.detail || "Không thể xóa lịch làm việc" };
-    }
-    revalidatePath("/dashboard/manager/staff");
-    return { success: true, message: "Đã xóa lịch làm việc" };
-  } catch (e) {
-    return { success: false, message: "Lỗi kết nối máy chủ" };
+export async function deleteScheduleAction(id: string): Promise<ActionResponse> {
+  const result = await apiClient.fetch(`${API_ENDPOINTS.SCHEDULES}/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!result.success) {
+    return createErrorResponse(result.error?.message || "Không thể xóa lịch làm việc", result.error);
   }
+
+  revalidatePath("/dashboard/manager/staff");
+  return createSuccessResponse("Đã xóa lịch làm việc");
 }
 
-export async function deleteSchedulesBatchAction(ids: string[]) {
-  try {
-    const results = await Promise.all(
-      ids.map(id =>
-        fetch(`${API_BASE_URL}${SCHEDULING_PATH}/schedules/${id}`, {
-          method: "DELETE",
-        }).then(async res => {
-          if (!res.ok) {
-            const err = (await res.json()) as APIErrorResponse;
-            throw new Error(err.detail || `Không thể xóa lịch ${id}`);
-          }
-          return res;
-        })
-      )
-    );
-    revalidatePath("/dashboard/manager/staff");
-    return { success: true, message: `Đã xóa ${results.length} lịch làm việc` };
-  } catch (error: unknown) {
-    console.error("Batch Delete Schedules Error:", error);
-    const message = error instanceof Error ? error.message : "Lỗi khi xóa hàng loạt";
-    return { success: false, message };
+export async function deleteSchedulesBatchAction(ids: string[]): Promise<ActionResponse> {
+  // Dùng allSettled để tiếp tục xóa các items khác nếu 1 item fail
+  const results = await Promise.allSettled(
+    ids.map(id =>
+      apiClient.fetch(`${API_ENDPOINTS.SCHEDULES}/${id}`, {
+        method: "DELETE",
+      })
+    )
+  );
+
+  const successCount = results.filter(
+    r => r.status === "fulfilled" && r.value.success
+  ).length;
+  const failedCount = results.length - successCount;
+
+  revalidatePath("/dashboard/manager/staff");
+
+  if (failedCount === 0) {
+    return createSuccessResponse(`Đã xóa ${successCount} lịch làm việc`);
   }
+
+  if (successCount === 0) {
+    return createErrorResponse(`Không thể xóa bất kỳ lịch nào (${failedCount} thất bại)`);
+  }
+
+  return createSuccessResponse(
+    `Đã xóa ${successCount}/${ids.length} lịch làm việc (${failedCount} thất bại)`
+  );
 }
 

@@ -38,13 +38,20 @@ export async function getOperationalSettingsAction() {
     }
 
     if (data.exception_dates) {
-      data.exception_dates = data.exception_dates.map((d: ExceptionDate, index: number) => ({
-        ...d,
-        // Đảm bảo luôn có ID duy nhất. Nếu Backend không trả về id, dùng date + index
-        id: d.id || `${d.date}-${index}`,
-        open_time: d.open_time?.slice(0, 5) || undefined,
-        close_time: d.close_time?.slice(0, 5) || undefined,
-      }));
+      data.exception_dates = data.exception_dates.map((d: ExceptionDate) => {
+        // Backend phải trả về ID - nếu thiếu là bug nghiêm trọng
+        // Array index KHÔNG BAO GIỜ được dùng làm ID vì thay đổi khi xóa item
+        if (!d.id) {
+          console.warn(`Exception date missing ID: ${d.date}`);
+          d.id = crypto.randomUUID();
+        }
+        return {
+          ...d,
+          id: d.id,
+          open_time: d.open_time?.slice(0, 5) || undefined,
+          close_time: d.close_time?.slice(0, 5) || undefined,
+        };
+      });
     }
 
     return data;
@@ -84,7 +91,6 @@ export async function updateOperationalSettingsAction(settings: OperationalSetti
     if (data.regular_operating_hours) {
       data.regular_operating_hours = data.regular_operating_hours.map((h: OperatingHour) => ({
         ...h,
-        id: crypto.randomUUID(), // Add explicit ID for optimistic UI keys if needed (client-side only trick, or adjust types)
         open_time: h.open_time?.slice(0, 5) || "08:00",
         close_time: h.close_time?.slice(0, 5) || "20:00",
       }));

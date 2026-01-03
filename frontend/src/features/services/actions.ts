@@ -1,6 +1,12 @@
 "use server";
 
-import { API_BASE_URL } from "@/shared/api";
+import {
+  apiClient,
+  API_ENDPOINTS,
+  createSuccessResponse,
+  createErrorResponse,
+  type ActionResponse,
+} from "@/shared/api";
 import { revalidatePath } from "next/cache";
 import type {
   CategoryCreateInput,
@@ -21,168 +27,137 @@ import type {
   SkillUpdateInput,
 } from "./types";
 
-const SERVICES_PATH = "/api/v1/services";
-const SKILLS_PATH = "/api/v1/skills";
-const CATEGORIES_PATH = "/api/v1/categories";
-const RESOURCES_PATH = "/api/v1/resources";
-
-// --- Helper Wrapper ---
-async function fetchAPI<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<{ success: boolean; message?: string; data?: T }> {
-  try {
-    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      return {
-        success: false,
-        message: err.detail || `Lỗi ${res.status}: ${res.statusText}`,
-      };
-    }
-
-    // Handle 204 No Content
-    if (res.status === 204) {
-      return { success: true };
-    }
-
-    const data = await res.json();
-    return { success: true, data };
-  } catch (error) {
-    console.error(`Fetch Error [${endpoint}]:`, error);
-    return { success: false, message: "Lỗi kết nối máy chủ" };
-  }
-}
-
 // ========== Skills Actions ==========
 export async function getSkillsAction(): Promise<Skill[]> {
-  const res = await fetch(`${API_BASE_URL}${SKILLS_PATH}`, {
+  const result = await apiClient.fetch<Skill[]>(API_ENDPOINTS.SKILLS, {
     cache: "no-store",
   });
-  if (!res.ok) throw new Error("Không thể tải danh sách kỹ năng");
-  return res.json();
+  if (!result.success) throw new Error(result.error?.message || "Không thể tải danh sách kỹ năng");
+  return result.data!;
 }
 
-export async function createSkillAction(data: SkillCreateInput) {
-  const res = await fetchAPI<Skill>(SKILLS_PATH, {
+export async function createSkillAction(data: SkillCreateInput): Promise<ActionResponse<Skill>> {
+  const result = await apiClient.fetch<Skill>(API_ENDPOINTS.SKILLS, {
     method: "POST",
     body: JSON.stringify(data),
   });
-  if (res.success) revalidatePath("/dashboard/manager/services", "page");
-  return {
-    ...res,
-    message: res.success ? "Tạo kỹ năng thành công" : res.message,
-  };
+  
+  if (!result.success) {
+    return createErrorResponse(result.error?.message || "Không thể tạo kỹ năng", result.error);
+  }
+  
+  revalidatePath("/dashboard/manager/services", "page");
+  return createSuccessResponse("Tạo kỹ năng thành công", result.data);
 }
 
-export async function updateSkillAction(id: string, data: SkillUpdateInput) {
-  const res = await fetchAPI(`${SKILLS_PATH}/${id}`, {
+export async function updateSkillAction(id: string, data: SkillUpdateInput): Promise<ActionResponse> {
+  const result = await apiClient.fetch(`${API_ENDPOINTS.SKILLS}/${id}`, {
     method: "PUT",
     body: JSON.stringify(data),
   });
-  if (res.success) revalidatePath("/dashboard/manager/services", "page");
-  return {
-    ...res,
-    message: res.success ? "Cập nhật kỹ năng thành công" : res.message,
-  };
+  
+  if (!result.success) {
+    return createErrorResponse(result.error?.message || "Không thể cập nhật kỹ năng", result.error);
+  }
+  
+  revalidatePath("/dashboard/manager/services", "page");
+  return createSuccessResponse("Cập nhật kỹ năng thành công");
 }
 
 export async function deleteSkillAction(id: string): Promise<void> {
-  const res = await fetchAPI(`${SKILLS_PATH}/${id}`, { method: "DELETE" });
-  if (!res.success) throw new Error(res.message);
+  const result = await apiClient.fetch(`${API_ENDPOINTS.SKILLS}/${id}`, { method: "DELETE" });
+  if (!result.success) throw new Error(result.error?.message || "Không thể xóa kỹ năng");
   revalidatePath("/dashboard/manager/services", "page");
 }
 
 // ========== Categories Actions ==========
 export async function getCategoriesAction(): Promise<ServiceCategory[]> {
-  const res = await fetch(`${API_BASE_URL}${CATEGORIES_PATH}`, {
+  const result = await apiClient.fetch<ServiceCategory[]>(API_ENDPOINTS.CATEGORIES, {
     cache: "no-store",
   });
-  if (!res.ok) throw new Error("Không thể tải danh sách danh mục");
-  return res.json();
+  if (!result.success) throw new Error(result.error?.message || "Không thể tải danh sách danh mục");
+  return result.data!;
 }
 
-export async function createCategoryAction(data: CategoryCreateInput) {
-  const res = await fetchAPI<ServiceCategory>(CATEGORIES_PATH, {
+export async function createCategoryAction(data: CategoryCreateInput): Promise<ActionResponse<ServiceCategory>> {
+  const result = await apiClient.fetch<ServiceCategory>(API_ENDPOINTS.CATEGORIES, {
     method: "POST",
     body: JSON.stringify(data),
   });
-  if (res.success) revalidatePath("/dashboard/manager/services", "page");
-  return {
-    ...res,
-    message: res.success ? "Tạo danh mục thành công" : res.message,
-  };
+  
+  if (!result.success) {
+    return createErrorResponse(result.error?.message || "Không thể tạo danh mục", result.error);
+  }
+  
+  revalidatePath("/dashboard/manager/services", "page");
+  return createSuccessResponse("Tạo danh mục thành công", result.data);
 }
 
 export async function updateCategoryAction(
   id: string,
   data: CategoryUpdateInput
-) {
-  const res = await fetchAPI(`${CATEGORIES_PATH}/${id}`, {
+): Promise<ActionResponse> {
+  const result = await apiClient.fetch(`${API_ENDPOINTS.CATEGORIES}/${id}`, {
     method: "PUT",
     body: JSON.stringify(data),
   });
-  if (res.success) revalidatePath("/dashboard/manager/services", "page");
-  return {
-    ...res,
-    message: res.success ? "Cập nhật danh mục thành công" : res.message,
-  };
+  
+  if (!result.success) {
+    return createErrorResponse(result.error?.message || "Không thể cập nhật danh mục", result.error);
+  }
+  
+  revalidatePath("/dashboard/manager/services", "page");
+  return createSuccessResponse("Cập nhật danh mục thành công");
 }
 
 export async function reorderCategoriesAction(
   ids: string[]
 ): Promise<ServiceCategory[]> {
-  const res = await fetchAPI<ServiceCategory[]>(`${CATEGORIES_PATH}/reorder`, {
+  const result = await apiClient.fetch<ServiceCategory[]>(`${API_ENDPOINTS.CATEGORIES}/reorder`, {
     method: "PUT",
     body: JSON.stringify({ ids }),
   });
-  if (!res.success) throw new Error(res.message);
+  if (!result.success) throw new Error(result.error?.message || "Không thể sắp xếp lại danh mục");
   revalidatePath("/dashboard/manager/services", "page");
-  return res.data!;
+  return result.data!;
 }
 
 export async function deleteCategoryAction(id: string): Promise<void> {
-  const res = await fetchAPI(`${CATEGORIES_PATH}/${id}`, { method: "DELETE" });
-  if (!res.success) throw new Error(res.message);
+  const result = await apiClient.fetch(`${API_ENDPOINTS.CATEGORIES}/${id}`, { method: "DELETE" });
+  if (!result.success) throw new Error(result.error?.message || "Không thể xóa danh mục");
   revalidatePath("/dashboard/manager/services", "page");
 }
 
 // ========== Resource Groups Actions ==========
 export async function getResourceGroupsAction(): Promise<ResourceGroup[]> {
-  const res = await fetch(`${API_BASE_URL}${RESOURCES_PATH}/groups`, {
+  const result = await apiClient.fetch<ResourceGroup[]>(API_ENDPOINTS.RESOURCE_GROUPS, {
     cache: "no-store",
   });
-  if (!res.ok) throw new Error("Không thể tải danh sách nhóm tài nguyên");
-  return res.json();
+  if (!result.success) throw new Error(result.error?.message || "Không thể tải danh sách nhóm tài nguyên");
+  return result.data!;
 }
 
 export async function createResourceGroupAction(
   data: ResourceGroupCreateInput
-) {
-  const res = await fetchAPI(`${RESOURCES_PATH}/groups`, {
+): Promise<ActionResponse<ResourceGroup>> {
+  const result = await apiClient.fetch<ResourceGroup>(API_ENDPOINTS.RESOURCE_GROUPS, {
     method: "POST",
     body: JSON.stringify(data),
   });
 
-  if (res.success) revalidatePath("/dashboard/manager/services", "page");
-  return {
-    ...res,
-    message: res.success ? "Tạo nhóm tài nguyên thành công" : res.message,
-  };
+  if (!result.success) {
+    return createErrorResponse(result.error?.message || "Không thể tạo nhóm tài nguyên", result.error);
+  }
+
+  revalidatePath("/dashboard/manager/services", "page");
+  return createSuccessResponse("Tạo nhóm tài nguyên thành công", result.data);
 }
 
 export async function deleteResourceGroupAction(id: string): Promise<void> {
-  const res = await fetchAPI(`${RESOURCES_PATH}/groups/${id}`, {
+  const result = await apiClient.fetch(`${API_ENDPOINTS.RESOURCE_GROUPS}/${id}`, {
     method: "DELETE",
   });
-  if (!res.success) throw new Error(res.message);
+  if (!result.success) throw new Error(result.error?.message || "Không thể xóa nhóm tài nguyên");
   revalidatePath("/dashboard/manager/services", "page");
 }
 
@@ -190,29 +165,31 @@ export async function deleteResourceGroupAction(id: string): Promise<void> {
 export async function getResourcesAction(
   groupId?: string
 ): Promise<Resource[]> {
-  const url = groupId
-    ? `${API_BASE_URL}${RESOURCES_PATH}?group_id=${groupId}`
-    : `${API_BASE_URL}${RESOURCES_PATH}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) throw new Error("Không thể tải danh sách tài nguyên");
-  return res.json();
+  const endpoint = groupId
+    ? `${API_ENDPOINTS.RESOURCES}?group_id=${groupId}`
+    : API_ENDPOINTS.RESOURCES;
+  const result = await apiClient.fetch<Resource[]>(endpoint, { cache: "no-store" });
+  if (!result.success) throw new Error(result.error?.message || "Không thể tải danh sách tài nguyên");
+  return result.data!;
 }
 
-export async function createResourceAction(data: ResourceCreateInput) {
-  const res = await fetchAPI(RESOURCES_PATH, {
+export async function createResourceAction(data: ResourceCreateInput): Promise<ActionResponse<Resource>> {
+  const result = await apiClient.fetch<Resource>(API_ENDPOINTS.RESOURCES, {
     method: "POST",
     body: JSON.stringify(data),
   });
-  if (res.success) revalidatePath("/dashboard/manager/services", "page");
-  return {
-    ...res,
-    message: res.success ? "Tạo tài nguyên thành công" : res.message,
-  };
+  
+  if (!result.success) {
+    return createErrorResponse(result.error?.message || "Không thể tạo tài nguyên", result.error);
+  }
+  
+  revalidatePath("/dashboard/manager/services", "page");
+  return createSuccessResponse("Tạo tài nguyên thành công", result.data);
 }
 
 export async function deleteResourceAction(id: string): Promise<void> {
-  const res = await fetchAPI(`${RESOURCES_PATH}/${id}`, { method: "DELETE" });
-  if (!res.success) throw new Error(res.message);
+  const result = await apiClient.fetch(`${API_ENDPOINTS.RESOURCES}/${id}`, { method: "DELETE" });
+  if (!result.success) throw new Error(result.error?.message || "Không thể xóa tài nguyên");
   revalidatePath("/dashboard/manager/services", "page");
 }
 
@@ -220,16 +197,16 @@ export async function createMaintenanceAction(
   resourceId: string,
   data: MaintenanceCreateInput
 ): Promise<ResourceMaintenance> {
-  const res = await fetchAPI<ResourceMaintenance>(
-    `${RESOURCES_PATH}/${resourceId}/maintenance`,
+  const result = await apiClient.fetch<ResourceMaintenance>(
+    `${API_ENDPOINTS.RESOURCES}/${resourceId}/maintenance`,
     {
       method: "POST",
       body: JSON.stringify(data),
     }
   );
-  if (!res.success) throw new Error(res.message);
+  if (!result.success) throw new Error(result.error?.message || "Không thể tạo bảo trì");
   revalidatePath("/dashboard/manager/services", "page");
-  return res.data!;
+  return result.data!;
 }
 
 // ========== Services Actions ==========
@@ -245,20 +222,21 @@ export async function getServicesAction(
   params.append("page", String(page));
   params.append("limit", String(limit));
 
-  const url = `${API_BASE_URL}${SERVICES_PATH}?${params.toString()}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) throw new Error("Không thể tải danh sách dịch vụ");
-  const responseData = await res.json();
+  const endpoint = `${API_ENDPOINTS.SERVICES}?${params.toString()}`;
+  const result = await apiClient.fetch<{ data: Service[]; total: number; page: number; limit: number } | Service[]>(endpoint, { cache: "no-store" });
+  
+  if (!result.success) throw new Error(result.error?.message || "Không thể tải danh sách dịch vụ");
 
   // Backend trả về ServiceListResponse format: { data, total, page, limit }
-  if (responseData.data && typeof responseData.total === "number") {
-    return responseData;
+  if (typeof result.data === "object" && "data" in result.data && typeof result.data.total === "number") {
+    return result.data;
   }
 
   // Fallback nếu backend trả array trực tiếp (backward compatibility)
+  const arrayData = Array.isArray(result.data) ? result.data : [];
   return {
-    data: Array.isArray(responseData) ? responseData : [],
-    total: Array.isArray(responseData) ? responseData.length : 0,
+    data: arrayData,
+    total: arrayData.length,
     page: 1,
     limit: 1000,
   };
@@ -267,71 +245,78 @@ export async function getServicesAction(
 export async function getServiceByIdAction(
   id: string
 ): Promise<ServiceWithDetails> {
-  const res = await fetch(`${API_BASE_URL}${SERVICES_PATH}/${id}`, {
+  const result = await apiClient.fetch<ServiceWithDetails>(`${API_ENDPOINTS.SERVICES}/${id}`, {
     cache: "no-store",
   });
-  if (!res.ok) throw new Error("Không thể tải thông tin dịch vụ");
-  return res.json();
+  if (!result.success) throw new Error(result.error?.message || "Không thể tải thông tin dịch vụ");
+  return result.data!;
 }
 
-export async function createServiceAction(data: ServiceCreateInput) {
+const UNCATEGORIZED = "uncategorized";
+
+export async function createServiceAction(data: ServiceCreateInput): Promise<ActionResponse<Service>> {
+  // Loại bỏ magic string "uncategorized" - chỉ gửi category_id thực tế
   const payload = {
     ...data,
     category_id:
-      data.category_id && data.category_id !== "uncategorized"
+      data.category_id && data.category_id !== UNCATEGORIZED
         ? data.category_id
         : undefined,
     image_url: data.image_url || undefined,
     description: data.description || undefined,
   };
 
-  const res = await fetchAPI(SERVICES_PATH, {
+  const result = await apiClient.fetch<Service>(API_ENDPOINTS.SERVICES, {
     method: "POST",
     body: JSON.stringify(payload),
   });
-  if (res.success) revalidatePath("/dashboard/manager/services", "page");
-  return {
-    ...res,
-    message: res.success ? "Tạo dịch vụ thành công" : res.message,
-  };
+  
+  if (!result.success) {
+    return createErrorResponse(result.error?.message || "Không thể tạo dịch vụ", result.error);
+  }
+  
+  revalidatePath("/dashboard/manager/services", "page");
+  return createSuccessResponse("Tạo dịch vụ thành công", result.data);
 }
 
 export async function updateServiceAction(
   id: string,
   data: ServiceUpdateInput
-) {
+): Promise<ActionResponse<Service>> {
   const payload = {
     ...data,
     category_id:
-      data.category_id && data.category_id !== "uncategorized"
+      data.category_id && data.category_id !== UNCATEGORIZED
         ? data.category_id
         : null,
     image_url: data.image_url || null,
     description: data.description || null,
   };
 
-  const res = await fetchAPI(`${SERVICES_PATH}/${id}`, {
+  const result = await apiClient.fetch<Service>(`${API_ENDPOINTS.SERVICES}/${id}`, {
     method: "PUT",
     body: JSON.stringify(payload),
   });
-  if (res.success) revalidatePath("/dashboard/manager/services", "page");
-  return {
-    ...res,
-    message: res.success ? "Cập nhật dịch vụ thành công" : res.message,
-  };
+  
+  if (!result.success) {
+    return createErrorResponse(result.error?.message || "Không thể cập nhật dịch vụ", result.error);
+  }
+  
+  revalidatePath("/dashboard/manager/services", "page");
+  return createSuccessResponse("Cập nhật dịch vụ thành công", result.data);
 }
 
 export async function toggleServiceStatusAction(id: string): Promise<Service> {
-  const res = await fetchAPI<Service>(`${SERVICES_PATH}/${id}/toggle-status`, {
+  const result = await apiClient.fetch<Service>(`${API_ENDPOINTS.SERVICES}/${id}/toggle-status`, {
     method: "PATCH",
   });
-  if (!res.success) throw new Error(res.message);
+  if (!result.success) throw new Error(result.error?.message || "Không thể thay đổi trạng thái");
   revalidatePath("/dashboard/manager/services", "page");
-  return res.data!;
+  return result.data!;
 }
 
 export async function deleteServiceAction(id: string): Promise<void> {
-  const res = await fetchAPI(`${SERVICES_PATH}/${id}`, { method: "DELETE" });
-  if (!res.success) throw new Error(res.message);
+  const result = await apiClient.fetch(`${API_ENDPOINTS.SERVICES}/${id}`, { method: "DELETE" });
+  if (!result.success) throw new Error(result.error?.message || "Không thể xóa dịch vụ");
   revalidatePath("/dashboard/manager/services", "page");
 }
