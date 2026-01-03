@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { cn } from "@/shared/lib/utils"
-import { Button } from "@/shared/ui/button"
-import { Input } from "@/shared/ui/input"
-import { ListFilter, Search } from "lucide-react"
+import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { ListFilter, Search } from "lucide-react";
 
 interface PageHeaderProps {
-  title: string
-  subtitle?: string
-  searchPlaceholder?: string
-  onSearch?: (value: string) => void
-  onFilterClick?: () => void
-  actionLabel?: string
-  onActionClick?: () => void
-  className?: string
+  title: string;
+  subtitle?: string;
+  searchPlaceholder?: string;
+  onSearch?: (value: string) => void;
+  onFilterClick?: () => void;
+  actionLabel?: string;
+  onActionClick?: () => void;
+  className?: string;
 }
 
 /**
@@ -31,7 +31,12 @@ export function PageHeader({
   className,
 }: PageHeaderProps) {
   return (
-    <div className={cn("flex flex-col gap-4 md:flex-row md:items-start md:justify-between mb-8", className)}>
+    <div
+      className={cn(
+        "flex flex-col gap-4 md:flex-row md:items-start md:justify-between mb-8",
+        className
+      )}
+    >
       {/* Khối Tiêu đề */}
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
@@ -70,14 +75,11 @@ export function PageHeader({
 
         {/* Nút hành động chính */}
         {actionLabel && (
-          <Button
-            className="flex gap-2"
-            onClick={onActionClick}
-          >
+          <Button className="flex gap-2" onClick={onActionClick}>
             <span>{actionLabel}</span>
           </Button>
         )}
       </div>
     </div>
-  )
+  );
 }

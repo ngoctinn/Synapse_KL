@@ -5,26 +5,26 @@
   --radius: 0.75rem;
 
   /* ===== NEUTRALS PALETTE (Light) ===== */
-  --neutral-100: 199 42% 11%;     /* #102027 */
-  --neutral-90: 200 23% 18%;      /* #263238 */
-  --neutral-80: 200 18% 26%;      /* #37474F */
-  --neutral-70: 200 18% 33%;      /* #455A64 */
-  --neutral-60: 200 18% 41%;      /* #546E7A */
-  --neutral-50: 199 18% 46%;      /* #607D8B */
-  --neutral-40: 200 16% 54%;      /* #78909C */
-  --neutral-30: 200 15% 62%;      /* #90A4AE */
-  --neutral-20: 200 15% 73%;      /* #B0BEC5 */
-  --neutral-10: 199 13% 84%;      /* #CFD8DC */
-  --neutral-5: 199 15% 92%;       /* Lightest shade */
-  --neutral-0: 0 0% 100%;         /* #FFFFFF */
+  --neutral-100: 199 42% 11%; /* #102027 */
+  --neutral-90: 200 23% 18%; /* #263238 */
+  --neutral-80: 200 18% 26%; /* #37474F */
+  --neutral-70: 200 18% 33%; /* #455A64 */
+  --neutral-60: 200 18% 41%; /* #546E7A */
+  --neutral-50: 199 18% 46%; /* #607D8B */
+  --neutral-40: 200 16% 54%; /* #78909C */
+  --neutral-30: 200 15% 62%; /* #90A4AE */
+  --neutral-20: 200 15% 73%; /* #B0BEC5 */
+  --neutral-10: 199 13% 84%; /* #CFD8DC */
+  --neutral-5: 199 15% 92%; /* Lightest shade */
+  --neutral-0: 0 0% 100%; /* #FFFFFF */
 
   /* ===== PRIMARY PALETTE (Teal) ===== */
-  --primary-base: 187 100% 33%;    /* #0097A7 */
-  --primary-light: 187 50% 93%;   /* Light teal bg */
+  --primary-base: 187 100% 33%; /* #0097A7 */
+  --primary-light: 187 50% 93%; /* Light teal bg */
   --primary-dark: 187 100% 25%;
 
   /* ===== SEMANTIC TOKENS (Light Mode) ===== */
-  --background: 180 20% 98%;      /* #F8FAFA */
+  --background: 180 20% 98%; /* #F8FAFA */
   --foreground: var(--neutral-100);
 
   --card: var(--neutral-0);
@@ -45,7 +45,7 @@
   --accent: 187 60% 95%;
   --accent-foreground: var(--primary-base);
 
-  --destructive: 0 100% 65%;      /* #FF4D4D */
+  --destructive: 0 100% 65%; /* #FF4D4D */
   --destructive-foreground: var(--neutral-0);
 
   --border: var(--neutral-10);
@@ -161,8 +161,13 @@
     @apply bg-primary/20 text-primary;
   }
 
-  body { @apply bg-background text-foreground antialiased; }
-  button:not(:disabled), [role="button"]:not(:disabled) { cursor: pointer; }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
 
   /* Custom Scrollbar Styling */
   ::-webkit-scrollbar {
@@ -213,5 +218,3 @@
     @apply leading-7 text-foreground;
   }
 }
-
-

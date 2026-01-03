@@ -8,8 +8,6 @@ import * as React from "react";
 import { DatePickerWithRange } from "@/shared/components/date-range-picker";
 import { TimePickerDropdown } from "@/shared/components/time-picker-dropdown";
 import { cn } from "@/shared/lib/utils";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +19,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -169,7 +169,10 @@ export function ExceptionDatesManager({
             <>
               <span className="flex items-center gap-1.5">
                 <Calendar className="h-4 w-4" />
-                <span className="font-medium text-foreground">{summary.total}</span> ngày ngoại lệ
+                <span className="font-medium text-foreground">
+                  {summary.total}
+                </span>{" "}
+                ngày ngoại lệ
               </span>
               {summary.closedDays > 0 && (
                 <span>• {summary.closedDays} ngày nghỉ</span>
@@ -395,8 +398,12 @@ export function ExceptionDatesManager({
                     <AlertDialogHeader>
                       <AlertDialogTitle>Xóa ngày ngoại lệ?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Bạn có chắc muốn xóa ngày ngoại lệ &ldquo;{item.reason}&rdquo; ({format(new Date(item.date), "dd/MM/yyyy", { locale: vi })})? 
-                        Thao tác này không thể hoàn tác.
+                        Bạn có chắc muốn xóa ngày ngoại lệ &ldquo;{item.reason}
+                        &rdquo; (
+                        {format(new Date(item.date), "dd/MM/yyyy", {
+                          locale: vi,
+                        })}
+                        )? Thao tác này không thể hoàn tác.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

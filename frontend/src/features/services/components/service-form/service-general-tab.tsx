@@ -29,7 +29,10 @@ interface ServiceGeneralTabProps {
   onAddCategory: () => void;
 }
 
-export function ServiceGeneralTab({ categories, onAddCategory }: ServiceGeneralTabProps) {
+export function ServiceGeneralTab({
+  categories,
+  onAddCategory,
+}: ServiceGeneralTabProps) {
   const form = useFormContext<ServiceCreateForm>();
 
   return (
@@ -68,7 +71,9 @@ export function ServiceGeneralTab({ categories, onAddCategory }: ServiceGeneralT
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="uncategorized">
-                      <span className="text-muted-foreground">Chưa phân loại</span>
+                      <span className="text-muted-foreground">
+                        Chưa phân loại
+                      </span>
                     </SelectItem>
                     {categories.map((c) => (
                       <SelectItem key={c.id} value={c.id}>
@@ -123,10 +128,7 @@ export function ServiceGeneralTab({ categories, onAddCategory }: ServiceGeneralT
               </div>
             </div>
             <FormControl>
-              <Switch
-                checked={field.value}
-                onCheckedChange={field.onChange}
-              />
+              <Switch checked={field.value} onCheckedChange={field.onChange} />
             </FormControl>
           </FormItem>
         )}

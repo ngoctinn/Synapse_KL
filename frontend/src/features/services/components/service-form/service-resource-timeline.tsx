@@ -9,7 +9,9 @@ interface ServiceResourceTimelineProps {
   resourceGroups: ResourceGroupWithCount[] | ResourceGroup[];
 }
 
-export function ServiceResourceTimeline({ resourceGroups }: ServiceResourceTimelineProps) {
+export function ServiceResourceTimeline({
+  resourceGroups,
+}: ServiceResourceTimelineProps) {
   const form = useFormContext<ServiceCreateForm>();
   const duration = form.watch("duration") || 60;
   const buffer = form.watch("buffer_time") || 0;
@@ -28,7 +30,9 @@ export function ServiceResourceTimeline({ resourceGroups }: ServiceResourceTimel
   }
 
   const getGroupName = (groupId: string) => {
-    return resourceGroups.find(g => g.id === groupId)?.name || "Chưa chọn nhóm";
+    return (
+      resourceGroups.find((g) => g.id === groupId)?.name || "Chưa chọn nhóm"
+    );
   };
 
   return (
@@ -80,14 +84,17 @@ export function ServiceResourceTimeline({ resourceGroups }: ServiceResourceTimel
         {requirements.length > 0 ? (
           requirements.map((req, index) => {
             const start = req.start_delay || 0;
-            const usage = req.usage_duration || (duration - start);
+            const usage = req.usage_duration || duration - start;
 
             const left = (start / total) * 100;
             const width = (usage / total) * 100;
             const groupName = getGroupName(req.group_id);
 
             return (
-              <div key={index} className="relative h-8 flex items-center group/row">
+              <div
+                key={index}
+                className="relative h-8 flex items-center group/row"
+              >
                 {/* Row Label (Visible on hover or if space permits) */}
                 <div className="absolute -left-1 opacity-0 group-hover/row:opacity-100 transition-opacity bg-background/90 px-2 py-0.5 rounded border text-xs font-medium z-30 pointer-events-none whitespace-nowrap shadow-sm">
                   {groupName} ({usage}p)
@@ -116,7 +123,9 @@ export function ServiceResourceTimeline({ resourceGroups }: ServiceResourceTimel
           })
         ) : (
           <div className="h-8 flex items-center justify-center border border-dashed rounded-lg bg-muted/5">
-             <span className="text-xs text-muted-foreground italic">Chưa cấu hình tài nguyên</span>
+            <span className="text-xs text-muted-foreground italic">
+              Chưa cấu hình tài nguyên
+            </span>
           </div>
         )}
       </div>
@@ -124,15 +133,18 @@ export function ServiceResourceTimeline({ resourceGroups }: ServiceResourceTimel
       {/* Chú thích các thành phần trên Timeline */}
       <div className="flex items-center justify-center gap-6 text-xs font-semibold text-muted-foreground/70 pt-2 border-t border-border/40">
         <div className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors">
-          <div className="w-3 h-3 bg-primary border border-primary/30 rounded-full shadow-sm" /> Tài nguyên sử dụng
+          <div className="w-3 h-3 bg-primary border border-primary/30 rounded-full shadow-sm" />{" "}
+          Tài nguyên sử dụng
         </div>
         <div className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors">
-          <div className="w-3 h-3 bg-primary/10 border border-primary/20 rounded-sm" /> Thời gian liệu trình
+          <div className="w-3 h-3 bg-primary/10 border border-primary/20 rounded-sm" />{" "}
+          Thời gian liệu trình
         </div>
         <div className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors">
           <div className="w-3 h-3 bg-alert-warning/20 border border-alert-warning-border/40 rounded-sm overflow-hidden relative">
-              <div className="absolute inset-0 opacity-20 bg-[image:repeating-linear-gradient(45deg,var(--color-alert-warning-foreground)_0,var(--color-alert-warning-foreground)_1px,transparent_0,transparent_3px)] [background-size:4px_4px]" />
-          </div> Nghỉ/Chuẩn bị
+            <div className="absolute inset-0 opacity-20 bg-[image:repeating-linear-gradient(45deg,var(--color-alert-warning-foreground)_0,var(--color-alert-warning-foreground)_1px,transparent_0,transparent_3px)] [background-size:4px_4px]" />
+          </div>{" "}
+          Nghỉ/Chuẩn bị
         </div>
       </div>
     </div>

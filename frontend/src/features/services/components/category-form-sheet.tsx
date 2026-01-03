@@ -74,7 +74,7 @@ export function CategoryFormSheet({
     showExitConfirm,
     setShowExitConfirm,
     handleConfirmExit,
-    contentProps
+    contentProps,
   } = useFormGuard({
     isDirty: form.formState.isDirty,
     onClose: () => onOpenChange(false),
@@ -83,9 +83,10 @@ export function CategoryFormSheet({
 
   async function onSubmit(data: CategoryCreateForm) {
     startTransition(async () => {
-      const result = isEdit && category
-        ? await updateCategoryAction(category.id, data)
-        : await createCategoryAction(data);
+      const result =
+        isEdit && category
+          ? await updateCategoryAction(category.id, data)
+          : await createCategoryAction(data);
 
       if (result.success) {
         toast.success(result.message);
@@ -100,88 +101,91 @@ export function CategoryFormSheet({
     <>
       <Sheet open={open} onOpenChange={handleOpenChange}>
         <SheetContent className="sm:max-w-md" {...contentProps}>
-        <SheetHeader>
-          <SheetTitle>{isEdit ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}</SheetTitle>
-          <SheetDescription>
-            {isEdit
-              ? "Cập nhật thông tin danh mục dịch vụ."
-              : "Tạo danh mục mới để phân loại các dịch vụ Spa."}
-          </SheetDescription>
-        </SheetHeader>
+          <SheetHeader>
+            <SheetTitle>
+              {isEdit ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}
+            </SheetTitle>
+            <SheetDescription>
+              {isEdit
+                ? "Cập nhật thông tin danh mục dịch vụ."
+                : "Tạo danh mục mới để phân loại các dịch vụ Spa."}
+            </SheetDescription>
+          </SheetHeader>
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 py-4"
-          >
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel required>Tên danh mục</FormLabel>
-                  <FormControl>
-                    <Input placeholder="VD: Chăm sóc da mặt" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Mô tả</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Mô tả về danh mục này..."
-                      className="resize-none min-h-[100px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex justify-end gap-3 pt-4">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => handleOpenChange(false)}
-              >
-                Hủy
-              </Button>
-              <Button type="submit" disabled={isPending}>
-                {isEdit ? "Cập nhật" : "Tạo mới"}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </SheetContent>
-
-      <AlertDialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Thay đổi chưa được lưu</AlertDialogTitle>
-            <AlertDialogDescription>
-              Bạn đang nhập dở thông tin. Thoát bây giờ sẽ làm mất các dữ liệu này.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Tiếp tục chỉnh sửa</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmExit}
-              className="bg-destructive hover:bg-destructive/90"
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4 py-4"
             >
-              Thoát và bỏ qua
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </Sheet>
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>Tên danh mục</FormLabel>
+                    <FormControl>
+                      <Input placeholder="VD: Chăm sóc da mặt" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mô tả</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Mô tả về danh mục này..."
+                        className="resize-none min-h-[100px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end gap-3 pt-4">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => handleOpenChange(false)}
+                >
+                  Hủy
+                </Button>
+                <Button type="submit" disabled={isPending}>
+                  {isEdit ? "Cập nhật" : "Tạo mới"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </SheetContent>
+
+        <AlertDialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Thay đổi chưa được lưu</AlertDialogTitle>
+              <AlertDialogDescription>
+                Bạn đang nhập dở thông tin. Thoát bây giờ sẽ làm mất các dữ liệu
+                này.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Tiếp tục chỉnh sửa</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleConfirmExit}
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                Thoát và bỏ qua
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </Sheet>
     </>
   );
 }

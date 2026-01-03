@@ -3,11 +3,11 @@
 import { DurationSelect } from "@/shared/components/duration-select";
 import { Button } from "@/shared/ui/button";
 import {
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/shared/ui/form";
 import { useFormContext } from "react-hook-form";
 import { type ServiceCreateForm } from "../../schemas";
@@ -38,7 +38,9 @@ export function ServicePricingTab() {
                         className="font-medium text-muted-foreground hover:text-primary"
                         onClick={() => field.onChange(p)}
                       >
-                        {new Intl.NumberFormat('vi-VN', { notation: 'compact' }).format(p)}
+                        {new Intl.NumberFormat("vi-VN", {
+                          notation: "compact",
+                        }).format(p)}
                       </Button>
                     ))}
                     <Button

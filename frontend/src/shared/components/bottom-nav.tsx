@@ -1,20 +1,23 @@
-"use client"
+"use client";
 
-import { navigationConfig } from "@/shared/config/navigation"
-import { cn } from "@/shared/lib/utils"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { navigationConfig } from "@/shared/config/navigation";
+import { cn } from "@/shared/lib/utils";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function BottomNav() {
-  const pathname = usePathname()
+  const pathname = usePathname();
   // Lấy menu của customer từ config
-  const customerNav = navigationConfig.customer.sidebarNav[0].items
+  const customerNav = navigationConfig.customer.sidebarNav[0].items;
 
   return (
-    <nav aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t bg-background px-4 pb-safe md:hidden">
+    <nav
+      aria-label="Main navigation"
+      className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t bg-background px-4 pb-safe md:hidden"
+    >
       {customerNav.map((item) => {
-        const Icon = item.icon
-        const isActive = pathname === item.href
+        const Icon = item.icon;
+        const isActive = pathname === item.href;
 
         return (
           <Link
@@ -28,8 +31,8 @@ export function BottomNav() {
             <Icon className="size-5" />
             <span className="text-xs font-medium">{item.title}</span>
           </Link>
-        )
+        );
       })}
     </nav>
-  )
+  );
 }

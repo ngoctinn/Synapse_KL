@@ -2,31 +2,31 @@
 
 import { useFormGuard } from "@/shared/hooks/use-form-guard";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
 import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
 } from "@/shared/ui/sheet";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -45,7 +45,12 @@ interface ShiftFormSheetProps {
   onSuccess?: () => void;
 }
 
-export function ShiftFormSheet({ open, onOpenChange, shift, onSuccess }: ShiftFormSheetProps) {
+export function ShiftFormSheet({
+  open,
+  onOpenChange,
+  shift,
+  onSuccess,
+}: ShiftFormSheetProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEdit = !!shift;
 
@@ -119,7 +124,10 @@ export function ShiftFormSheet({ open, onOpenChange, shift, onSuccess }: ShiftFo
   return (
     <>
       <Sheet open={open} onOpenChange={handleOpenChange}>
-        <SheetContent className="sm:max-w-md w-full overflow-y-auto" {...contentProps}>
+        <SheetContent
+          className="sm:max-w-md w-full overflow-y-auto"
+          {...contentProps}
+        >
           <SheetHeader>
             <SheetTitle>
               {isEdit ? "Sửa ca làm việc" : "Thêm ca làm việc"}
@@ -130,81 +138,93 @@ export function ShiftFormSheet({ open, onOpenChange, shift, onSuccess }: ShiftFo
           </SheetHeader>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4 py-4"
+            >
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tên ca</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ca Sáng" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="start_time"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tên ca</FormLabel>
+                      <FormLabel>Giờ bắt đầu</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ca Sáng" {...field} />
+                        <Input type="time" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="start_time"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Giờ bắt đầu</FormLabel>
-                        <FormControl>
-                          <Input type="time" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="end_time"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Giờ kết thúc</FormLabel>
-                        <FormControl>
-                          <Input type="time" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
                 <FormField
                   control={form.control}
-                  name="color_code"
+                  name="end_time"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Màu sắc hiển thị</FormLabel>
+                      <FormLabel>Giờ kết thúc</FormLabel>
                       <FormControl>
-                        <div className="flex gap-2">
-                          <Input type="color" {...field} value={field.value || "#10B981"} className="w-16 h-9 p-1 cursor-pointer" />
-                          <Input {...field} value={field.value || "#10B981"} placeholder="#10B981" />
-                        </div>
+                        <Input type="time" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+              </div>
 
-                <div className="flex justify-end gap-3 pt-4">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => handleOpenChange(false)}
-                  >
-                    Hủy
-                  </Button>
-                  <Button type="submit" loading={isSubmitting}>
-                    {isEdit ? "Cập nhật" : "Tạo mới"}
-                  </Button>
-                </div>
-              </form>
-            </Form>
+              <FormField
+                control={form.control}
+                name="color_code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Màu sắc hiển thị</FormLabel>
+                    <FormControl>
+                      <div className="flex gap-2">
+                        <Input
+                          type="color"
+                          {...field}
+                          value={field.value || "#10B981"}
+                          className="w-16 h-9 p-1 cursor-pointer"
+                        />
+                        <Input
+                          {...field}
+                          value={field.value || "#10B981"}
+                          placeholder="#10B981"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end gap-3 pt-4">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => handleOpenChange(false)}
+                >
+                  Hủy
+                </Button>
+                <Button type="submit" loading={isSubmitting}>
+                  {isEdit ? "Cập nhật" : "Tạo mới"}
+                </Button>
+              </div>
+            </form>
+          </Form>
         </SheetContent>
       </Sheet>
 
@@ -213,7 +233,8 @@ export function ShiftFormSheet({ open, onOpenChange, shift, onSuccess }: ShiftFo
           <AlertDialogHeader>
             <AlertDialogTitle>Thay đổi chưa được lưu</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn đang nhập dở thông tin ca làm việc. Thoát bây giờ sẽ làm mất các dữ liệu này.
+              Bạn đang nhập dở thông tin ca làm việc. Thoát bây giờ sẽ làm mất
+              các dữ liệu này.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -230,4 +251,3 @@ export function ShiftFormSheet({ open, onOpenChange, shift, onSuccess }: ShiftFo
     </>
   );
 }
-
