@@ -1,36 +1,136 @@
+# PROJECT_UI_RULES_DEV.md
 
-# QUY TẮC ĐẶC THÙ DỰ ÁN (PROJECT_SPECIFIC_STANDARDS)
-> **Mục tiêu**: Chuẩn hóa ngôn ngữ và giao diện cho dự án Synapse_KL.
-> **Trạng thái**: BẮT BUỘC ÁP DỤNG.
+> Dự án: Synapse_KL
+> Trạng thái: BẮT BUỘC ÁP DỤNG
+> Phạm vi: DEV PHASE (Logic-first)
 
-## 1. NGÔN NGỮ & ĐỊA PHƯƠNG HÓA (LOCALIZATION)
-*   **UI Text**: 100% **Tiếng Việt**.
-    *   ❌ Sai: `Dashboard`, `Settings`, `Logout`.
-    *   ✅ Đúng: `Tổng Quan`, `Cấu Hình`, `Đăng Xuất`.
-*   **Code Naming**: 100% **Tiếng Anh** (Variables, Functions, Classes, Files).
-    *   ❌ Sai: `function tinhTong()`, `var khachHang`.
-    *   ✅ Đúng: `function calculateTotal()`, `var customer`.
-*   **Comments**:
-    *   Ngôn ngữ: **Tiếng Việt**.
-    *   Nội dung: Chỉ giải thích **WHY** (Tại sao làm thế này), KHÔNG giải thích **WHAT** (Code làm gì).
-    *   ❌ Sai: `// Hàm này lấy danh sách user`.
-    *   ✅ Đúng: `// WHY: Cần filter user đã xóa để tránh lỗi tính lương`.
+---
 
-## 2. PHONG CÁCH PHÁT TRIỂN UI (MINIMALIST DEV)
-*   **Giai đoạn hiện tại**: Tập trung vào **Business Logic** và **Layout Structure**.
-*   **Design Constraints**:
-    *   **NO DECORATION**: Không dùng bóng đổ (`shadow`), bo góc trang trí (`rounded-xl`), màu nền sặc sỡ (`bg-gradient`).
-    *   **Structure Only**: Chỉ dùng `flex`, `grid`, `gap`, `p-*`, `m-*`, `border` (để chia vùng).
-    *   **Components**: Sử dụng Shadcn/UI component ở trạng thái **Default** (không override style thủ công).
+## 0. MỤC TIÊU
 
-## 3. CẤU TRÚC PHÂN QUYỀN (RBAC PORTAL)
-Tách biệt rõ ràng 4 phân hệ người dùng trong `src/app`:
-1.  `/admin`: **Quản trị viên** (Layout Dashboard 2 cột).
-2.  `/desk`: **Lễ tân** (Layout Full-screen tối ưu cho lưới Booking).
-3.  `/tech`: **Kỹ thuật viên** (Layout Mobile-first, giới hạn chiều rộng).
-4.  `/portal`: **Khách hàng** (Layout Web tiêu chuẩn, Branding).
+* Tối đa hóa tốc độ triển khai Business Logic
+* Cố định UI semantics ngay từ đầu
+* Loại bỏ hoàn toàn xao nhãng về UI/UX/Styling
+* Tránh refactor UI làm ảnh hưởng logic về sau
 
-## 4. QUY TẮC KIỂM SOÁT AGENT
-*   Nếu User hỏi bằng Tiếng Việt -> Trả lời Tiếng Việt.
-*   Nếu phát hiện code có text Tiếng Anh in cứng ra màn hình -> **TỰ ĐỘNG DỊCH** sang Tiếng Việt ngay lập tức.
-*   Nếu phát hiện UI quá nhiều màu sắc/hiệu ứng trong giai đoạn này -> **TỰ ĐỘNG ĐƠN GIẢN HÓA** về wireframe.
+---
+
+## 1. NGÔN NGỮ & ĐẶT TÊN
+
+* **UI Text**: 100% **Tiếng Việt**
+* **Code Naming** (biến, hàm, class, file): 100% **Tiếng Anh**
+* **Comment**:
+
+  * Ngôn ngữ: **Tiếng Việt**
+  * Chỉ giải thích **WHY** (Tại sao làm vậy)
+  * KHÔNG giải thích **WHAT** (Code làm gì)
+
+---
+
+## 2. FORM RULE (QUY TẮC CỐT LÕI)
+
+```
+FORM = Sheet + Form (KHÔNG NGOẠI LỆ)
+```
+
+* Mọi Create / Edit / View-Edit → **BẮT BUỘC dùng Sheet**
+* TUYỆT ĐỐI KHÔNG:
+
+  * Đặt Form trực tiếp trong Page
+  * Đặt Form trong Dialog thường
+  * Dựng Form bằng `div` + state thủ công
+
+---
+
+## 3. DIALOG RULE
+
+* `Dialog` **KHÔNG dùng cho Form**
+* CHỈ được phép dùng:
+
+  * `AlertDialog` → Xác nhận hành động nguy hiểm (Delete, Reset, Irreversible)
+
+---
+
+## 4. COMPONENT SEMANTICS (SHADCN/UI)
+
+* **BẮT BUỘC** dùng component chính danh của **shadcn/ui**
+* Mỗi hành vi nghiệp vụ → đúng **01 loại component**
+
+| Hành vi nghiệp vụ | Component bắt buộc              |
+| ----------------- | ------------------------------- |
+| Tạo / Sửa (CRUD)  | `Sheet`                         |
+| Nhập liệu         | `Input`, `Select` (qua Wrapper) |
+| Xác nhận          | `AlertDialog`                   |
+| Danh sách         | `Table`                         |
+| Không có dữ liệu  | `EmptyState`                    |
+
+**CẤM TUYỆT ĐỐI**
+
+* Fake modal / fake form
+* Workaround UI bằng `div`
+* Dùng thẻ HTML trần (`input`, `select`) không wrapper
+
+---
+
+## 5. FORM WRAPPER RULE
+
+* **BẮT BUỘC** dùng `field.tsx` gồm:
+
+  * `Field`
+  * `FieldContent`
+  * `FieldError`
+* Kết hợp `Controller` từ `react-hook-form`
+* **BẮT BUỘC** dùng Generic Type rõ ràng cho form (`useForm<T>`, `useFormContext<T>`)
+
+---
+
+## 6. STYLING RULE (KHÓA CHẶT)
+
+### TUYỆT ĐỐI CẤM
+
+* Màu sắc (`bg-*`, `text-*`)
+* Shadow (`shadow-*`)
+* Rounded (`rounded-*`)
+* Icon trang trí
+* Animation / Transition
+* Override `className`
+* Custom `variant`, `size`
+
+### CHỈ CHO PHÉP LAYOUT TỐI THIỂU
+
+```
+flex | grid | gap-4 | p-4 | border
+```
+
+> UI chỉ dùng để **chia vùng chức năng**, không để làm đẹp.
+
+
+* Page **CHỈ** compose component
+* TUYỆT ĐỐI KHÔNG đặt Form trực tiếp trong Page
+
+---
+
+## 7. REVIEW RULE (FAIL NGAY)
+
+PR **BỊ REJECT** nếu phát hiện:
+
+* Form không nằm trong Sheet
+* Dialog chứa `Input` / `Select`
+* Có class Tailwind trang trí
+* Có lý do "cho đẹp", "cho dễ nhìn"
+* UI thay đổi làm ảnh hưởng Business Logic
+
+---
+
+## 8. CÂU HỎI KIỂM TRA CUỐI
+
+> "Component này đại diện cho hành vi nghiệp vụ nào?"
+
+Nếu không trả lời được → **Component sai**.
+
+---
+
+## 9. GHI CHÚ
+
+* File này **CHỈ áp dụng cho DEV PHASE**
+* UI polish, branding, icon, animation **KHÔNG thuộc phạm vi file này**

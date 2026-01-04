@@ -79,6 +79,8 @@ Chia route theo Role để tối ưu UX riêng biệt:
 *   **Level 1 (90%)**: Dùng `className` để override style cục bộ.
 *   **Level 2**: Tạo Wrapper Component nếu tái sử dụng nhiều.
 *   **Level 3**: Chỉ sửa file trong `shared/ui` khi cần đổi Design System toàn cục (thêm Variant/Size bằng `cva`).
+*   **Modern Form Pattern**: Bắt buộc dùng `field.tsx` primitives (`Field`, `FieldContent`, `FieldError`) + `Controller`. Loại bỏ hoàn toàn sự phụ thuộc vào file `form.tsx` cũ.
+*   **Strict Typing**: Mọi form phải được định kiểu qua Zod Schema Inference (`z.infer<typeof schema>`) và truyền generic vào các hook/component của `react-hook-form`.
 *   **Forbidden**: KHÔNG sửa logic nội tại (behavior) của Shadcn components.
 
 ### 4.3. Data Table & State
