@@ -1,3 +1,4 @@
+import { cn } from "@/shared/lib/utils";
 import { Toaster } from "@/shared/ui/sonner";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -19,8 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className="antialiased">
-      <body className={`${inter.variable} font-sans selection:bg-primary/10`}>
+    <html lang="vi" suppressHydrationWarning className={cn("antialiased", inter.variable)}>
+      <body className={`${inter.variable} font-sans`}>
         {children}
         <Toaster richColors position="top-right" />
       </body>
