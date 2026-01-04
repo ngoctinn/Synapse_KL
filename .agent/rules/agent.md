@@ -62,4 +62,4 @@ trigger: always_on
 ```ts
 // WHY: Giới hạn context để agent xử lý nghiệp vụ chính xác
 ```
-Package:fe:pnpm be:uv venv, bash: gitbash
+Package:fe:pnpm không dùng npx be:uv venv, bash: gitbash

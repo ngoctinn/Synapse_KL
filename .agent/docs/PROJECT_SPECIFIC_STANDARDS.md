@@ -77,15 +77,18 @@
 
 ---
 
-## 5. FORM WRAPPER RULE
+## 5. Form Component (React Hook Form Integration)
+Mục đích: Wrapper cho toàn bộ form, quản lý trạng thái form bằng React Hook Form
 
-* **BẮT BUỘC** dùng `field.tsx` gồm:
+Thành phần chính:
 
-  * `Field`
-  * `FieldContent`
-  * `FieldError`
-* Kết hợp `Controller` từ `react-hook-form`
-* **BẮT BUỘC** dùng Generic Type rõ ràng cho form (`useForm<T>`, `useFormContext<T>`)
+* Form - Provider wrapper
+* FormField - Kết nối từng field với form control
+* FormItem - Container cho một trường
+* FormLabel - Nhãn cho input
+* FormControl - Wrapper cho control component
+* FormDescription - Text hướng dẫn
+FormMessage - Hiển thị lỗi validation
 
 ---
 
