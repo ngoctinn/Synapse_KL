@@ -27,7 +27,7 @@ from app.modules.services.link_models import ServiceRequiredSkill
 from app.modules.staff.models import StaffProfile
 from app.modules.staff.link_models import StaffSkillLink
 from app.modules.scheduling.models import Shift, StaffSchedule
-from app.modules.settings.models import OperationalSetting
+from app.modules.settings.models import OperatingHour, ExceptionDate
 
 from app.core.config import settings
 

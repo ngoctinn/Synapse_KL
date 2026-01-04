@@ -21,16 +21,14 @@ class SettingsService:
         Lấy cấu hình vận hành hiện tại.
         Nếu chưa có dữ liệu, trả về cấu hình mặc định (08:00 - 20:00).
         """
-        # Fetch Operating Hours
-        result_hours = await db.exec(select(OperatingHour).order_by(OperatingHour.day_of_week))
+        # WHY: Sắp xếp theo thứ tự thời gian để đảm bảo UI hiển thị đúng trình tự các ca
+        result_hours = await db.exec(select(OperatingHour).order_by(OperatingHour.day_of_week, OperatingHour.open_time))
         hours = result_hours.all()
 
-        # If empty, return default
         if not hours:
             hours = self._get_default_hours()
 
-        # Fetch Exception Dates
-        result_dates = await db.exec(select(ExceptionDate).order_by(ExceptionDate.date))
+        result_dates = await db.exec(select(ExceptionDate).order_by(ExceptionDate.date, ExceptionDate.open_time))
         dates = result_dates.all()
 
         return OperationalSettingsRead(
@@ -44,18 +42,13 @@ class SettingsService:
         Xóa cũ -> Thêm mới để đảm bảo đồng bộ.
         """
         async with db.begin():
-            # Clear existing data
+        async with db.begin():
             await db.exec(delete(OperatingHour))
             await db.exec(delete(ExceptionDate))
 
-            # Insert new data
-            # Convert Pydantic models to SQLModel instances
             db.add_all([OperatingHour(**h.model_dump()) for h in settings.regular_operating_hours])
             db.add_all([ExceptionDate(**d.model_dump()) for d in settings.exception_dates])
 
-            # Commit handled by context manager on exit
-
-        # Return updated state
         return await self.get_settings(db)
 
     def _get_default_hours(self) -> list[OperatingHour]:
