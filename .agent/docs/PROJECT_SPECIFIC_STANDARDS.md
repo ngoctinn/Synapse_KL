@@ -27,20 +27,25 @@
 
 ---
 
-## 2. FORM RULE (QUY TẮC CỐT LÕI)
+## 2. NGUYÊN TẮC: Context vs Focus
 
-```
-FORM = Sheet + Form (KHÔNG NGOẠI LỆ)
-```
+* **Ưu tiên dùng Sheet (Side panel)**:
 
-* Mọi Create / Edit / View-Edit → **BẮT BUỘC dùng Sheet**
-* TUYỆT ĐỐI KHÔNG:
+  * Cho các thao tác Create / Edit nhanh.
+  * Khi người dùng cần tham chiếu dữ liệu từ màn hình nền (giữ context).
 
-  * Đặt Form trực tiếp trong Page
-  * Đặt Form trong Dialog thường
-  * Dựng Form bằng `div` + state thủ công
+* **Form có độ dài trung bình (scrolling chấp nhận được)**
 
----
+* **Dùng Page riêng biệt**:
+
+  * Khi Form quá phức tạp, nhiều cột, hoặc dạng Master-Detail.
+  * Form có nhiều bước (Stepper/Wizard).
+  * Cần không gian hiển thị tối đa để tập trung (Focus mode).
+
+**TUYỆT ĐỐI KHÔNG**:
+
+* Đặt Form trong Dialog thường (trừ trường hợp confirm có 1 input lý do).
+* Dựng Form bằng div + state thủ công.
 
 ## 3. DIALOG RULE
 
@@ -58,7 +63,7 @@ FORM = Sheet + Form (KHÔNG NGOẠI LỆ)
 
 | Hành vi nghiệp vụ | Component bắt buộc              |
 | ----------------- | ------------------------------- |
-| Tạo / Sửa (CRUD)  | `Sheet`                         |
+| Tạo / Sửa (CRUD)  | `Sheet` (Ưu tiên)                 |
 | Nhập liệu         | `Input`, `Select` (qua Wrapper) |
 | Xác nhận          | `AlertDialog`                   |
 | Danh sách         | `Table`                         |
