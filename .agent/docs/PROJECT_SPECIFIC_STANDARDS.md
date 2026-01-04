@@ -77,18 +77,28 @@
 
 ---
 
-## 5. Form Component (React Hook Form Integration)
-Mục đích: Wrapper cho toàn bộ form, quản lý trạng thái form bằng React Hook Form
+## 5. Form Pattern (React Hook Form + Controller)
+**BẮT BUỘC**: Dùng `Controller` + `Field` primitive từ `@/shared/ui/field`.
 
-Thành phần chính:
+### Pattern:
+```tsx
+import { useForm, Controller } from "react-hook-form"
+import { Field } from "@/shared/ui/field"
 
-* Form - Provider wrapper
-* FormField - Kết nối từng field với form control
-* FormItem - Container cho một trường
-* FormLabel - Nhãn cho input
-* FormControl - Wrapper cho control component
-* FormDescription - Text hướng dẫn
-FormMessage - Hiển thị lỗi validation
+const form = useForm<FormData>()
+
+<Controller
+  control={form.control}
+  name="fieldName"
+  render={({ field }) => (
+    <Field label="Label" error={form.formState.errors.fieldName?.message}>
+      <Input {...field} />
+    </Field>
+  )}
+/>
+```
+
+**CẤM**: Dùng `form.tsx` pattern cũ (`FormField`, `FormItem`, `FormControl`).
 
 ---
 

@@ -4,9 +4,13 @@
 - **Package Manager**: pnpm
 
 ## 1. ARCHITECTURE: MODULAR BFF
-- **Structure**: `features/` (Logic) vs `shared/` (UI).
+- **Structure**:
+  - `app/`: Routing + Role-specific Layouts (Route Groups pattern).
+  - `features/`: Business Logic (Server Actions, Hooks).
+  - `shared/`: Reusable Resources (UI primitives, Utils, Hooks).
 - **BFF Pattern**: Server Actions (Next.js) gọi API FastAPI (Backend).
 - **Middleware**: Chỉ dùng để bảo vệ Route UI (Redirect 307). API Auth do FastAPI lo.
+- **Route Groups**: `(admin)/`, `(desk)/`, `(tech)/`, `(portal)/` → Mỗi role có layout riêng.
 
 ## 2. DATA FETCHING (SERVER ACTIONS)
 - **Fetch Wrapper**: BẮT BUỘC dùng `fetchWithAuth()` để forward Cookies.

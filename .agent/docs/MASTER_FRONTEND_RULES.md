@@ -28,11 +28,12 @@ Tuân thủ kiến trúc **Modular**, không dùng cấu trúc phẳng.
 ```
 src/
 ├── app/                  # Router & Layouts (Portal Separation)
-│   ├── (auth)/           # Login/Register
-│   ├── admin/            # Manager Dashboard
-│   ├── desk/             # Receptionist Grid
-│   ├── tech/             # Technician (Mobile-first)
-│   └── portal/           # Customer Booking
+│   ├── (auth)/           # Route Group: Login/Register
+│   ├── (admin)/          # Route Group: Manager Dashboard
+│   ├── (desk)/           # Route Group: Receptionist Grid
+│   ├── (tech)/           # Route Group: Technician (Mobile-first)
+│   ├── (portal)/         # Route Group: Customer Booking
+│   └── layout.tsx        # Root Layout (mandatory)
 ├── features/             # LOGIC NGHIỆP VỤ (Feature-Sliced)
 │   ├── [feature-name]/   # vd: schedule, staff, booking
 │   │   ├── actions.ts    # Server Actions (Mutations)
@@ -53,12 +54,14 @@ src/
 
 ## 3. ROUTING & RBAC STRATEGY
 
-### 3.1. Portal Separation
-Chia route theo Role để tối ưu UX riêng biệt:
-*   `/admin`: Manager (Desktop-first).
-*   `/desk`: Receptionist (Full-screen Grid, Hotkeys).
-*   `/tech`: Technician (Mobile-first).
-*   `/portal`: Customer (Mobile-first).
+### 3.1. Portal Separation (Route Groups)
+Chia route theo Role bằng Route Groups để tối ưu UX riêng biệt:
+*   `(admin)/`: Manager (Desktop-first) → URL: `/admin`.
+*   `(desk)/`: Receptionist (Full-screen Grid, Hotkeys) → URL: `/desk`.
+*   `(tech)/`: Technician (Mobile-first) → URL: `/tech`.
+*   `(portal)/`: Customer (Mobile-first) → URL: `/portal`.
+
+**WHY Route Groups**: Mỗi group có `layout.tsx` riêng, không ảnh hưởng URL structure.
 
 ### 3.2. Security Layers
 1.  **Middleware**: Redirect ngay lập tức nếu sai Role (vd: Customer vào `/admin`).
