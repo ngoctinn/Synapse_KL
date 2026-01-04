@@ -8,6 +8,7 @@ import {
 } from "@/shared/ui/breadcrumb"
 import { Separator } from "@/shared/ui/separator"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/shared/ui/sidebar"
+import { Toaster } from "@/shared/ui/sonner"
 import { AdminSidebar } from "./_components/admin-sidebar"
 
 export default function AdminLayout({
@@ -38,6 +39,7 @@ export default function AdminLayout({
           {children}
         </div>
       </SidebarInset>
+      <Toaster />
     </SidebarProvider>
   )
 }
