@@ -1,38 +1,41 @@
-
 import { Button } from '@/shared/ui/button';
-import { Card, CardContent } from '@/shared/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 
 export default function PortalPage() {
   return (
-    <div className="flex flex-col gap-8">
-      <section className="text-center py-12 flex flex-col gap-4 items-center border rounded-lg bg-gray-50">
-        <h1 className="text-3xl font-bold">Thư Giãn & Tái Tạo</h1>
-        <p className="text-gray-600 max-w-md">Trải nghiệm spa cao cấp dành riêng cho bạn.</p>
-        <Button size="lg">Đặt Lịch Hẹn</Button>
+    <div className="flex flex-col gap-4">
+      <section className="flex flex-col gap-4 p-4 border">
+        <h1>Khám Phá Trải Nghiệm Spa Cao Cấp</h1>
+        <p>Chào mừng bạn đến với Synapse, nơi sự thư giãn gặp gỡ công nghệ.</p>
+        <div className="flex gap-4">
+          <Button>Đặt Lịch Ngay</Button>
+          <Button variant="outline">Tìm Hiểu Thêm</Button>
+        </div>
       </section>
 
-      <section className="grid md:grid-cols-3 gap-6">
-        <Card>
-           <CardContent className="p-6">
-             <div className="font-bold text-lg mb-2">Trị Liệu Massage</div>
-             <p className="text-sm text-gray-500 mb-4">Thư giãn sâu cơ bắp.</p>
-             <Button variant="outline" className="w-full">Xem Chi Tiết</Button>
-           </CardContent>
-        </Card>
-        <Card>
-           <CardContent className="p-6">
-             <div className="font-bold text-lg mb-2">Chăm Sóc Da Mặt</div>
-             <p className="text-sm text-gray-500 mb-4">Cấp ẩm và phục hồi.</p>
-             <Button variant="outline" className="w-full">Xem Chi Tiết</Button>
-           </CardContent>
-        </Card>
-        <Card>
-           <CardContent className="p-6">
-             <div className="font-bold text-lg mb-2">Tẩy Tế Bào Chết</div>
-             <p className="text-sm text-gray-500 mb-4">Làm sạch và sáng da.</p>
-             <Button variant="outline" className="w-full">Xem Chi Tiết</Button>
-           </CardContent>
-        </Card>
+      <section className="flex flex-col gap-4">
+        <h2>Dịch Vụ Của Chúng Tôi</h2>
+        <div className="grid grid-cols-1 gap-4">
+          <Card>
+            <CardHeader className="border-b p-4">
+              <CardTitle>Massage Thụy Điển</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <p>Thư giãn hoàn toàn cơ bắp với kỹ thuật massage truyền thống.</p>
+              <Button variant="link" className="p-0">Chi tiết</Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="border-b p-4">
+              <CardTitle>Chăm Sóc Da Mặt</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <p>Liệu trình chuyên sâu giúp làn da rạng rỡ và khỏe mạnh.</p>
+              <Button variant="link" className="p-0">Chi tiết</Button>
+            </CardContent>
+          </Card>
+        </div>
       </section>
     </div>
   );

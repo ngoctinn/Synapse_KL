@@ -14,7 +14,7 @@ async function getSession(req: NextRequest) {
   };
 }
 
-export async function middleware(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
   // WHY: Cho phép truy cập các trang Public và Auth mà không cần check session

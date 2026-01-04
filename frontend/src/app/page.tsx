@@ -3,12 +3,10 @@ import Link from "next/link";
 
 export default function Page() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-4 text-center">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-4xl font-bold tracking-tight">Synapse</h1>
-        <p className="text-muted-foreground text-lg">
-          Hệ thống CRM và Quản lý Spa trực tuyến cao cấp.
-        </p>
+    <div className="flex flex-col gap-4 p-4">
+      <div className="flex flex-col gap-4">
+        <h1>Synapse</h1>
+        <p>Hệ thống CRM và Quản lý Spa trực tuyến cao cấp.</p>
       </div>
 
       <div className="flex gap-4">

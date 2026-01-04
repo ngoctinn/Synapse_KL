@@ -42,7 +42,6 @@ class SettingsService:
         Xóa cũ -> Thêm mới để đảm bảo đồng bộ.
         """
         async with db.begin():
-        async with db.begin():
             await db.exec(delete(OperatingHour))
             await db.exec(delete(ExceptionDate))
 
