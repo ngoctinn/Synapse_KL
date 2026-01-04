@@ -6,37 +6,37 @@ import { CalendarIcon, Plus, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useFieldArray, useFormContext } from "react-hook-form"
 
-import { OperationalSettingsValues } from "./schemas"
+import { OperationalSettingsFormValues } from "../model/schemas"
 
 import { cn } from "@/shared/lib/utils"
 import { Button } from "@/shared/ui/button"
 import { Calendar } from "@/shared/ui/calendar"
 import {
-  FormLabel
+    FormLabel
 } from "@/shared/ui/form"
 import { Input } from "@/shared/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
 } from "@/shared/ui/sheet"
 import { Switch } from "@/shared/ui/switch"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/shared/ui/table"
 
-// Reusing same time slots
+// WHY: 30 phút là granularity phổ biến cho lịch làm việc spa
 const TIME_SLOTS = Array.from({ length: 49 }).map((_, i) => {
     const totalMinutes = i * 30
     const hours = Math.floor(totalMinutes / 60)
@@ -45,17 +45,11 @@ const TIME_SLOTS = Array.from({ length: 49 }).map((_, i) => {
 })
 
 export function ExceptionDateForm() {
-    const { control } = useFormContext<OperationalSettingsValues>()
+    const { control } = useFormContext<OperationalSettingsFormValues>()
     const { fields, append, remove } = useFieldArray({
         control,
         name: "exceptionDates"
     })
-
-    // Sheet local form state (controlled by a separate specialized form or just managing append directly)
-    // To keep it simple for now, we'll just show the list table here
-    // And implement the "Add" logic via a controlled Sheet form in a real app,
-    // or reusing the main form context if we want to "add to pending list".
-    // Here we assume "Add" opens a Sheet that appends to the `exceptionDates` field array upon save.
 
     const [isSheetOpen, setIsSheetOpen] = useState(false)
     const [newException, setNewException] = useState<{
@@ -83,7 +77,7 @@ export function ExceptionDateForm() {
             closeTime: newException.isClosed ? undefined : newException.closeTime
         })
         setIsSheetOpen(false)
-        setNewException({ // Reset
+        setNewException({
              date: undefined,
             reason: "",
             isClosed: true,

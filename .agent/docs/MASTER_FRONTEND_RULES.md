@@ -23,11 +23,11 @@ Chúng ta sử dụng mô hình **Next.js làm BFF (Backend for Frontend)** cho 
 
 ## 2. PROJECT STRUCTURE (MODULAR FSD)
 
-Tuân thủ kiến trúc **Modular**, không dùng cấu trúc phẳng.
+Tuân thủ kiến trúc **Modular Feature-Sliced**, không dùng cấu trúc phẳng.
 
 ```
 src/
-├── app/                  # Router & Layouts (Portal Separation)
+├── app/                  # CHỈ Router & Layouts (KHÔNG chứa logic)
 │   ├── (auth)/           # Route Group: Login/Register
 │   ├── (admin)/          # Route Group: Manager Dashboard
 │   ├── (desk)/           # Route Group: Receptionist Grid
@@ -35,10 +35,17 @@ src/
 │   ├── (portal)/         # Route Group: Customer Booking
 │   └── layout.tsx        # Root Layout (mandatory)
 ├── features/             # LOGIC NGHIỆP VỤ (Feature-Sliced)
-│   ├── [feature-name]/   # vd: schedule, staff, booking
-│   │   ├── actions.ts    # Server Actions (Mutations)
-│   │   ├── components/   # UI Components riêng của feature
-│   │   └── hooks/        # Hooks riêng
+│   └── [feature-name]/   # vd: settings, schedule, booking
+│       ├── index.ts      # Barrel export
+│       ├── model/        # Schemas (Zod), Types, Constants
+│       │   ├── index.ts
+│       │   └── schemas.ts
+│       ├── ui/           # Components riêng của feature
+│       │   ├── index.ts
+│       │   └── *.tsx
+│       ├── api/          # Server Actions, API calls
+│       │   └── actions.ts
+│       └── hooks/        # Feature-specific hooks (optional)
 ├── shared/               # REUSABLE (Dùng chung)
 │   ├── ui/               # Shadcn Components (Giữ nguyên bản)
 │   ├── lib/              # Utilities (fetcher, constants)
@@ -46,9 +53,21 @@ src/
 └── middleware.ts         # RBAC Protection
 ```
 
+### Quy tắc `app/` Directory:
+*   **CHỈ CHỨA**: `page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`
+*   **CẤM**: Đặt components, schemas, hooks, utils trong `app/`
+*   **Import**: Luôn import logic từ `@/features/[name]`
+
+### Quy tắc `features/` Structure:
+*   **model/**: Zod schemas, TypeScript types, constants
+*   **ui/**: React components (client/server)
+*   **api/**: Server Actions, fetch wrappers
+*   **Barrel Export**: Mỗi folder có `index.ts` để re-export
+
 ### Quy tắc Dependencies:
 1.  **Shared** KHÔNG phụ thuộc **Features**.
 2.  **Features** KHÔNG import trực tiếp lẫn nhau (dùng Shared hoặc URL State).
+3.  **App** CHỈ import từ **Features** và **Shared**.
 
 ---
 

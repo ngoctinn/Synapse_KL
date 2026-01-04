@@ -6,9 +6,9 @@ import { useFieldArray, useFormContext } from "react-hook-form"
 import { Button } from "@/shared/ui/button"
 import { Card, CardContent } from "@/shared/ui/card"
 import {
-    FormControl,
-    FormField,
-    FormItem
+  FormControl,
+  FormField,
+  FormItem
 } from "@/shared/ui/form"
 import { Label } from "@/shared/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
@@ -17,7 +17,7 @@ import { Switch } from "@/shared/ui/switch"
 
 const DAYS_OF_WEEK = ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"]
 
-// Generate time slots (30 mins step)
+// WHY: 30 phút là granularity phổ biến cho lịch làm việc spa
 const TIME_SLOTS = Array.from({ length: 49 }).map((_, i) => {
     const totalMinutes = i * 30
     const hours = Math.floor(totalMinutes / 60)
@@ -31,8 +31,8 @@ interface TimeSlotRowProps {
 }
 
 export function TimeSlotRow({ dayIndex, onCopyToAll }: TimeSlotRowProps) {
-    const { control, watch } = useFormContext()
-    const { fields,append, remove } = useFieldArray({
+    const { control, watch, formState: { errors } } = useFormContext()
+    const { fields, append, remove } = useFieldArray({
         control,
         name: `days.${dayIndex}.slots`
     })
@@ -123,12 +123,19 @@ export function TimeSlotRow({ dayIndex, onCopyToAll }: TimeSlotRowProps) {
                         >
                             <Plus className="h-4 w-4 mr-2" /> Thêm ca
                         </Button>
+
+                        {/* Validation Error Message */}
+                        {(errors.days as any)?.[dayIndex]?.slots?.message && (
+                            <p className="text-destructive text-sm font-medium">
+                                {(errors.days as any)[dayIndex].slots.message}
+                            </p>
+                        )}
+
                     </div>
                 )}
 
                 {!isEnabled && <span className="text-muted-foreground italic flex-1">Đóng cửa</span>}
 
-                {/* Only show Copy button for Monday (index 1) for example, or first day of list */}
                 {dayIndex === 1 && onCopyToAll && (
                      <Button type="button" variant="ghost" size="sm" onClick={onCopyToAll}>
                         <Copy className="h-4 w-4 mr-2"/> Copy to all

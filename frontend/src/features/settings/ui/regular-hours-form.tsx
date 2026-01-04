@@ -7,7 +7,7 @@ export function RegularHoursForm() {
     const { getValues, setValue } = useFormContext()
 
     const copyMondayToAll = () => {
-        // Monday is index 1 in our 0-6 array (0=Sun)
+        // WHY: Monday là index 1 trong mảng 0-6 (0=Sun)
         const mondaySlots = getValues("days.1.slots")
         const mondayEnabled = getValues("days.1.isEnabled")
 

@@ -1,6 +1,5 @@
-
+import { OperationalSettingsView } from "@/features/settings"
 import { Metadata } from "next"
-import { OperationalSettingsView } from "./operational-settings-view"
 
 export const metadata: Metadata = {
   title: "Cấu hình vận hành | Synapse Admin",
