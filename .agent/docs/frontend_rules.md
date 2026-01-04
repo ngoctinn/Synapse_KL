@@ -18,7 +18,7 @@
 - **Customization**:
   - Ưu tiên `className` override.
   - Sửa file gốc (`shared/ui`) CHỈ KHI thay đổi Design System (thêm Variant).
-  - **Form Pattern**: Dùng `field.tsx` + `Controller`. Cấm dùng `form.tsx` legacy.
+  - **Form Pattern**: Dùng `form.tsx` shadcn (`FormField`, `FormItem`, `FormControl`) + `zodResolver`.
 - **Data Table**: State (Page/Sort) phải nằm trên URL (`searchParams`).
 
 ## 4. REALTIME STRATEGY
