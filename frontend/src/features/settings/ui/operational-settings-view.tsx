@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect, useState, useTransition } from "react"
-import { FormProvider, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 
 import { Button } from "@/shared/ui/button"
 import { Form } from "@/shared/ui/form"
@@ -104,24 +104,22 @@ export function OperationalSettingsView() {
             </div>
             <Separator />
 
-            <FormProvider {...form}>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                        <Tabs defaultValue="regular" className="w-full">
-                            <TabsList>
-                                <TabsTrigger value="regular">Giờ làm việc thường</TabsTrigger>
-                                <TabsTrigger value="exceptions">Ngày nghỉ & Ngoại lệ</TabsTrigger>
-                            </TabsList>
-                            <TabsContent value="regular" className="mt-4">
-                                <RegularHoursForm />
-                            </TabsContent>
-                            <TabsContent value="exceptions" className="mt-4">
-                                <ExceptionDateForm />
-                            </TabsContent>
-                        </Tabs>
-                    </form>
-                </Form>
-            </FormProvider>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                    <Tabs defaultValue="regular" className="w-full">
+                        <TabsList>
+                            <TabsTrigger value="regular">Giờ làm việc thường</TabsTrigger>
+                            <TabsTrigger value="exceptions">Ngày nghỉ & Ngoại lệ</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="regular" className="mt-4">
+                            <RegularHoursForm />
+                        </TabsContent>
+                        <TabsContent value="exceptions" className="mt-4">
+                            <ExceptionDateForm />
+                        </TabsContent>
+                    </Tabs>
+                </form>
+            </Form>
         </div>
     )
 }

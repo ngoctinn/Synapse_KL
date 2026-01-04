@@ -48,16 +48,20 @@ export const operatingDaySchema = z.object({
     const current = sortedSlots[i]
     const next = sortedSlots[i + 1]
 
-    // Check overlap: current.close > next.open
-    // Lưu ý: So sánh string HH:MM hoạt động tốt
-    if (current.closeTime > next.openTime) {
+    // WHY: Tính khoảng cách giữa 2 slots (phút)
+    const [currentH, currentM] = current.closeTime.split(':').map(Number)
+    const [nextH, nextM] = next.openTime.split(':').map(Number)
+    const gapMinutes = (nextH * 60 + nextM) - (currentH * 60 + currentM)
+
+    // WHY: Domain rule - Recovery time 10-15 phút để vệ sinh/chuẩn bị
+    if (gapMinutes < 10) {
       return false
     }
   }
   return true
 }, {
-  message: "Time slots cannot overlap",
-  path: ["slots"], // Sẽ hiển thị lỗi ở field slots
+  message: "Các ca phải cách nhau tối thiểu 10 phút (recovery time)",
+  path: ["slots"],
 })
 
 export const regularHoursFormSchema = z.object({

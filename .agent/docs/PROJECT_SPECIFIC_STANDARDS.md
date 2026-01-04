@@ -77,78 +77,96 @@
 
 ---
 
-## 5. Form Pattern (React Hook Form + Controller)
-**BẮT BUỘC**: Dùng `Controller` + `Field` primitive từ `@/shared/ui/field`.
+## 5. Form Pattern (React Hook Form + Shadcn)
+**BẮT BUỘC**: Dùng `FormField` + `FormItem` + `FormControl` từ `@/shared/ui/form`.
 
 ### Pattern:
 ```tsx
-import { useForm, Controller } from "react-hook-form"
-import { Field } from "@/shared/ui/field"
+import { useForm } from "react-hook-form"
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/shared/ui/form"
 
 const form = useForm<FormData>()
 
-<Controller
-  control={form.control}
-  name="fieldName"
-  render={({ field }) => (
-    <Field label="Label" error={form.formState.errors.fieldName?.message}>
-      <Input {...field} />
-    </Field>
-  )}
-/>
+<Form {...form}>
+  <form onSubmit={form.handleSubmit(onSubmit)}>
+    <FormField
+      control={form.control}
+      name="fieldName"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Label</FormLabel>
+          <FormControl>
+            <Input {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  </form>
+</Form>
 ```
 
-**CẤM**: Dùng `form.tsx` pattern cũ (`FormField`, `FormItem`, `FormControl`).
+**CẤM**: Dùng `Controller` trực tiếp (trừ khi component không tương thích với FormField).
 
 ---
 
-## 6. STYLING RULE (KHÓA CHẶT)
+## 6. STYLING GUIDELINES (Shadcn/UI Best Practices)
 
-### TUYỆT ĐỐI CẤM
+### ✅ KHUYẾN KHÍCH
 
-* Màu sắc (`bg-*`, `text-*`)
-* Shadow (`shadow-*`)
-* Rounded (`rounded-*`)
-* Icon trang trí
-* Animation / Transition
-* Override `className`
-* Custom `variant`, `size`
+* **Shadcn Components**: Dùng `Card`, `Badge`, `Separator` theo thiết kế
+* **Tailwind Utilities**: Layout (`flex`, `grid`), spacing (`gap-*`, `p-*`, `m-*`), colors (`text-*`, `bg-*`)
+* **Responsive**: `sm:`, `md:`, `lg:` cho mobile-first design
+* **States**: `hover:`, `focus:`, `data-[state]:` cho interactive elements
+* **Semantic Classes**: `text-muted-foreground`, `text-destructive` (từ design tokens)
 
-### CHỈ CHO PHÉP LAYOUT TỐI THIỂU
+### ⚠️ TRÁNH
 
-```
-flex | grid | gap-4 | p-4 | border
-```
+* **Inline Styles**: `style={{ ... }}` (dùng Tailwind thay thế)
+* **Custom CSS Files**: Mỗi component 1 file CSS riêng (dùng `className`)
+* **Override Base Styles**: Sửa trực tiếp `@/shared/ui/*` components (dùng `cn()` hoặc composition)
+* **Magic Numbers**: `w-[237px]` (dùng design tokens: `w-full`, `w-1/2`)
 
-> UI chỉ dùng để **chia vùng chức năng**, không để làm đẹp.
+### 🎯 MỤC TIÊU
 
-
-* Page **CHỈ** compose component
-* TUYỆT ĐỐI KHÔNG đặt Form trực tiếp trong Page
-
----
-
-## 7. REVIEW RULE (FAIL NGAY)
-
-PR **BỊ REJECT** nếu phát hiện:
-
-* Form không nằm trong Sheet
-* Dialog chứa `Input` / `Select`
-* Có class Tailwind trang trí
-* Có lý do "cho đẹp", "cho dễ nhìn"
-* UI thay đổi làm ảnh hưởng Business Logic
+* **Consistency**: UI nhất quán theo design system
+* **Accessibility**: Màu sắc, contrast, keyboard navigation
+* **Responsive**: Mobile-first, hoạt động tốt mọi màn hình
+* **Maintainable**: Dễ đọc, dễ sửa, dễ scale
 
 ---
 
-## 8. CÂU HỎI KIỂM TRA CUỐI
+## 7. FORM BEST PRACTICES
 
-> "Component này đại diện cho hành vi nghiệp vụ nào?"
+### ✅ PATTERN CHUẨN
 
-Nếu không trả lời được → **Component sai**.
+* **Form trong Sheet/Dialog**: Dùng cho create/edit actions
+* **FormField + FormControl**: Bắt buộc cho tất cả inputs
+* **Validation**: Zod schemas với error messages tiếng Việt
+* **Loading States**: `isPending`, `isLoading` với visual feedback
+
+### ⚠️ TRÁNH
+
+* Form trực tiếp trong Page (dùng Sheet/Dialog)
+* Uncontrolled inputs (phải dùng `react-hook-form`)
+* Validation logic trong component (đặt trong schemas)
+
+---
+
+## 8. REVIEW CHECKLIST
+
+PR cần đảm bảo:
+
+* ✅ Component có mục đích nghiệp vụ rõ ràng
+* ✅ Dùng Shadcn components đúng cách
+* ✅ Responsive trên mobile/tablet/desktop
+* ✅ Accessible (keyboard, screen reader)
+* ✅ Error handling đầy đủ
+* ✅ Loading states cho async operations
 
 ---
 
 ## 9. GHI CHÚ
 
-* File này **CHỈ áp dụng cho DEV PHASE**
-* UI polish, branding, icon, animation **KHÔNG thuộc phạm vi file này**
+* **Dev Phase**: Focus vào functionality, accessibility, consistency
+* **Polish Phase**: Branding, animations, micro-interactions (sau khi core features stable)
