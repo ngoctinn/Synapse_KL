@@ -1,6 +1,7 @@
 # FE_RULES_NEXT16_HYBRID (v2025.12)
 - **Source**: `MASTER_FRONTEND_RULES.md`.
 - **Stack**: Next.js 16, React 19, Tailwind v4, Shadcn/ui, Supabase SSR.
+- **Package Manager**: pnpm
 
 ## 1. ARCHITECTURE: MODULAR BFF
 - **Structure**: `features/` (Logic) vs `shared/` (UI).

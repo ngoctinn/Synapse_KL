@@ -43,7 +43,7 @@ sleep 3
 # 2. Chạy Frontend
 echo "💻 [2/2] Đang khởi động Frontend (Next.js)..."
 echo "💡 Lưu ý: Nếu báo lỗi cổng 3000 đang bận, hãy tắt các trình chạy Next.js cũ."
-(cd frontend && npm run dev) &
+(cd frontend && pnpm dev) &
 
 echo ""
 echo "✨ Hệ thống đã sẵn sàng!"
