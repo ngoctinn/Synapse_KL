@@ -37,13 +37,10 @@ class Skill(SQLModel, table=True):
         default_factory=lambda: datetime.now(timezone.utc)
     )
 
-    # Relationship: Skill được nhiều Services yêu cầu (M-N qua link table)
     services: list["Service"] = Relationship(
         back_populates="skills",
         link_model=ServiceRequiredSkill
     )
-
-    # Relationship: Skill được nhiều Staff sở hữu (M-N qua link table)
     staff_members: list["StaffProfile"] = Relationship(
         back_populates="skills",
         link_model=StaffSkillLink

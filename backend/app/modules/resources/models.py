@@ -3,7 +3,7 @@ Resource Models - Quản lý tài nguyên vật lý của Spa.
 Bao gồm: ResourceGroup (nhóm), Resource (giường/thiết bị), MaintenanceSchedule (lịch bảo trì).
 """
 from datetime import datetime, timezone
-from enum import Enum
+from enum import Enum as PyEnum
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
@@ -14,14 +14,14 @@ if TYPE_CHECKING:
     from app.modules.services.models import ServiceResourceRequirement
 
 
-class ResourceType(str, Enum):
+class ResourceType(str, PyEnum):
     """Loại tài nguyên: Giường, Thiết bị hoặc Phòng."""
     BED = "BED"
     EQUIPMENT = "EQUIPMENT"
     ROOM = "ROOM"
 
 
-class ResourceStatus(str, Enum):
+class ResourceStatus(str, PyEnum):
     """Trạng thái tài nguyên."""
     ACTIVE = "ACTIVE"
     MAINTENANCE = "MAINTENANCE"

@@ -25,7 +25,6 @@ async def get_all_services(
     page: int = 1,
     limit: int = 100
 ) -> tuple[list[Service], int]:
-    # Base query
     stmt = select(Service).where(Service.deleted_at.is_(None))
     if category_id:
         stmt = stmt.where(Service.category_id == category_id)
@@ -34,11 +33,9 @@ async def get_all_services(
     if search:
         stmt = stmt.where(Service.name.ilike(f"%{search}%"))
 
-    # Count query
     count_stmt = select(func.count()).select_from(stmt.subquery())
     total = (await session.exec(count_stmt)).one()
 
-    # Pagination
     stmt = stmt.order_by(Service.created_at.desc()).offset((page - 1) * limit).limit(limit)
 
     result = await session.exec(stmt)
@@ -95,7 +92,6 @@ def validate_and_create_requirements(
 
 async def create_service(session: AsyncSession, data: ServiceCreate) -> Service:
     try:
-        # Verify category exists
         if data.category_id:
             result = await session.exec(
                 select(ServiceCategory).where(ServiceCategory.id == data.category_id)
@@ -103,7 +99,6 @@ async def create_service(session: AsyncSession, data: ServiceCreate) -> Service:
             if not result.first():
                 raise HTTPException(status_code=400, detail="Danh mục không tồn tại")
 
-        # Verify skills exist
         skills = []
         if data.skill_ids:
             result = await session.exec(select(Skill).where(Skill.id.in_(data.skill_ids)))
@@ -111,14 +106,10 @@ async def create_service(session: AsyncSession, data: ServiceCreate) -> Service:
             if len(skills) != len(data.skill_ids):
                 raise HTTPException(status_code=400, detail="Một hoặc nhiều kỹ năng không tồn tại")
 
-        # Create service
         service_data = data.model_dump(exclude={"skill_ids", "resource_requirements"})
         service = Service(**service_data)
-
-        # Assign relationships directly
         service.skills = skills
 
-        # Map and validate resource requirements
         if data.resource_requirements:
             service.resource_requirements = validate_and_create_requirements(
                 data.resource_requirements,
@@ -129,9 +120,7 @@ async def create_service(session: AsyncSession, data: ServiceCreate) -> Service:
         session.add(service)
         await session.commit()
 
-        # Force refresh or return known state.
-        # With direct assignment, 'service' object in memory is up to date.
-        # But to get eager loaded fields (like category) behaving consistently, fetch again.
+        # WHY: Fetch lại để eager load relationships (category, skills, etc.)
         return await get_service_by_id(session, service.id)
     except HTTPException:
         await session.rollback()
@@ -153,30 +142,26 @@ async def update_service(session: AsyncSession, service_id: UUID, data: ServiceU
 
         service.updated_at = datetime.now(timezone.utc)
 
-        # Update skills if provided
         if data.skill_ids is not None:
             if not data.skill_ids:
-             service.skills = []
+                service.skills = []
             else:
-             skill_result = await session.exec(select(Skill).where(Skill.id.in_(data.skill_ids)))
-             new_skills = list(skill_result.all())
-             if len(new_skills) != len(data.skill_ids):
-                 raise HTTPException(status_code=400, detail="Một hoặc nhiều kỹ năng không tồn tại")
-             service.skills = new_skills
+                skill_result = await session.exec(select(Skill).where(Skill.id.in_(data.skill_ids)))
+                new_skills = list(skill_result.all())
+                if len(new_skills) != len(data.skill_ids):
+                    raise HTTPException(status_code=400, detail="Một hoặc nhiều kỹ năng không tồn tại")
+                service.skills = new_skills
 
-        # Update resource requirements if provided
         if data.resource_requirements is not None:
             service.resource_requirements = validate_and_create_requirements(
                 data.resource_requirements,
-                service.duration, # Dùng duration mới (đã update ở setattr trên)
-                service.buffer_time, # Dùng buffer_time mới hoặc giữ nguyên
+                service.duration,
+                service.buffer_time,
                 service_id
             )
 
         session.add(service)
         await session.commit()
-        # Direct assignment updates the session object, so it shouldn't be stale.
-        # However, to ensure consistency with other sessions/db triggers (if any), fetching is safe.
         return await get_service_by_id(session, service_id)
     except HTTPException:
         await session.rollback()
@@ -207,7 +192,7 @@ async def delete_service(session: AsyncSession, service_id: UUID) -> None:
     now = datetime.now(timezone.utc)
     service.deleted_at = now
 
-    # Cascade soft delete tất cả resource requirements
+    # WHY: Cascade soft delete để giữ tính toàn vẹn tham chiếu
     for req in service.resource_requirements:
         req.deleted_at = now
         session.add(req)

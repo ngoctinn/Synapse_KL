@@ -33,6 +33,7 @@ ignore = ["E501"]
 
 [dependency-groups]
 dev = [
+    "aiosqlite>=0.22.1",
     "pytest>=9.0.2",
     "pytest-asyncio>=1.3.0",
     "ruff>=0.8.0",

@@ -4,13 +4,13 @@ import { fetchApi } from "@/shared/lib/api-client"
 import { revalidatePath } from "next/cache"
 
 import type {
-  ExceptionDateValues,
-  OperatingDay,
-  OperationalSettingsApi,
-  OperationalSettingsFormValues,
+    ExceptionDateValues,
+    OperatingDay,
+    OperationalSettingsApi,
+    OperationalSettingsFormValues,
 } from "../model/schemas"
 
-const ENDPOINT = "/api/v1/settings/operational/"
+const ENDPOINT = "/settings/operational"
 
 // === Transform Functions ===
 

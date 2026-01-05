@@ -25,7 +25,8 @@ class UserProfile(SQLModel, table=True):
     full_name: str | None = None
     phone_number: str | None = None
     avatar_url: str | None = None
-    role: str = Field(default="customer")  # Should be ENUM but string is sufficient for now
+    # WHY: Đủ linh hoạt cho MVP, sẽ chuyển sang Enum nếu cần strict validation
+    role: str = Field(default="customer")
     is_active: bool = Field(default=True)
     created_at: datetime = Field(
         sa_type=DateTime(timezone=True),
@@ -60,12 +61,8 @@ class StaffProfile(SQLModel, table=True):
     # We can access them via join if needed.
 
     profile: UserProfile = Relationship()
-
-    # Relationship M-N với Skills
     skills: list[Skill] = Relationship(
         back_populates="staff_members",
         link_model=StaffSkillLink
     )
-
-    # Relationship 1-N với StaffSchedule - Dùng string cho quan hệ liên module hoặc forward ref cùng file
     schedules: list["StaffSchedule"] = Relationship(back_populates="staff")

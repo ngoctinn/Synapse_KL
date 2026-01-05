@@ -7,23 +7,28 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import settings
 
-# Create custom SSL context that disables verification
-# This is needed for Supabase Pooler to avoid 'self-signed certificate' errors
-ssl_context = ssl.create_default_context()
-ssl_context.check_hostname = False
-ssl_context.verify_mode = ssl.CERT_NONE
+# Create SSL context based on configuration
+# SECURITY: Only disable SSL verification in dev environments with self-signed certs
+if settings.DISABLE_SSL_VERIFY:
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
+else:
+    ssl_context = ssl.create_default_context()
 
-# Query parameters handling:
-# If DATABASE_URL already has sslmode, asyncpg might conflict if we pass connect_args ssl.
-# However, create_async_engine usually handles this.
-# For asyncpg + Supabase, passing the ssl context in connect_args is the most robust way.
+# Determine connect_args based on database type
+connect_args = {}
+if settings.DATABASE_URL.startswith("postgresql"):
+    connect_args = {"ssl": ssl_context}
+elif settings.DATABASE_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
 
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=False,
     future=True,
     pool_pre_ping=True,
-    connect_args={"ssl": ssl_context}
+    connect_args=connect_args
 )
 
 # SessionLocal factory để tạo session async

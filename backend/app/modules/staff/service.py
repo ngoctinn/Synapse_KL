@@ -53,13 +53,12 @@ async def invite_staff(session: AsyncSession, invite_in: StaffInviteRequest) -> 
     3. Tạo StaffProfile bổ sung.
     """
     try:
-        # 1. Invite User via Supabase Code
-        # Payload data will be used by Trigger to fill public.profiles
+        # WHY: Supabase Trigger sẽ tự tạo UserProfile từ metadata này
         invite_data = {
             "email": invite_in.email,
             "data": {
                 "full_name": invite_in.full_name,
-                "role": invite_in.role  # 'manager', 'receptionist', 'technician'
+                "role": invite_in.role
             }
         }
 
@@ -69,24 +68,20 @@ async def invite_staff(session: AsyncSession, invite_in: StaffInviteRequest) -> 
         if not user or not user.id:
              raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Supabase Invite failed")
 
-        # 2. Assign User ID from Supabase
         user_id = UUID(user.id)
 
-        # 3. Create Staff Profile (Additional details not in public.profiles)
-        # Check if staff profile already exists (rare case: re-invite)
+        # WHY: Tránh tạo trùng khi re-invite cùng email
         existing_staff = await get_staff_by_id(session, user_id)
         if existing_staff:
-             # Just update title if needed
-             existing_staff.title = invite_in.title
-             session.add(existing_staff)
-             await session.commit()
-             await session.refresh(existing_staff)
-             return existing_staff
+            existing_staff.title = invite_in.title
+            session.add(existing_staff)
+            await session.commit()
+            await session.refresh(existing_staff)
+            return existing_staff
 
         staff_profile = StaffProfile(
             user_id=user_id,
             title=invite_in.title,
-            # Defaults
             bio="",
             color_code="#6366F1"
         )
@@ -99,12 +94,12 @@ async def invite_staff(session: AsyncSession, invite_in: StaffInviteRequest) -> 
 
     except Exception as e:
         error_str = str(e)
-        # Handle specific Supabase errors
+        # WHY: Supabase trả về message khác nhau cho duplicate email
         if "already been registered" in error_str or "already signed up" in error_str:
-             raise HTTPException(
-                 status_code=status.HTTP_409_CONFLICT,
-                 detail="Email này đã được đăng ký hoặc mời tham gia hệ thống trước đó."
-             )
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Email này đã được đăng ký hoặc mời tham gia hệ thống trước đó."
+            )
         print(f"DEBUG - Invite Error: {error_str}")
         raise e
 
@@ -128,10 +123,9 @@ async def update_staff_profile(
     if not staff:
         raise StaffNotFoundException()
 
-    # Separate profile data and staff data
+    # WHY: Tách riêng để update đúng bảng (profiles vs staff_profiles)
     update_data = staff_in.model_dump(exclude_unset=True)
 
-    # Profile fields (delegated to public.profiles)
     profile_fields = {"full_name", "is_active", "avatar_url"}
     profile_update = {k: v for k, v in update_data.items() if k in profile_fields}
 
@@ -140,7 +134,6 @@ async def update_staff_profile(
             setattr(staff.profile, key, value)
         session.add(staff.profile)
 
-    # Staff fields
     staff_fields = {"title", "bio", "color_code"}
     staff_update = {k: v for k, v in update_data.items() if k in staff_fields}
 
@@ -162,14 +155,13 @@ async def update_staff_skills(
     if not staff:
         raise StaffNotFoundException()
 
-    # Xóa tất cả links cũ
+    # WHY: Sync toàn bộ - xóa cũ, tạo mới để đảm bảo consistency
     existing_links = (await session.execute(
         select(StaffSkillLink).where(StaffSkillLink.staff_id == user_id)
     )).scalars().all()
     for link in existing_links:
         await session.delete(link)
 
-    # Tạo links mới
     for skill_id in skills_in.skill_ids:
         new_link = StaffSkillLink(staff_id=user_id, skill_id=skill_id)
         session.add(new_link)
@@ -185,7 +177,7 @@ async def delete_staff_profile(session: AsyncSession, user_id: UUID) -> bool:
     if not staff:
         raise StaffNotFoundException()
 
-    # Update is_active in profiles
+    # WHY: Soft delete thay vì hard delete để giữ history booking
     if staff.profile:
         staff.profile.is_active = False
         session.add(staff.profile)

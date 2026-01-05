@@ -54,15 +54,20 @@ class Settings(BaseSettings):
         return f"postgresql+asyncpg://{info.data.get('DB_USER')}:{info.data.get('POSTGRES_PASSWORD')}@{info.data.get('DB_HOST')}:{info.data.get('DB_PORT')}/{info.data.get('DB_NAME')}"
 
     # JWT Security
-    SECRET_KEY: str = "super-secret-key-change-me-in-production"
+    # SECURITY: SECRET_KEY MUST be set in .env file. No default value for production safety.
+    SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
 
-    # Supabase Integration
     SUPABASE_URL: str = ""
     SUPABASE_KEY: str = "" # Anon Key
     SUPABASE_SERVICE_ROLE_KEY: str = "" # Admin Key (Backend only)
     FRONTEND_URL: str = "http://localhost:3000"
+
+    # Database SSL Configuration
+    # Set to "true" in dev/local environments with self-signed certs (Supabase Pooler)
+    # Set to "false" (or leave unset) in production with proper SSL certs
+    DISABLE_SSL_VERIFY: bool = False
 
     model_config = ConfigDict(
         case_sensitive=True,

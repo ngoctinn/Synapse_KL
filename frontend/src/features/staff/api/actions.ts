@@ -3,8 +3,8 @@
 import { fetchApi } from "@/shared/lib/api-client"
 import { revalidatePath } from "next/cache"
 import {
-  staffInviteSchema,
-  type StaffProfile
+    staffInviteSchema,
+    type StaffProfile
 } from "../model/schemas"
 
 interface ActionState {
@@ -13,7 +13,7 @@ interface ActionState {
     fieldErrors?: Record<string, string[]>
 }
 
-const BASE_URL = "/api/v1/staff"
+const BASE_URL = "/staff"
 
 export async function inviteStaff(
     prevState: ActionState | null,

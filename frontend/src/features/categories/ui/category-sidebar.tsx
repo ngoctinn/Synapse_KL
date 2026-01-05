@@ -98,8 +98,8 @@ export function CategorySidebar({ categories, selectedId, onSelect }: CategorySi
   }
 
   return (
-    <div className="flex flex-col h-full border-r bg-muted/10">
-      <div className="p-4 border-b flex items-center justify-between bg-background">
+    <div className="flex flex-col h-full" suppressHydrationWarning>
+      <div className="p-4 border-b flex items-center justify-between" suppressHydrationWarning>
         <h2 className="font-semibold text-lg">Danh mục</h2>
         <Button size="sm" variant="outline" onClick={() => { setEditingCategory(null); setIsSheetOpen(true); }}>
           <Plus className="h-4 w-4 mr-2" />

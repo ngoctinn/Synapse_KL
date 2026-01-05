@@ -2,17 +2,16 @@
 Scheduling Models - Ca làm việc và Phân công lịch làm việc.
 """
 from datetime import date, datetime, time, timezone
-from enum import Enum
+from enum import Enum as PyEnum
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from sqlalchemy import Column, Date, DateTime, Time
-from sqlalchemy.dialects.postgresql import ENUM as PgENUM
+from sqlalchemy import Column, Date, DateTime, Time, Enum as SaEnum
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.modules.staff.models import StaffProfile
 
-class ScheduleStatus(str, Enum):
+class ScheduleStatus(str, PyEnum):
     """Trạng thái lịch làm việc."""
     DRAFT = "DRAFT"
     PUBLISHED = "PUBLISHED"
@@ -54,7 +53,7 @@ class StaffSchedule(SQLModel, table=True):
     shift_id: UUID = Field(foreign_key="shifts.id")
     work_date: date = Field(sa_column=Column(Date, nullable=False))
     status: ScheduleStatus = Field(
-        sa_column=Column(PgENUM("DRAFT", "PUBLISHED", "CANCELLED", name="schedule_status", create_type=False), nullable=False, server_default="DRAFT")
+        sa_column=Column(SaEnum(ScheduleStatus, name="schedule_status"), nullable=False, server_default="DRAFT")
     )
     created_at: datetime = Field(
         sa_type=DateTime(timezone=True),
