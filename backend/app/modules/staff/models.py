@@ -9,6 +9,7 @@ from uuid import UUID
 from sqlalchemy import DateTime
 from sqlmodel import Field, Relationship, SQLModel
 
+from app.core.enums import UserRole
 from app.modules.skills.models import Skill
 from app.modules.staff.link_models import StaffSkillLink
 
@@ -25,8 +26,7 @@ class UserProfile(SQLModel, table=True):
     full_name: str | None = None
     phone_number: str | None = None
     avatar_url: str | None = None
-    # WHY: Đủ linh hoạt cho MVP, sẽ chuyển sang Enum nếu cần strict validation
-    role: str = Field(default="customer")
+    role: UserRole = Field(default=UserRole.CUSTOMER)
     is_active: bool = Field(default=True)
     created_at: datetime = Field(
         sa_type=DateTime(timezone=True),

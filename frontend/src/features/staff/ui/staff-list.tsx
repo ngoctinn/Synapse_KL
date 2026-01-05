@@ -35,8 +35,9 @@ import {
   TableRow,
 } from "@/shared/ui/table"
 
-import { deleteStaff } from "../api/actions"
-import { StaffProfile, StaffRole } from "../model/schemas"
+import { UserRole } from "@/shared/model/enums"
+import { deleteStaff, resendInviteStaff } from "../api/actions"
+import { STAFF_ROLE_LABELS, StaffProfile } from "../model/schemas"
 
 interface StaffListProps {
   staff: StaffProfile[]
@@ -52,16 +53,18 @@ function getInitials(name: string) {
     .slice(0, 2)
 }
 
-function RoleBadge({ role }: { role?: StaffRole }) {
+function RoleBadge({ role }: { role?: UserRole }) {
   if (!role) return <Badge variant="outline">User</Badge>
 
   switch (role) {
-    case StaffRole.MANAGER:
-      return <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200 border-purple-200">Quản lý</Badge>
-    case StaffRole.RECEPTIONIST:
-      return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200">Lễ tân</Badge>
-    case StaffRole.TECHNICIAN:
-      return <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200">KTV</Badge>
+    case UserRole.MANAGER:
+      return <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200 border-purple-200">{STAFF_ROLE_LABELS[role]}</Badge>
+    case UserRole.RECEPTIONIST:
+      return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200">{STAFF_ROLE_LABELS[role]}</Badge>
+    case UserRole.TECHNICIAN:
+      return <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200">{STAFF_ROLE_LABELS[role]}</Badge>
+    case UserRole.CUSTOMER:
+      return <Badge variant="outline">{STAFF_ROLE_LABELS[role]}</Badge>
     default:
       return <Badge variant="outline">{role}</Badge>
   }
@@ -101,6 +104,21 @@ export function StaffList({ staff }: StaffListProps) {
         toast.error(result.message)
       }
       setDeleteId(null)
+    })
+  }
+
+  function handleResendInvite(email: string) {
+    if (!email) return
+
+    startTransition(async () => {
+      toast.promise(resendInviteStaff(email), {
+        loading: "Đang gửi lại lời mời...",
+        success: (res: any) => {
+          if (res.success) return res.message
+          throw new Error(res.message)
+        },
+        error: (err) => err.message
+      })
     })
   }
 
@@ -165,6 +183,13 @@ export function StaffList({ staff }: StaffListProps) {
                         <DropdownMenuItem onClick={() => router.push(`/admin/staff/${item.userId}`)}>
                           Xem chi tiết
                         </DropdownMenuItem>
+
+                        {item.email && (
+                          <DropdownMenuItem onClick={() => handleResendInvite(item.email!)}>
+                            Gửi lại mời
+                          </DropdownMenuItem>
+                        )}
+
                         <DropdownMenuItem onClick={() => navigator.clipboard.writeText(item.userId)}>
                           Copy ID
                         </DropdownMenuItem>

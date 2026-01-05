@@ -9,21 +9,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
+from app.core.config import settings
 from app.core.supabase import supabase_admin
 from app.modules.staff.exceptions import StaffNotFoundException
+import logging
+
+logger = logging.getLogger(__name__)
 import asyncio
 from app.modules.staff.link_models import StaffSkillLink
 from app.modules.staff.models import StaffProfile, UserProfile
 from app.modules.staff.schemas import (
-    StaffInviteRequest,
+    StaffSyncRequest,
     StaffProfileCreate,
     StaffProfileUpdate,
     StaffSkillsUpdate,
 )
-import requests
-from starlette.concurrency import run_in_threadpool
-
-
 
 
 async def get_all_staff(session: AsyncSession) -> Sequence[StaffProfile]:
@@ -50,149 +50,65 @@ async def get_staff_by_id(session: AsyncSession, user_id: UUID) -> StaffProfile 
     return result.scalars().first()
 
 
-async def invite_staff(session: AsyncSession, invite_in: StaffInviteRequest) -> StaffProfile:
+async def sync_staff_profile(session: AsyncSession, sync_in: StaffSyncRequest) -> StaffProfile:
     """
-    Mời nhân viên mới:
-    1. Check Local DB: Nếu User đã tồn tại -> Kích hoạt lại (Không gửi mail).
-    2. Nếu chưa có -> Gọi Supabase Admin Invite API -> Tạo User + Gửi Email.
+    Đồng bộ thông tin nhân viên từ Frontend (Supabase Auth) vào Local DB.
+    Hàm này thay thế cho invite_staff cũ, đảm bảo không call API ra ngoài.
     """
-    # B1: Check Local Data trước để tránh spam mail invite cho nhân viên cũ
-    existing_profile = (await session.execute(
-        select(UserProfile).where(UserProfile.email == invite_in.email)
-    )).scalars().first()
+    logger.info(f"🔄 Syncing Staff Profile: {sync_in.email} ({sync_in.user_id})")
 
-    user_id: UUID
+    # 1. Check & Update UserProfile
+    user_profile = await session.get(UserProfile, sync_in.user_id)
 
-    if existing_profile:
-        # CASE 1: Đã có hồ sơ -> Kích hoạt lại
-        logger.info(f"♻️ User {invite_in.email} already exists locally. Reactivating instantly.")
-        user_id = existing_profile.id
-
-        # Đảm bảo active luôn tại đây
-        existing_profile.is_active = True
-        existing_profile.role = invite_in.role
-        session.add(existing_profile)
+    if not user_profile:
+        # Nếu chưa có -> Tạo mới (Manual Insert thay vì chờ Trigger)
+        logger.info(f"✨ Creating NEW UserProfile locally: {sync_in.user_id}")
+        user_profile = UserProfile(
+            id=sync_in.user_id,
+            email=sync_in.email,
+            full_name=sync_in.full_name,
+            role=sync_in.role,
+            is_active=True
+        )
+        session.add(user_profile)
     else:
-        # CASE 2: Chưa có -> Mời mới qua Supabase
-        try:
-            invite_data = {
-                "email": invite_in.email,
-                "data": {
-                    "full_name": invite_in.full_name,
-                    "role": invite_in.role
-                }
-            }
+        # Nếu đã có -> Cập nhật thông tin mới nhất
+        logger.info(f"♻️ Updating existing UserProfile: {sync_in.user_id}")
+        user_profile.email = str(sync_in.email)
+        user_profile.full_name = sync_in.full_name
+        user_profile.role = sync_in.role
+        user_profile.is_active = True
+        session.add(user_profile)
 
-            auth_url = f"{settings.SUPABASE_URL}/auth/v1/invite"
-            headers = {
-                "apikey": settings.SUPABASE_SERVICE_ROLE_KEY,
-                "Authorization": f"Bearer {settings.SUPABASE_SERVICE_ROLE_KEY}",
-                "Content-Type": "application/json"
-            }
-            payload = {
-                "email": invite_in.email,
-                "data": invite_data["data"]
-            }
+    # 2. Check & Update StaffProfile
+    staff_profile = await session.get(StaffProfile, sync_in.user_id)
 
-            logger.info(f"📡 Direct Invite via Requests: {auth_url}")
+    if not staff_profile:
+        logger.info(f"✨ Creating NEW StaffProfile: {sync_in.user_id}")
+        staff_profile = StaffProfile(
+            user_id=sync_in.user_id,
+            title=sync_in.title,
+            bio="",
+            color_code="#6366F1"
+        )
+        session.add(staff_profile)
+    else:
+        logger.info(f"♻️ Updating existing StaffProfile: {sync_in.user_id}")
+        staff_profile.title = sync_in.title
+        session.add(staff_profile)
 
-            # FIX: Use requests + run_in_threadpool to avoid Windows asyncio hangs while keeping non-blocking behavior
-            # FIX: Use requests + run_in_threadpool with partial to handle kwargs correctly
-            from functools import partial
-            post_cmd = partial(requests.post, auth_url, headers=headers, json=payload)
-            resp = await run_in_threadpool(post_cmd)
-
-            # Xử lý trường hợp Exception từ Supabase
-            if resp.status_code != 200:
-                error_data = resp.json()
-                error_msg = error_data.get("msg", "") or error_data.get("message", "")
-
-                # Fallback: Nếu Supabase bảo đã tồn tại (mà Local DB lại không thấy - Data lệch)
-                if "already been registered" in error_msg or "already signed up" in error_msg:
-                    logger.warning(f"⚠️ User {invite_in.email} exists in Auth but MISSING in Local DB.")
-                    # Trường hợp này buộc phải báo lỗi để Admin check lại data sync
-                    raise HTTPException(
-                        status_code=status.HTTP_409_CONFLICT,
-                        detail="Email này đã đăng ký tài khoản nhưng thiếu hồ sơ hệ thống. Vui lòng liên hệ Admin."
-                    )
-                else:
-                    logger.error(f"❌ Direct Invite Failed: {resp.status_code} - {resp.text}")
-                    raise Exception(f"Invite Failed: {resp.status_code} {error_msg}")
-
-            # Invite thành công
-            data_res = resp.json()
-            user_id = UUID(data_res.get("id"))
-            logger.info(f"✅ Invite Success! New User ID: {user_id}")
-
-        except Exception as e:
-            error_str = str(e)
-            logger.error(f"DEBUG - Invite Logic Error: {error_str}")
-            raise e
-
-    # --- LOGIC CHUNG SAU KHI CÓ USER_ID ---
-
-    # Chỉ wait trigger nếu là User Mới (tức là không phải existing_profile)
-    if not existing_profile:
-        # Wait for Supabase Trigger to create UserProfile
-        profile_exists = await session.get(UserProfile, user_id)
-        if not profile_exists:
-            for _ in range(10): # Wait up to 5s
-                profile_exists = await session.get(UserProfile, user_id)
-                if profile_exists:
-                    break
-                await asyncio.sleep(0.5)
-
-        if not profile_exists:
-            logger.warning(f"⚠️ Trigger slow. Fallback creating profile for {user_id}")
-            new_profile = UserProfile(
-                id=user_id,
-                email=invite_in.email,
-                full_name=invite_in.full_name,
-                role=invite_in.role,
-                is_active=True
-            )
-            session.add(new_profile)
-            try:
-                await session.flush()
-            except Exception:
-                await session.rollback()
-
-    # 2. Xử lý StaffProfile
-        staff_profile = await session.get(StaffProfile, user_id)
-
-        if staff_profile:
-            # Nếu đã là nhân viên -> Cập nhật thông tin mới nhất
-            staff_profile.title = invite_in.title
-            session.add(staff_profile) # Mark for update
-            logger.info(f"♻️ Updating existing Staff Profile: {user_id}")
-        else:
-            # Nếu chưa là nhân viên -> Tạo mới
-            staff_profile = StaffProfile(
-                user_id=user_id,
-                title=invite_in.title,
-                bio="",
-                color_code="#6366F1"
-            )
-            session.add(staff_profile)
-            logger.info(f"✨ Creating NEW Staff Profile: {user_id}")
-
-        # 3. Đảm bảo UserProfile Active (trường hợp nhân viên cũ nghỉ việc quay lại)
-        user_profile = await session.get(UserProfile, user_id)
-        if user_profile:
-             user_profile.is_active = True
-             user_profile.role = invite_in.role # Cập nhật role mới luôn
-             session.add(user_profile)
-
+    try:
         await session.commit()
-        await session.refresh(staff_profile)
-        # Refresh relation để api trả về full data - QUAN TRỌNG
-        try:
-            await session.refresh(staff_profile, ["profile"])
-        except Exception:
-            # Fallback nếu refresh relation fail (hiếm)
-            pass
-
-        return staff_profile
+        # WHY: Thay vì refresh đơn lẻ, ta dùng lại hàm getter có đầy đủ selectinload
+        # để đảm bảo trả về object hoàn chỉnh cho Validator của Pydantic.
+        return await get_staff_by_id(session, sync_in.user_id)
+    except Exception as e:
+        logger.error(f"❌ Error syncing staff profile: {str(e)}")
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Lỗi đồng bộ dữ liệu: {str(e)}"
+        )
 
 
 

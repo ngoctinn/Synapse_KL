@@ -6,6 +6,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.router import api_router
 from app.core.config import settings
 
+# WHY: Import model registry để SQLAlchemy mapper resolve được tất cả relationship string references
+import app.core.models  # noqa: F401
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

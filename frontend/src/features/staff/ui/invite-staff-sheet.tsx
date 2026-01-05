@@ -34,10 +34,10 @@ import {
   SheetTrigger,
 } from "@/shared/ui/sheet"
 
+import { UserRole } from "@/shared/model/enums"
 import { inviteStaff } from "../api/actions"
 import {
   STAFF_ROLE_LABELS,
-  StaffRole,
   staffInviteSchema,
   type StaffInviteValues
 } from "../model/schemas"
@@ -52,7 +52,7 @@ export function InviteStaffSheet() {
       email: "",
       fullName: "",
       title: "Kỹ thuật viên",
-      role: StaffRole.TECHNICIAN,
+      role: UserRole.TECHNICIAN,
     },
   })
 
