@@ -15,6 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog"
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import { deleteStaff } from "../api/actions"
@@ -49,15 +50,25 @@ export function StaffDetailHeader({ staff }: StaffDetailHeaderProps) {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight">{staff.fullName}</h1>
-            <Badge variant={staff.isActive ? "default" : "secondary"}>
-              {staff.isActive ? "Đang hoạt động" : "Tạm ngưng"}
-            </Badge>
+          <div className="flex items-center gap-4">
+            <Avatar className="h-16 w-16 border-2 border-primary/10">
+              <AvatarImage src={staff.avatarUrl} alt={staff.fullName} />
+              <AvatarFallback className="text-lg" style={{ backgroundColor: staff.colorCode, color: "white" }}>
+                {staff.fullName.substring(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold tracking-tight">{staff.fullName}</h1>
+                <Badge variant={staff.isActive ? "default" : "secondary"}>
+                  {staff.isActive ? "Đang hoạt động" : "Tạm ngưng"}
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                {staff.role ? STAFF_ROLE_LABELS[staff.role] : "Người dùng"} • {staff.title}
+              </p>
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground">
-            {staff.role ? STAFF_ROLE_LABELS[staff.role] : "Người dùng"} • {staff.title}
-          </p>
         </div>
       </div>
 

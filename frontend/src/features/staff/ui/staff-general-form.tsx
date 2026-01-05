@@ -17,6 +17,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/shared/ui/form"
+import { ImageUpload } from "@/shared/ui/image-upload"
 import { Input } from "@/shared/ui/input"
 import { Switch } from "@/shared/ui/switch"
 import { Textarea } from "@/shared/ui/textarea"
@@ -39,6 +40,7 @@ export function StaffGeneralForm({ staff }: StaffGeneralFormProps) {
       title: staff.title,
       bio: staff.bio ?? "",
       colorCode: staff.colorCode,
+      avatarUrl: staff.avatarUrl,
       isActive: staff.isActive,
     },
   })
@@ -49,6 +51,7 @@ export function StaffGeneralForm({ staff }: StaffGeneralFormProps) {
     formData.append("title", values.title)
     formData.append("bio", values.bio ?? "")
     formData.append("colorCode", values.colorCode)
+    if (values.avatarUrl) formData.append("avatarUrl", values.avatarUrl)
     formData.append("isActive", values.isActive ? "true" : "false")
 
     startTransition(async () => {
@@ -101,6 +104,25 @@ export function StaffGeneralForm({ staff }: StaffGeneralFormProps) {
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="avatarUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ảnh đại diện</FormLabel>
+                  <FormControl>
+                    <ImageUpload
+                      value={field.value}
+                      onChange={field.onChange}
+                      bucketName="staff-avatars"
+                      folder="avatars"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}

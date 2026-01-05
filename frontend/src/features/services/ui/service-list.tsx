@@ -1,6 +1,6 @@
 "use client"
 
-import { MoreHorizontal, Pause, Play, Trash } from "lucide-react"
+import { Clock, Edit, MoreHorizontal, Pause, Play, Trash } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 import { toast } from "sonner"
@@ -15,6 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/shared/ui/alert-dialog"
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import {
@@ -32,28 +33,17 @@ import {
   TableRow,
 } from "@/shared/ui/table"
 
+import { formatDuration, formatPrice } from "@/shared/lib/format"
 import { deleteService, toggleServiceStatus } from "../api/actions"
 import type { Service } from "../model/schemas"
 
 interface ServiceListProps {
   services: Service[]
+  onEdit: (service: Service) => void
+  onDelete: (id: string) => void
 }
 
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(price)
-}
-
-function formatDuration(minutes: number): string {
-  if (minutes < 60) return `${minutes} phút`
-  const hours = Math.floor(minutes / 60)
-  const mins = minutes % 60
-  return mins > 0 ? `${hours}h ${mins}p` : `${hours} giờ`
-}
-
-export function ServiceList({ services }: ServiceListProps) {
+export function ServiceList({ services, onEdit, onDelete }: ServiceListProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -99,9 +89,8 @@ export function ServiceList({ services }: ServiceListProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Tên dịch vụ</TableHead>
-              <TableHead>Thời lượng</TableHead>
-              <TableHead>Giá</TableHead>
+              <TableHead className="w-[400px]">Dịch vụ</TableHead>
+              <TableHead>Chi phí & Thời gian</TableHead>
               <TableHead>Trạng thái</TableHead>
               <TableHead className="w-[80px]">Thao tác</TableHead>
             </TableRow>
@@ -113,9 +102,31 @@ export function ServiceList({ services }: ServiceListProps) {
                 className="cursor-pointer hover:bg-muted/50 transition-colors"
                 onClick={() => router.push(`/admin/services/${service.id}`)}
               >
-                <TableCell className="font-medium">{service.name}</TableCell>
-                <TableCell>{formatDuration(service.duration)}</TableCell>
-                <TableCell>{formatPrice(service.price)}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-4">
+                    <Avatar className="h-12 w-12 rounded-lg border">
+                      <AvatarImage src={service.imageUrl ?? ""} alt={service.name} className="object-cover" />
+                      <AvatarFallback className="rounded-lg bg-primary/10 text-primary uppercase">
+                        {service.name.substring(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col gap-1">
+                      <span className="font-semibold text-sm leading-none">{service.name}</span>
+                      <span className="text-xs text-muted-foreground w-11/12 truncate" title={service.description ?? ""}>
+                        {service.description ?? "Chưa có mô tả"}
+                      </span>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-col gap-1">
+                    <span className="font-medium">{formatPrice(service.price)}</span>
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <Clock className="mr-1 h-3 w-3" />
+                      {formatDuration(service.duration)}
+                    </div>
+                  </div>
+                </TableCell>
                 <TableCell>
                   {service.isActive ? (
                     <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">
@@ -134,6 +145,10 @@ export function ServiceList({ services }: ServiceListProps) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onEdit(service)}>
+                        <Edit className="mr-2 h-4 w-4" /> Chỉnh sửa
+                      </DropdownMenuItem>
+
                       <DropdownMenuItem
                         onClick={() => handleToggleStatus(service.id)}
                         disabled={isPending}

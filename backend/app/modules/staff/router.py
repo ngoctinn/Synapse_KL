@@ -53,6 +53,7 @@ async def invite_staff(
             title=staff.title,
             bio=staff.bio,
             color_code=staff.color_code,
+            avatar_url=staff.profile.avatar_url if staff.profile else None,
             is_active=is_active,
             role=staff.profile.role if staff.profile else data.role,
             email=staff.profile.email if staff.profile else data.email
@@ -83,8 +84,10 @@ async def list_staff(
             user_id=staff.user_id,
             full_name=staff.profile.full_name if staff.profile else "Không xác định",
             title=staff.title,
+
             bio=staff.bio,
             color_code=staff.color_code,
+            avatar_url=staff.profile.avatar_url if staff.profile else None,
             is_active=staff.profile.is_active if staff.profile else False,
             role=staff.profile.role if staff.profile else None,
             email=staff.profile.email if staff.profile else None,
@@ -145,6 +148,7 @@ async def update_staff(
         title=staff.title,
         bio=staff.bio,
         color_code=staff.color_code,
+        avatar_url=staff.profile.avatar_url if staff.profile else None,
         is_active=staff.profile.is_active if staff.profile else False,
         role=staff.profile.role if staff.profile else None,
         email=staff.profile.email if staff.profile else None,

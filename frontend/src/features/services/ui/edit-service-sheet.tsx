@@ -1,7 +1,7 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Edit, Plus, Trash } from "lucide-react"
+import { Plus, Trash } from "lucide-react"
 import { useState, useTransition } from "react"
 import { useFieldArray, useForm, type SubmitHandler } from "react-hook-form"
 import { toast } from "sonner"
@@ -17,6 +17,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/shared/ui/form"
+import { ImageUpload } from "@/shared/ui/image-upload"
 import { Input } from "@/shared/ui/input"
 import {
   Select,
@@ -31,40 +32,42 @@ import {
   SheetDescription,
   SheetFooter,
   SheetHeader,
-  SheetTitle,
-  SheetTrigger,
+  SheetTitle
 } from "@/shared/ui/sheet"
 import { Switch } from "@/shared/ui/switch"
 import { Textarea } from "@/shared/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group"
 
+import type { Category } from "@/features/categories/model/schemas"
 import type { ResourceGroup } from "@/features/resources/model/schemas"
 import type { Skill } from "@/features/skills/model/schemas"
+import { formatDuration } from "@/shared/lib/format"
 import { updateService } from "../api/actions"
-import type { Category } from "../api/category-actions"
+import { SERVICE_BUFFER_OPTIONS, SERVICE_DURATION_OPTIONS } from "../config/constants"
 import { serviceUpdateSchema, type ServiceWithDetails } from "../model/schemas"
-
-// WHY: Solver granularity yêu cầu time slots chuẩn 15p increments để tối ưu scheduling
-const DURATION_OPTIONS = [15, 30, 45, 60, 75, 90, 120, 150, 180, 240] as const
-const BUFFER_OPTIONS = [0, 5, 10, 15, 20, 30] as const
-
-function formatDuration(minutes: number): string {
-  if (minutes < 60) return `${minutes} phút`
-  const hours = Math.floor(minutes / 60)
-  const mins = minutes % 60
-  return mins > 0 ? `${hours}h ${mins}p` : `${hours} giờ`
-}
 
 interface EditServiceSheetProps {
   service: ServiceWithDetails
   categories: Category[]
   skills: Skill[]
   resourceGroups: ResourceGroup[]
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
-export function EditServiceSheet({ service, categories, skills, resourceGroups }: EditServiceSheetProps) {
-  const [open, setOpen] = useState(false)
+export function EditServiceSheet({
+  service,
+  categories,
+  skills,
+  resourceGroups,
+  open: controlledOpen,
+  onOpenChange: setControlledOpen,
+}: EditServiceSheetProps) {
+  const [internalOpen, setInternalOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
+
+  const open = controlledOpen ?? internalOpen
+  const setOpen = setControlledOpen ?? setInternalOpen
 
   type FormValues = z.infer<typeof serviceUpdateSchema>
 
@@ -125,13 +128,8 @@ export function EditServiceSheet({ service, categories, skills, resourceGroups }
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Edit className="mr-2 h-4 w-4" />
-          Chỉnh sửa
-        </Button>
-      </SheetTrigger>
       <SheetContent className="w-[500px] sm:w-[600px] overflow-y-auto">
+
         <SheetHeader>
           <SheetTitle>Chỉnh sửa dịch vụ</SheetTitle>
           <SheetDescription>
@@ -201,7 +199,7 @@ export function EditServiceSheet({ service, categories, skills, resourceGroups }
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {DURATION_OPTIONS.map((m) => (
+                        {SERVICE_DURATION_OPTIONS.map((m) => (
                           <SelectItem key={m} value={String(m)}>
                             {formatDuration(m)}
                           </SelectItem>
@@ -229,7 +227,7 @@ export function EditServiceSheet({ service, categories, skills, resourceGroups }
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {BUFFER_OPTIONS.map((m) => (
+                        {SERVICE_BUFFER_OPTIONS.map((m) => (
                           <SelectItem key={m} value={String(m)}>
                             {m === 0 ? "Không cần" : `${m} phút`}
                           </SelectItem>
@@ -296,11 +294,14 @@ export function EditServiceSheet({ service, categories, skills, resourceGroups }
               name="imageUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>URL Hình ảnh</FormLabel>
+                  <FormLabel>Hình ảnh</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://example.com/image.jpg" {...field} value={field.value ?? ""} />
+                    <ImageUpload
+                      value={field.value}
+                      onChange={field.onChange}
+                      bucketName="service-images"
+                    />
                   </FormControl>
-                  <FormDescription>Link đến hình ảnh minh họa cho dịch vụ.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -424,7 +425,7 @@ export function EditServiceSheet({ service, categories, skills, resourceGroups }
                             </FormControl>
                             <SelectContent>
                               <SelectItem value="0">Ngay lập tức (0p)</SelectItem>
-                              {DURATION_OPTIONS.map((m) => (
+                              {SERVICE_DURATION_OPTIONS.map((m) => (
                                 <SelectItem key={m} value={String(m)}>{m} phút</SelectItem>
                               ))}
                             </SelectContent>
@@ -450,7 +451,7 @@ export function EditServiceSheet({ service, categories, skills, resourceGroups }
                             </FormControl>
                             <SelectContent>
                               <SelectItem value="null">Hết dịch vụ</SelectItem>
-                              {DURATION_OPTIONS.map((m) => (
+                              {SERVICE_DURATION_OPTIONS.map((m) => (
                                 <SelectItem key={m} value={String(m)}>{m} phút</SelectItem>
                               ))}
                             </SelectContent>

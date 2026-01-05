@@ -22,6 +22,7 @@ class StaffProfileUpdate(SQLModel):
     title: str | None = None
     bio: str | None = None
     color_code: str | None = None
+    avatar_url: str | None = None
     is_active: bool | None = None
 
 
@@ -32,6 +33,7 @@ class StaffProfileRead(SQLModel):
     title: str
     bio: str | None = None
     color_code: str
+    avatar_url: str | None = None
     is_active: bool
     role: str | None = None
     email: str | None = None

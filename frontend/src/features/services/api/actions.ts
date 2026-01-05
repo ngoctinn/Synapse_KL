@@ -8,7 +8,7 @@ import type {
   ServiceWithDetails
 } from "../model/schemas"
 
-const API_BASE = "/api/v1"
+const API_BASE = ""
 
 // WHY: Backend trả snake_case, frontend cần camelCase
 interface BackendService {
@@ -90,29 +90,45 @@ function transformServiceWithDetails(data: BackendServiceWithDetails): ServiceWi
     }
 }
 
-export async function getServices(
-    categoryId?: string,
-    isActive?: boolean,
-    search?: string
-): Promise<{ data: Service[]; total: number }> {
-    const params = new URLSearchParams()
-    if (categoryId) params.append("category_id", categoryId)
-    if (isActive !== undefined) params.append("is_active", String(isActive))
-    if (search) params.append("search", search)
+export async function getServices({
+  page = 1,
+  limit = 100,
+  search,
+  categoryId,
+  isActive,
+}: {
+  page?: number
+  limit?: number
+  search?: string
+  categoryId?: string
+  isActive?: boolean
+} = {}): Promise<{ success: boolean; data?: Service[]; total: number; error?: string }> {
+  const params = new URLSearchParams()
+  params.append("page", String(page))
+  params.append("limit", String(limit))
+  if (categoryId) params.append("category_id", categoryId)
+  if (isActive !== undefined) params.append("is_active", String(isActive))
+  if (search) params.append("search", search)
 
-    const queryString = params.toString()
-    const url = queryString ? `${API_BASE}/services?${queryString}` : `${API_BASE}/services`
+  const queryString = params.toString()
+  const url = queryString ? `${API_BASE}/services?${queryString}` : `${API_BASE}/services`
 
+  try {
     const result = await fetchApi<BackendServiceListResponse>(url, { method: "GET" })
 
     if (!result.success) {
-        throw new Error(result.error || "Không thể tải danh sách dịch vụ")
+      return { success: false, total: 0, error: result.error || "Không thể tải danh sách dịch vụ" }
     }
 
     return {
-        data: result.data.data.map(transformService),
-        total: result.data.total,
+      success: true,
+      data: result.data.data.map(transformService),
+      total: result.data.total,
     }
+  } catch (error) {
+    console.error("Get services error:", error)
+    return { success: false, total: 0, error: "Lỗi kết nối server" }
+  }
 }
 
 

@@ -132,7 +132,7 @@ async def update_staff_profile(
     update_data = staff_in.model_dump(exclude_unset=True)
 
     # Profile fields (delegated to public.profiles)
-    profile_fields = {"full_name", "is_active"}
+    profile_fields = {"full_name", "is_active", "avatar_url"}
     profile_update = {k: v for k, v in update_data.items() if k in profile_fields}
 
     if profile_update and staff.profile:

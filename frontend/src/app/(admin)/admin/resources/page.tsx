@@ -3,7 +3,7 @@ import { ResourcesView } from "@/features/resources/ui/resources-view"
 import { Suspense } from "react"
 
 interface PageProps {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 export const metadata = {
@@ -11,7 +11,8 @@ export const metadata = {
 }
 
 export default async function ResourcesPage({ searchParams }: PageProps) {
-  const groupId = typeof searchParams.groupId === "string" ? searchParams.groupId : undefined
+  const resolvedParams = await searchParams
+  const groupId = typeof resolvedParams.groupId === "string" ? resolvedParams.groupId : undefined
 
   // Parallel data fetching
   const [groupsResult, resourcesResult] = await Promise.all([
@@ -25,6 +26,11 @@ export default async function ResourcesPage({ searchParams }: PageProps) {
 
   const groups = groupsResult.data
   const resources = resourcesResult.success ? (resourcesResult.data || []) : []
+
+  console.log("ResourcesPage Debug:", { groupId, resourcesCount: resources.length, success: resourcesResult.success })
+  if (resources.length > 0) {
+    console.log("Sample resource:", resources[0])
+  }
 
   return (
     <Suspense fallback={<div className="p-8">Đang tải dữ liệu...</div>}>

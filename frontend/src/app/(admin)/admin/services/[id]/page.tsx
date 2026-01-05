@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation"
 
+import { getCategories } from "@/features/categories/api/actions"
 import { getResourceGroups } from "@/features/resources/api/actions"
 import { getServiceDetail } from "@/features/services/api/actions"
-import { getCategories } from "@/features/services/api/category-actions"
 import { EditServiceSheet } from "@/features/services/ui"
 import { getSkills } from "@/features/skills/api/actions"
 import { ArrowLeft } from "lucide-react"
@@ -36,7 +36,7 @@ export default async function ServiceDetailPage({
   const { id } = await params
 
   try {
-    const [service, allSkills, categories, resourceGroupsResult] = await Promise.all([
+    const [service, allSkills, categoriesResult, resourceGroupsResult] = await Promise.all([
       getServiceDetail(id),
       getSkills(),
       getCategories(),
@@ -47,7 +47,8 @@ export default async function ServiceDetailPage({
       notFound()
     }
 
-    const resourceGroups = resourceGroupsResult.success ? resourceGroupsResult.data : []
+    const categories = categoriesResult.success && categoriesResult.data ? categoriesResult.data : []
+    const resourceGroups = resourceGroupsResult.success && resourceGroupsResult.data ? resourceGroupsResult.data : []
 
     return (
       <div className="flex h-full flex-col space-y-6 p-8">

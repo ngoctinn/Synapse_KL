@@ -15,20 +15,13 @@ import {
   SelectValue,
 } from "@/shared/ui/select"
 
-import type { Category } from "../api/category-actions"
-
-interface ServiceTableToolbarProps {
-  categories: Category[]
-}
-
-export function ServiceTableToolbar({ categories }: ServiceTableToolbarProps) {
+export function ServiceTableToolbar() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
 
   // Get current params
   const currentSearch = searchParams.get("search") ?? ""
-  const currentCategory = searchParams.get("categoryId") ?? "all"
   const currentStatus = searchParams.get("isActive") ?? "all"
 
   // Update URL helper
@@ -42,7 +35,7 @@ export function ServiceTableToolbar({ categories }: ServiceTableToolbarProps) {
       }
 
       // Reset page when filtering
-      // params.delete("page")
+      params.delete("page")
 
       startTransition(() => {
         router.replace(`?${params.toString()}`)
@@ -61,7 +54,7 @@ export function ServiceTableToolbar({ categories }: ServiceTableToolbarProps) {
     })
   }
 
-  const hasFilter = currentSearch || currentCategory !== "all" || currentStatus !== "all"
+  const hasFilter = currentSearch || currentStatus !== "all"
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between py-4">
@@ -72,23 +65,6 @@ export function ServiceTableToolbar({ categories }: ServiceTableToolbarProps) {
           onChange={(e) => handleSearch(e.target.value)}
           className="h-8 w-[150px] lg:w-[250px]"
         />
-
-        <Select
-          value={currentCategory}
-          onValueChange={(value) => updateUrl("categoryId", value)}
-        >
-          <SelectTrigger className="h-8 w-[150px]">
-            <SelectValue placeholder="Danh mục" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tất cả danh mục</SelectItem>
-            {categories.map((cat) => (
-              <SelectItem key={cat.id} value={cat.id}>
-                {cat.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
 
         <Select
           value={currentStatus}

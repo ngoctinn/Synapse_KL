@@ -91,6 +91,7 @@ interface BackendStaffProfile {
     role?: string
     skill_ids?: string[]
     email?: string
+    avatar_url?: string
 }
 // WHY: Transform snake_case từ Backend sang camelCase cho Frontend
 function transformStaff(item: BackendStaffProfile): StaffProfile {
@@ -104,6 +105,7 @@ function transformStaff(item: BackendStaffProfile): StaffProfile {
         role: item.role as any,
         skillIds: item.skill_ids,
         email: item.email,
+        avatarUrl: item.avatar_url,
     }
 }
 
@@ -135,6 +137,7 @@ export async function updateStaffProfile(
         title: formData.get("title"),
         bio: formData.get("bio"),
         colorCode: formData.get("colorCode"),
+        avatarUrl: formData.get("avatarUrl"),
         isActive: formData.get("isActive") === "true",
     }
 
@@ -146,6 +149,7 @@ export async function updateStaffProfile(
                 title: rawData.title,
                 bio: rawData.bio,
                 color_code: rawData.colorCode,
+                avatar_url: rawData.avatarUrl,
                 is_active: rawData.isActive,
             }),
         })

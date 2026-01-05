@@ -11,7 +11,7 @@ export const serviceResourceRequirementSchema = z.object({
 
 export type ServiceResourceRequirement = z.infer<typeof serviceResourceRequirementSchema>
 
-export const serviceCreateSchema = z.object({
+export const serviceBaseSchema = z.object({
     name: z.string().min(2, { error: "Tên dịch vụ phải có ít nhất 2 ký tự" }),
     categoryId: z.string().uuid().nullable(),
     duration: z.number().int().min(5, { error: "Thời gian thực hiện tối thiểu 5 phút" }),
@@ -22,7 +22,9 @@ export const serviceCreateSchema = z.object({
     isActive: z.boolean(),
     skillIds: z.array(z.string().uuid()).min(1, { error: "Phải chọn ít nhất 1 kỹ năng" }),
     resourceRequirements: z.array(serviceResourceRequirementSchema),
-}).superRefine((data, ctx) => {
+})
+
+export const serviceCreateSchema = serviceBaseSchema.superRefine((data, ctx) => {
     const totalTime = data.duration + data.bufferTime
 
     data.resourceRequirements.forEach((req, index) => {
@@ -50,17 +52,11 @@ export const serviceCreateSchema = z.object({
 
 export type ServiceCreateValues = z.infer<typeof serviceCreateSchema>
 
-export const serviceUpdateSchema = serviceCreateSchema.partial().extend({
+// Fix: Derive from base schema instead of refined create schema to allow .partial()
+export const serviceUpdateSchema = serviceBaseSchema.partial().extend({
     skillIds: z.array(z.string().uuid()).min(1, { error: "Không thể xóa hết kỹ năng" }).optional(),
 }).superRefine((data, ctx) => {
     // Chỉ validate logic nếu có đủ cả duration và resourceRequirements
-    // Trong trường hợp update partial, logic này phức tạp hơn vì fields có thể undefined.
-    // Tuy nhiên, resourceRequirements trong form Update thường gửi full list.
-    // Duration có thể không đổi (undefined). Nếu undefined thì không validate strict được ở đây trừ khi fetch data cũ.
-    // -> Ở đây Zod chỉ validate những gì được gửi lên.
-    // TODO: Improve logic update partial validation if needed.
-
-    // Đơn giản hóa: Nếu có sửa duration VÀ resourceRequirements thì mới check.
     if (data.duration !== undefined && data.bufferTime !== undefined && data.resourceRequirements) {
         const totalTime = data.duration + data.bufferTime
         data.resourceRequirements.forEach((req, index) => {

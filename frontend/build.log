@@ -1,0 +1,24 @@
+
+> frontend@0.1.0 build
+> next build
+
+▲ Next.js 16.1.1 (Turbopack)
+- Environments: .env.local
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+✓ Compiled successfully in 20.6s
+  Running TypeScript ...
+Failed to compile.
+
+./src/features/categories/ui/view-placeholder.tsx:7:10
+Type error: Module '"../model/schemas"' has no exported member 'Service'.
+
+[0m [90m  5 |[39m [36mimport[39m { [33mCategory[39m } [36mfrom[39m [32m"@/features/categories"[39m
+ [90m  6 |[39m [36mimport[39m { [33mCategorySidebar[39m } [36mfrom[39m [32m"@/features/categories/ui/category-sidebar"[39m
+[31m[1m>[22m[39m[90m  7 |[39m [36mimport[39m { [33mService[39m } [36mfrom[39m [32m"../model/schemas"[39m
+ [90m    |[39m          [31m[1m^[22m[39m
+ [90m  8 |[39m
+ [90m  9 |[39m [36minterface[39m [33mServiceViewProps[39m {
+ [90m 10 |[39m   categories[33m:[39m [33mCategory[39m[][0m
+Next.js build worker exited with code: 1 and signal: null

@@ -3,13 +3,13 @@
 import { fetchApi } from "@/shared/lib/api-client"
 import { revalidatePath } from "next/cache"
 import type {
-    ResourceFormValues,
-    ResourceGroup,
-    ResourceGroupFormValues,
-    ResourceItem,
+  ResourceFormValues,
+  ResourceGroup,
+  ResourceGroupFormValues,
+  ResourceItem,
 } from "../model/schemas"
 
-const BASE_URL = "/api/v1/resources"
+const BASE_URL = "/resources"
 
 // === Resource Groups ===
 

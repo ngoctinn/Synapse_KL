@@ -5,6 +5,8 @@ import { StaffProfile } from "@/features/staff/model/schemas"
 import { InviteStaffSheet, StaffList } from "@/features/staff/ui"
 import { Separator } from "@/shared/ui/separator"
 
+export const dynamic = "force-dynamic"
+
 export default async function StaffPage() {
   const staff = await getStaffList() as StaffProfile[]
 
