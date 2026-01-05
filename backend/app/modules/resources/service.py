@@ -3,6 +3,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy import case, func
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -54,6 +55,19 @@ async def get_group_by_id(session: AsyncSession, group_id: UUID) -> ResourceGrou
 
 
 async def create_group(session: AsyncSession, data: ResourceGroupCreate) -> ResourceGroup:
+    # Check duplicate name
+    existing_group = await session.exec(
+        select(ResourceGroup).where(
+            ResourceGroup.name == data.name,
+            ResourceGroup.deleted_at.is_(None)
+        )
+    )
+    if existing_group.first():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Nhóm tài nguyên '{data.name}' đã tồn tại"
+        )
+
     group = ResourceGroup(**data.model_dump())
     session.add(group)
     await session.commit()
@@ -65,6 +79,21 @@ async def update_group(session: AsyncSession, group_id: UUID, data: ResourceGrou
     group = await get_group_by_id(session, group_id)
     if not group:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Nhóm tài nguyên không tồn tại")
+
+    if data.name and data.name != group.name:
+         # Check duplicate name if name changed
+        existing_group = await session.exec(
+            select(ResourceGroup).where(
+                ResourceGroup.name == data.name,
+                ResourceGroup.deleted_at.is_(None),
+                ResourceGroup.id != group_id
+            )
+        )
+        if existing_group.first():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Nhóm tài nguyên '{data.name}' đã tồn tại"
+            )
 
     update_data = data.model_dump(exclude_unset=True)
     for key, value in update_data.items():
@@ -127,11 +156,21 @@ async def create_resource(session: AsyncSession, data: ResourceCreate) -> Resour
     if not group:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Nhóm tài nguyên không tồn tại")
 
-    resource = Resource(**data.model_dump())
-    session.add(resource)
-    await session.commit()
-    await session.refresh(resource)
-    return resource
+    try:
+        resource = Resource(**data.model_dump())
+        session.add(resource)
+        await session.commit()
+        await session.refresh(resource)
+        return resource
+    except IntegrityError as e:
+        await session.rollback()
+        # Check integrity violation (e.g., unique code)
+        if "unique constraint" in str(e).lower() and "code" in str(e).lower():
+             raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Mã thiết bị '{data.code}' đã tồn tại"
+            )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Lỗi hệ thống khi tạo tài nguyên")
 
 
 async def update_resource(session: AsyncSession, resource_id: UUID, data: ResourceUpdate) -> Resource:
@@ -143,10 +182,19 @@ async def update_resource(session: AsyncSession, resource_id: UUID, data: Resour
     for key, value in update_data.items():
         setattr(resource, key, value)
 
-    session.add(resource)
-    await session.commit()
-    await session.refresh(resource)
-    return resource
+    try:
+        session.add(resource)
+        await session.commit()
+        await session.refresh(resource)
+        return resource
+    except IntegrityError as e:
+        await session.rollback()
+        if "unique constraint" in str(e).lower() and "code" in str(e).lower():
+             raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Mã thiết bị '{data.code}' đã tồn tại"
+            )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Lỗi hệ thống khi cập nhật tài nguyên")
 
 
 async def delete_resource(session: AsyncSession, resource_id: UUID) -> None:

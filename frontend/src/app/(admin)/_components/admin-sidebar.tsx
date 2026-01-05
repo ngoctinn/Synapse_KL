@@ -1,14 +1,14 @@
-import { Calendar, Home, Settings, Users } from "lucide-react"
+import { Bed, Calendar, Home, Settings, Users } from "lucide-react"
 
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from "@/shared/ui/sidebar"
 
 // Menu items.
@@ -27,6 +27,11 @@ const items = [
     title: "Nhân sự",
     url: "/admin/staff",
     icon: Users,
+  },
+  {
+    title: "Tài nguyên",
+    url: "/admin/resources",
+    icon: Bed,
   },
   {
     title: "Cài đặt",
