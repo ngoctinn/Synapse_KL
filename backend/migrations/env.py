@@ -24,7 +24,7 @@ from app.modules.resources.models import ResourceGroup
 from app.modules.skills.models import Skill
 from app.modules.services.models import Service, ServiceResourceRequirement
 from app.modules.services.link_models import ServiceRequiredSkill
-from app.modules.staff.models import StaffProfile
+from app.modules.staff.models import StaffProfile, UserProfile
 from app.modules.staff.link_models import StaffSkillLink
 from app.modules.scheduling.models import Shift, StaffSchedule
 from app.modules.settings.models import OperatingHour, ExceptionDate

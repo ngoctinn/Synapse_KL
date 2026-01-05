@@ -2,7 +2,7 @@
 import { z } from "zod"
 
 // WHY: Backend trả về format HH:MM:SS, UI dùng HH:MM
-const timeStringSchema = z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/, "Định dạng giờ không hợp lệ")
+const timeStringSchema = z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/, { error: "Định dạng giờ không hợp lệ" })
 
 // === API Schemas (snake_case - khớp với Backend) ===
 

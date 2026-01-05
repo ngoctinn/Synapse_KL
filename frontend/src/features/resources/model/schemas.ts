@@ -32,9 +32,9 @@ export const RESOURCE_STATUS_LABELS: Record<ResourceStatus, string> = {
 
 // WHY: Read model từ API
 export const resourceGroupSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid({ error: "ID không hợp lệ" }),
   name: z.string(),
-  type: z.nativeEnum(ResourceType),
+  type: z.enum(ResourceType),
   description: z.string().nullable().optional(),
   resource_count: z.number().int().default(0),
   active_count: z.number().int().default(0),
@@ -44,8 +44,8 @@ export type ResourceGroup = z.infer<typeof resourceGroupSchema>
 
 // WHY: Form schema cho Tạo/Sửa Group
 export const resourceGroupFormSchema = z.object({
-  name: z.string().min(1, "Tên nhóm không được để trống").max(100, "Tên quá dài"),
-  type: z.nativeEnum(ResourceType),
+  name: z.string().min(1, { error: "Tên nhóm không được để trống" }).max(100, { error: "Tên quá dài" }),
+  type: z.enum(ResourceType),
   description: z.string().optional(),
 })
 
@@ -55,11 +55,11 @@ export type ResourceGroupFormValues = z.infer<typeof resourceGroupFormSchema>
 
 // WHY: Read model từ API
 export const resourceSchema = z.object({
-  id: z.string().uuid(),
-  group_id: z.string().uuid().nullable(),
+  id: z.uuid(),
+  group_id: z.uuid({ error: "Nhóm không hợp lệ" }).nullable(),
   name: z.string(),
   code: z.string().nullable(),
-  status: z.nativeEnum(ResourceStatus),
+  status: z.enum(ResourceStatus),
   description: z.string().nullable().optional(),
   image_url: z.string().nullable().optional(),
 })
@@ -68,11 +68,11 @@ export type ResourceItem = z.infer<typeof resourceSchema>
 
 // WHY: Form schema cho Tạo/Sửa Resource
 export const resourceFormSchema = z.object({
-  name: z.string().min(1, "Tên thiết bị không được để trống").max(100, "Tên quá dài"),
-  code: z.string().max(50, "Mã quá dài").optional(),
-  status: z.nativeEnum(ResourceStatus),
+  name: z.string().min(1, { error: "Tên thiết bị không được để trống" }).max(100, { error: "Tên quá dài" }),
+  code: z.string().max(50, { error: "Mã quá dài" }).optional(),
+  status: z.enum(ResourceStatus),
   description: z.string().optional(),
-  group_id: z.string().uuid("Vui lòng chọn nhóm tài nguyên"),
+  group_id: z.uuid({ error: "Vui lòng chọn nhóm tài nguyên" }),
 })
 
 export type ResourceFormValues = z.infer<typeof resourceFormSchema>

@@ -33,6 +33,8 @@ class StaffProfileRead(SQLModel):
     bio: str | None = None
     color_code: str
     is_active: bool
+    role: str | None = None
+    email: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

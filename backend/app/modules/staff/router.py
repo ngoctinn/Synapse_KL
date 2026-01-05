@@ -3,8 +3,7 @@ Staff Router - API Endpoints cho quản lý nhân viên.
 """
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, status, HTTPException
-from pydantic import ValidationError
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from supabase import create_client, Client as SupabaseClient
 
@@ -23,71 +22,51 @@ from app.modules.staff.schemas import (
 router = APIRouter(prefix="/staff", tags=["Staff"])
 
 
-def get_supabase_admin() -> SupabaseClient:
-    """Supabase client với service_role key (có admin privileges)"""
-    if not settings.SUPABASE_URL or not settings.SUPABASE_SERVICE_ROLE_KEY:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Thiếu cấu hình Supabase (SUPABASE_URL hoặc SERVICE_ROLE_KEY)"
-        )
-    return create_client(
-        supabase_url=settings.SUPABASE_URL,
-        supabase_key=settings.SUPABASE_SERVICE_ROLE_KEY
-    )
-
-
-@router.post("/invite", status_code=status.HTTP_201_CREATED)
+@router.post("/invite", response_model=StaffProfileRead, status_code=status.HTTP_201_CREATED)
 async def invite_staff(
     data: StaffInviteRequest,
-    supabase: SupabaseClient = Depends(get_supabase_admin)
+    session: AsyncSession = Depends(get_db)
 ):
     """
     Mời nhân viên mới qua email.
-    Sử dụng Supabase Admin API để gửi invite link.
+    1. Gửi Invite Link qua Supabase Auth.
+    2. Tạo Staff Profile + User Profile (via Trigger).
     """
     try:
-        # Supabase Python SDK: auth.admin.invite_user_by_email
-        response = supabase.auth.admin.invite_user_by_email(
-            email=data.email,
-            options={
-                "data": {
-                    "full_name": data.full_name,
-                    "role": data.role,
-                    "title": data.title
-                },
-                "redirect_to": f"{settings.FRONTEND_URL}/auth/update-password"
-            }
+        staff = await service.invite_staff(session, data)
+
+        # Manual Mapping for Response
+        # Note: staff.profile might not be loaded immediately if not eager loaded in 'invite_staff'
+        # But service.invite_staff refreshes it.
+        # If profile is None (due to race condition or load issue), fallback to request data.
+
+        full_name = data.full_name
+        is_active = True # Default for invite
+
+        if staff.profile:
+             full_name = staff.profile.full_name
+             is_active = staff.profile.is_active
+
+        return StaffProfileRead(
+            user_id=staff.user_id,
+            full_name=full_name,
+            title=staff.title,
+            bio=staff.bio,
+            color_code=staff.color_code,
+            is_active=is_active,
+            role=staff.profile.role if staff.profile else data.role,
+            email=staff.profile.email if staff.profile else data.email
         )
 
-        # Check success
-        if hasattr(response, 'user') and response.user:
-            return {
-                "success": True,
-                "message": f"Đã gửi thư mời đến {data.email}",
-                "user_id": str(response.user.id)
-            }
-
-        return {"success": True, "message": "Yêu cầu mời đã được gửi thành công"}
-
     except Exception as e:
-        error_str = str(e).lower()
-        detail = "Lỗi không xác định khi mời nhân viên"
+        # Re-raise standard HTTP Exceptions
+        if isinstance(e, HTTPException):
+            raise e
 
-        if "already registered" in error_str or "already_invited" in error_str:
-            detail = "Email này đã được đăng ký hoặc mời tham gia hệ thống trước đó"
-        elif "rate limit" in error_str:
-            detail = "Bạn đã gửi quá nhiều yêu cầu mời. Vui lòng nghỉ ngơi và thử lại sau ít phút"
-        elif "smtp" in error_str or "email provider" in error_str:
-            detail = "Không thể gửi email mời (lỗi máy chủ SMTP). Vui lòng liên hệ kỹ thuật để kiểm tra cấu hình"
-        elif "invalid email" in error_str:
-            detail = "Địa chỉ email không hợp lệ"
-        else:
-            detail = f"Không thể gửi lời mời: {str(e)}"
-
-        print(f"DEBUG - Staff Invite Error: {str(e)}")
+        print(f"ERROR inviting staff: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=detail
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Lỗi hệ thống khi mời nhân viên. Vui lòng thử lại sau."
         )
 
 
@@ -107,6 +86,8 @@ async def list_staff(
             bio=staff.bio,
             color_code=staff.color_code,
             is_active=staff.profile.is_active if staff.profile else False,
+            role=staff.profile.role if staff.profile else None,
+            email=staff.profile.email if staff.profile else None,
             skill_ids=[skill.id for skill in staff.skills]
         )
         result.append(staff_data)
@@ -132,6 +113,8 @@ async def get_staff(
         bio=staff.bio,
         color_code=staff.color_code,
         is_active=staff.profile.is_active if staff.profile else False,
+        role=staff.profile.role if staff.profile else None,
+        email=staff.profile.email if staff.profile else None,
         skill_ids=[skill.id for skill in staff.skills]
     )
     return result
@@ -163,6 +146,8 @@ async def update_staff(
         bio=staff.bio,
         color_code=staff.color_code,
         is_active=staff.profile.is_active if staff.profile else False,
+        role=staff.profile.role if staff.profile else None,
+        email=staff.profile.email if staff.profile else None,
     )
 
 
@@ -182,6 +167,8 @@ async def update_staff_skills(
         bio=staff.bio,
         color_code=staff.color_code,
         is_active=staff.profile.is_active if staff.profile else False,
+        role=staff.profile.role if staff.profile else None,
+        email=staff.profile.email if staff.profile else None,
         skill_ids=[skill.id for skill in staff.skills]
     )
 
