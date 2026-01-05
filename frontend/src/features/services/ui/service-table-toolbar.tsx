@@ -57,7 +57,7 @@ export function ServiceTableToolbar() {
   const hasFilter = currentSearch || currentStatus !== "all"
 
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between py-4">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-1 items-center space-x-2">
         <Input
           placeholder="Tìm kiếm dịch vụ..."

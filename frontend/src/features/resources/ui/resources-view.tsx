@@ -159,7 +159,7 @@ export function ResourcesView({ groups, resources }: ResourcesViewProps) {
               </Button>
             </div>
 
-            <div className="flex-1 overflow-auto p-6 bg-muted/5">
+            <div className="flex-1 overflow-auto p-4">
               <ResourceList
                 resources={resources}
                 onEdit={handleEditResource}

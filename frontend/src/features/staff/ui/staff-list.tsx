@@ -128,7 +128,7 @@ export function StaffList({ staff }: StaffListProps) {
               staff.map((item) => (
                 <TableRow
                   key={item.userId}
-                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                  className="cursor-pointer"
                   onClick={() => router.push(`/admin/staff/${item.userId}`)}
                 >
                   <TableCell>

@@ -99,7 +99,7 @@ export function ServiceList({ services, onEdit, onDelete }: ServiceListProps) {
             {services.map((service) => (
               <TableRow
                 key={service.id}
-                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                className="cursor-pointer"
                 onClick={() => router.push(`/admin/services/${service.id}`)}
               >
                 <TableCell>
