@@ -59,6 +59,11 @@ export async function fetchApi<T>(
       }
     }
 
+    // FIX: 204 No Content -> Return success null
+    if (response.status === 204) {
+      return { success: true, data: null as unknown as T }
+    }
+
     const data = await response.json()
     return { success: true, data }
   } catch (error) {

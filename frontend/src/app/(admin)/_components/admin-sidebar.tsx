@@ -1,4 +1,8 @@
-import { Bed, Calendar, Home, Settings, Sparkles, Users } from "lucide-react"
+"use client"
+
+import { Bed, Calendar, Home, Settings, Sparkles, UserCircle, Users } from "lucide-react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 import {
   Sidebar,
@@ -9,9 +13,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
 } from "@/shared/ui/sidebar"
 
-// Menu items.
 const items = [
   {
     title: "Dashboard",
@@ -27,6 +31,11 @@ const items = [
     title: "Nhân sự",
     url: "/admin/staff",
     icon: Users,
+  },
+  {
+    title: "Khách hàng",
+    url: "/admin/customers",
+    icon: UserCircle,
   },
   {
     title: "Dịch vụ",
@@ -45,29 +54,37 @@ const items = [
   },
 ]
 
-
 export function AdminSidebar() {
+  const pathname = usePathname()
+
   return (
-    <Sidebar>
+    <Sidebar variant="inset" collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Synapse Admin</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {items.map((item) => {
+                const isActive = item.url === "/admin"
+                  ? pathname === "/admin"
+                  : pathname.startsWith(item.url)
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+                      <Link href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarRail />
     </Sidebar>
   )
 }

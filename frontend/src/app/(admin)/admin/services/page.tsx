@@ -38,11 +38,11 @@ export default async function ServicesPage(props: ServicesPageProps) {
   ])
 
   if (!servicesResult.success) {
-    return <div className="p-8 text-destructive">Lỗi tải danh sách dịch vụ: {servicesResult.error}</div>
+    return <div className="p-4 text-destructive">Lỗi tải danh sách dịch vụ: {servicesResult.error}</div>
   }
 
   if (!categoriesResult.success) {
-    return <div className="p-8 text-destructive">Lỗi tải danh mục: {categoriesResult.error}</div>
+    return <div className="p-4 text-destructive">Lỗi tải danh mục: {categoriesResult.error}</div>
   }
 
   const services = servicesResult.data || []
@@ -51,7 +51,7 @@ export default async function ServicesPage(props: ServicesPageProps) {
   const resourceGroups = resourceGroupsResult.success ? resourceGroupsResult.data : []
 
   return (
-    <Suspense fallback={<div className="p-8">Đang tải dữ liệu...</div>}>
+    <Suspense fallback={<div className="p-4">Đang tải dữ liệu...</div>}>
       <ServiceView
         services={services}
         categories={categories}

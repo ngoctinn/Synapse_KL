@@ -7,5 +7,9 @@ export const metadata: Metadata = {
 }
 
 export default function SettingsPage() {
-  return <OperationalSettingsView />
+  return (
+    <div className="h-full p-4 flex flex-col gap-4">
+      <OperationalSettingsView />
+    </div>
+  )
 }

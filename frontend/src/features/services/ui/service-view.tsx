@@ -85,7 +85,7 @@ export function ServiceView({
   }
 
   return (
-    <div className="flex h-[calc(100vh-65px)] w-full overflow-hidden border-t">
+    <div className="flex h-full w-full overflow-hidden border-t">
       {/* Sidebar: Categories */}
       <div className="w-[280px] flex-shrink-0 bg-background border-r">
         <CategorySidebar
@@ -97,7 +97,7 @@ export function ServiceView({
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 bg-muted/5">
-        <div className="p-6 border-b bg-background flex flex-col gap-4">
+        <div className="p-4 border-b bg-background flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold tracking-tight">
@@ -117,7 +117,7 @@ export function ServiceView({
 
         </div>
 
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-4">
           <div className="flex flex-col gap-4">
             <ServiceTableToolbar />
             <ServiceList
