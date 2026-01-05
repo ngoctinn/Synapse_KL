@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
+import { z } from "zod"
 
 import { Button } from "@/shared/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card"
@@ -20,7 +21,7 @@ import { Input } from "@/shared/ui/input"
 import { Switch } from "@/shared/ui/switch"
 import { Textarea } from "@/shared/ui/textarea"
 import { updateStaffProfile } from "../api/actions"
-import { staffUpdateSchema, type StaffProfile, type StaffUpdateValues } from "../model/schemas"
+import { staffUpdateSchema, type StaffProfile } from "../model/schemas"
 
 interface StaffGeneralFormProps {
   staff: StaffProfile
@@ -29,7 +30,7 @@ interface StaffGeneralFormProps {
 export function StaffGeneralForm({ staff }: StaffGeneralFormProps) {
   const [isPending, startTransition] = useTransition()
 
-  const form = useForm<StaffUpdateValues>({
+  const form = useForm<z.infer<typeof staffUpdateSchema>>({
     resolver: zodResolver(staffUpdateSchema),
     defaultValues: {
       fullName: staff.fullName,
@@ -40,7 +41,7 @@ export function StaffGeneralForm({ staff }: StaffGeneralFormProps) {
     },
   })
 
-  async function onSubmit(values: StaffUpdateValues) {
+  const onSubmit = async (values: z.infer<typeof staffUpdateSchema>) => {
     const formData = new FormData()
     formData.append("fullName", values.fullName)
     formData.append("title", values.title)
