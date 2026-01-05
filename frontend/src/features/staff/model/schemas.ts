@@ -15,6 +15,7 @@ export const staffInviteSchema = z.object({
     role: z.nativeEnum(UserRole, {
         message: "Vui lòng chọn vai trò",
     }),
+    skillIds: z.array(z.string()),
 })
 
 export type StaffInviteValues = z.infer<typeof staffInviteSchema>

@@ -24,11 +24,13 @@ export async function inviteStaff(
     prevState: ActionState | null,
     formData: FormData
 ): Promise<ActionState> {
+    const skillIdsRaw = formData.get("skillIds") as string
     const rawData = {
         email: formData.get("email") as string,
         fullName: formData.get("fullName") as string,
         title: formData.get("title") as string,
         role: formData.get("role") as UserRole,
+        skillIds: skillIdsRaw ? JSON.parse(skillIdsRaw) : [],
     }
 
     const validated = staffInviteSchema.safeParse(rawData)
@@ -93,6 +95,7 @@ export async function inviteStaff(
                 full_name: validated.data.fullName,
                 title: validated.data.title,
                 role: validated.data.role,
+                skill_ids: validated.data.skillIds,
                 // Removed skip_invitation - Backend now expects direct sync
             }),
         })

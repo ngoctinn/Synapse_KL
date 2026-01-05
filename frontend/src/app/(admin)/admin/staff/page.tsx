@@ -1,5 +1,6 @@
 import { Suspense } from "react"
 
+import { getSkills } from "@/features/skills/api/actions"
 import { getStaffList } from "@/features/staff/api/actions"
 import { StaffProfile } from "@/features/staff/model/schemas"
 import { InviteStaffSheet, StaffList } from "@/features/staff/ui"
@@ -8,7 +9,10 @@ import { Separator } from "@/shared/ui/separator"
 export const dynamic = "force-dynamic"
 
 export default async function StaffPage() {
-  const staff = await getStaffList() as StaffProfile[]
+  const [staff, allSkills] = await Promise.all([
+    getStaffList() as Promise<StaffProfile[]>,
+    getSkills()
+  ])
 
   return (
     <div className="flex h-full flex-col gap-4 p-4">
@@ -20,7 +24,7 @@ export default async function StaffPage() {
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <InviteStaffSheet />
+          <InviteStaffSheet allSkills={allSkills} />
         </div>
       </div>
 

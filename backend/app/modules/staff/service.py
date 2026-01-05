@@ -97,6 +97,19 @@ async def sync_staff_profile(session: AsyncSession, sync_in: StaffSyncRequest) -
         staff_profile.title = sync_in.title
         session.add(staff_profile)
 
+    # 3. Update Skills (if provided)
+    if sync_in.skill_ids:
+        # Clear old links if any (though usually this is a new staff)
+        existing_links = (await session.execute(
+            select(StaffSkillLink).where(StaffSkillLink.staff_id == sync_in.user_id)
+        )).scalars().all()
+        for link in existing_links:
+            await session.delete(link)
+
+        for skill_id in sync_in.skill_ids:
+            new_link = StaffSkillLink(staff_id=sync_in.user_id, skill_id=skill_id)
+            session.add(new_link)
+
     try:
         await session.commit()
         # WHY: Thay vì refresh đơn lẻ, ta dùng lại hàm getter có đầy đủ selectinload

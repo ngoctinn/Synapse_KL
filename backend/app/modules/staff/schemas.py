@@ -103,6 +103,7 @@ class StaffSyncRequest(SQLModel):
     full_name: str
     title: str = "Kỹ thuật viên"
     role: UserRole = UserRole.TECHNICIAN
+    skill_ids: list[UUID] = []
     # bio, color_code có thể thêm sau nếu invite form có
 
 
