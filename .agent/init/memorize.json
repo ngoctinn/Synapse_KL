@@ -1,0 +1,18 @@
+{
+  "shadcn_ui_standards": {
+    "sheet": {
+      "structure": "Form must use 'flex flex-col gap-4'. Body content wrapped in 'space-y-6 px-4'. SheetFooter must be OUTSIDE the body wrapper but inside Form.",
+      "padding": "SheetHeader/SheetFooter use 'p-4'. SheetContent has NO default padding. Do not double pad Footer.",
+      "rule": "Strictly follow Shadcn Demo structure."
+    },
+    "table": {
+      "header_styling": "TableHead text must be 'text-muted-foreground'.",
+      "text_wrapping": "REMOVE 'whitespace-nowrap' from TableHead and TableCell.",
+      "row_behavior": "Do NOT add 'hover:bg-muted/50' or 'transition-colors' to TableRow instances (it is built-in)."
+    },
+    "layout": {
+      "view_padding": "Use 'p-4' for main view containers (not p-6). Avoid 'bg-muted/*' backgrounds on containers.",
+      "toolbar": "Do NOT add vertical padding (py-*) to Toolbars; rely on parent flex gap."
+    }
+  }
+}
