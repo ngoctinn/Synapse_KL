@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "preinstall": "npx only-allow pnpm",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -42,6 +43,7 @@
     "react-hook-form": "^7.70.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
+    "use-debounce": "^10.0.6",
     "zod": "^4.3.5"
   },
   "devDependencies": {

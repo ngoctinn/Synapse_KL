@@ -92,11 +92,13 @@ function transformServiceWithDetails(data: BackendServiceWithDetails): ServiceWi
 
 export async function getServices(
     categoryId?: string,
-    isActive?: boolean
+    isActive?: boolean,
+    search?: string
 ): Promise<{ data: Service[]; total: number }> {
     const params = new URLSearchParams()
     if (categoryId) params.append("category_id", categoryId)
     if (isActive !== undefined) params.append("is_active", String(isActive))
+    if (search) params.append("search", search)
 
     const queryString = params.toString()
     const url = queryString ? `${API_BASE}/services?${queryString}` : `${API_BASE}/services`

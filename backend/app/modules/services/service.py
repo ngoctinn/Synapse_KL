@@ -21,6 +21,7 @@ async def get_all_services(
     session: AsyncSession,
     category_id: UUID | None = None,
     is_active: bool | None = None,
+    search: str | None = None,
     page: int = 1,
     limit: int = 100
 ) -> tuple[list[Service], int]:
@@ -30,6 +31,8 @@ async def get_all_services(
         stmt = stmt.where(Service.category_id == category_id)
     if is_active is not None:
         stmt = stmt.where(Service.is_active == is_active)
+    if search:
+        stmt = stmt.where(Service.name.ilike(f"%{search}%"))
 
     # Count query
     count_stmt = select(func.count()).select_from(stmt.subquery())

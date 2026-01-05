@@ -240,12 +240,23 @@ export function CreateServiceSheet({ categories, skills, resourceGroups }: Creat
                 <FormItem>
                   <FormLabel>Giá (VNĐ) *</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        min={0}
+                        step={1000}
+                        {...field}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        className="pr-12"
+                      />
+                      <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-muted-foreground text-sm">
+                        VNĐ
+                      </div>
+                    </div>
                   </FormControl>
+                  <FormDescription>
+                    Hiển thị: {field.value ? new Intl.NumberFormat("vi-VN").format(Number(field.value)) : "0"} VNĐ
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

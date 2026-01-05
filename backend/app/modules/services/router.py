@@ -23,12 +23,13 @@ router = APIRouter(prefix="/services", tags=["Services"])
 async def list_services(
     category_id: UUID | None = Query(None),
     is_active: bool | None = Query(None),
+    search: str | None = Query(None),
     page: int = Query(1, ge=1),
     limit: int = Query(100, ge=1, le=1000),
     session: AsyncSession = Depends(get_db)
 ):
     services, total = await service.get_all_services(
-        session, category_id, is_active, page, limit
+        session, category_id, is_active, search, page, limit
     )
     return ServiceListResponse(
         data=services,
