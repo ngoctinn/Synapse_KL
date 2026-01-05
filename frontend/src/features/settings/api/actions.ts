@@ -17,14 +17,9 @@ const ENDPOINT = "/api/v1/settings/operational/"
 // WHY: Chuyển đổi từ UI format (multi-slot per day) sang API format (flat array)
 function transformToApi(formData: OperationalSettingsFormValues): OperationalSettingsApi {
   const regularHours = formData.days.flatMap((day: OperatingDay) => {
+    // WHY: Không gửi record cho ngày nghỉ/đóng cửa để giữ DB sạch
     if (!day.isEnabled || day.slots.length === 0) {
-      return [{
-        day_of_week: day.dayOfWeek,
-        open_time: "00:00:00",
-        close_time: "00:00:00",
-        is_closed: true,
-        label: null,
-      }]
+      return []
     }
 
     return day.slots.map((slot) => ({

@@ -13,8 +13,8 @@ export function RegularHoursForm() {
 
         // Apply to Tue(2) to Fri(5)
         for (let i = 2; i <= 5; i++) {
-           setValue(`days.${i}.isEnabled`, mondayEnabled)
-           setValue(`days.${i}.slots`, mondaySlots)
+           setValue(`days.${i}.isEnabled`, mondayEnabled, { shouldDirty: true })
+           setValue(`days.${i}.slots`, mondaySlots, { shouldDirty: true })
         }
     }
 

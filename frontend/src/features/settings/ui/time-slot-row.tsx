@@ -1,7 +1,7 @@
 "use client"
 
 import { Copy, Plus, Trash2 } from "lucide-react"
-import { useFieldArray, useFormContext } from "react-hook-form"
+import { useFieldArray, useFormContext, useWatch } from "react-hook-form"
 
 import { Button } from "@/shared/ui/button"
 import { Card, CardContent } from "@/shared/ui/card"
@@ -31,13 +31,31 @@ interface TimeSlotRowProps {
 }
 
 export function TimeSlotRow({ dayIndex, onCopyToAll }: TimeSlotRowProps) {
-    const { control, watch, formState: { errors } } = useFormContext()
+    const { control, formState: { errors } } = useFormContext()
     const { fields, append, remove } = useFieldArray({
         control,
         name: `days.${dayIndex}.slots`
     })
 
-    const isEnabled = watch(`days.${dayIndex}.isEnabled`)
+    // WHY: Dùng useWatch để subscribe updates chính xác cho từng row, tránh render issue
+    const isEnabled = useWatch({
+        control,
+        name: `days.${dayIndex}.isEnabled`
+    })
+
+    // WHY: Quản lý slots khi toggle switch
+    const handleSwitchChange = (checked: boolean, fieldOnChange: (v: boolean) => void) => {
+        fieldOnChange(checked)
+        if (checked && fields.length === 0) {
+            // WHY: Tự động thêm slot mặc định khi bật switch mà chưa có slot nào
+            append({ openTime: "08:00", closeTime: "20:00" })
+        } else if (!checked && fields.length > 0) {
+            // WHY: Xóa tất cả slots khi tắt switch để tránh dữ liệu cũ
+            for (let i = fields.length - 1; i >= 0; i--) {
+                remove(i)
+            }
+        }
+    }
 
     return (
         <Card className="mb-4">
@@ -51,7 +69,7 @@ export function TimeSlotRow({ dayIndex, onCopyToAll }: TimeSlotRowProps) {
                                 <FormControl>
                                     <Switch
                                         checked={field.value}
-                                        onCheckedChange={field.onChange}
+                                        onCheckedChange={(checked) => handleSwitchChange(checked, field.onChange)}
                                     />
                                 </FormControl>
                                 <Label className="font-semibold">{DAYS_OF_WEEK[dayIndex]}</Label>
@@ -68,8 +86,8 @@ export function TimeSlotRow({ dayIndex, onCopyToAll }: TimeSlotRowProps) {
                                     control={control}
                                     name={`days.${dayIndex}.slots.${slotIndex}.openTime`}
                                     render={({ field }) => (
-                                        <FormItem className="w-[120px] space-y-0">
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormItem className="w-32 space-y-0">
+                                            <Select onValueChange={field.onChange} value={field.value}>
                                                 <FormControl>
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Mở" />
@@ -89,8 +107,8 @@ export function TimeSlotRow({ dayIndex, onCopyToAll }: TimeSlotRowProps) {
                                     control={control}
                                     name={`days.${dayIndex}.slots.${slotIndex}.closeTime`}
                                     render={({ field }) => (
-                                        <FormItem className="w-[120px] space-y-0">
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormItem className="w-32 space-y-0">
+                                            <Select onValueChange={field.onChange} value={field.value}>
                                                 <FormControl>
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Đóng" />
@@ -138,7 +156,7 @@ export function TimeSlotRow({ dayIndex, onCopyToAll }: TimeSlotRowProps) {
 
                 {dayIndex === 1 && onCopyToAll && (
                      <Button type="button" variant="ghost" size="sm" onClick={onCopyToAll}>
-                        <Copy className="h-4 w-4 mr-2"/> Copy to all
+                        <Copy className="h-4 w-4 mr-2"/> Sao chép tất cả
                      </Button>
                 )}
             </CardContent>

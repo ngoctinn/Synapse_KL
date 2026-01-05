@@ -4,10 +4,11 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect, useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
 
-import { Button } from "@/shared/ui/button"
 import { Form } from "@/shared/ui/form"
 import { Separator } from "@/shared/ui/separator"
+import { Skeleton } from "@/shared/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
+import { UnsavedChangesBar } from "@/shared/ui/unsaved-changes-bar"
 
 import { toast } from "sonner"
 import { getOperationalSettings, updateOperationalSettings } from "../api/actions"
@@ -39,6 +40,8 @@ export function OperationalSettingsView() {
         defaultValues
     })
 
+    const { isDirty } = form.formState
+
     // WHY: Load dữ liệu từ API khi component mount
     useEffect(() => {
         async function loadSettings() {
@@ -51,7 +54,8 @@ export function OperationalSettingsView() {
             setIsLoading(false)
         }
         loadSettings()
-    }, [form])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     const onSubmit = (data: OperationalSettingsFormValues) => {
         startTransition(async () => {
@@ -77,30 +81,46 @@ export function OperationalSettingsView() {
         })
     }
 
-    const onInvalid = (errors: any) => {
+    const onInvalid = (errors: unknown) => {
         console.error("Validation errors:", errors)
         toast.error("Vui lòng kiểm tra lại dữ liệu nhập (có lỗi validation)")
     }
 
+    const handleDiscard = () => {
+        form.reset()
+        toast.info("Đã hoàn tác các thay đổi")
+    }
+
+    const handleSave = () => {
+        form.handleSubmit(onSubmit, onInvalid)()
+    }
+
     if (isLoading) {
-        return <div className="p-4">Đang tải...</div>
+        return (
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div className="space-y-2">
+                        <Skeleton className="h-6 w-48" />
+                        <Skeleton className="h-4 w-72" />
+                    </div>
+                </div>
+                <Skeleton className="h-px w-full" />
+                <div className="space-y-4">
+                    {Array.from({ length: 7 }).map((_, i) => (
+                        <Skeleton key={i} className="h-16 w-full" />
+                    ))}
+                </div>
+            </div>
+        )
     }
 
     return (
-        <div className="h-full flex flex-col space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h3 className="text-lg font-medium">Cấu hình vận hành</h3>
-                    <p className="text-sm text-muted-foreground">
-                        Quản lý giờ mở cửa và ngày nghỉ lễ của hệ thống.
-                    </p>
-                </div>
-                <Button
-                    onClick={form.handleSubmit(onSubmit, onInvalid)}
-                    disabled={isPending}
-                >
-                    {isPending ? "Đang lưu..." : "Lưu thay đổi"}
-                </Button>
+        <div className="h-full flex flex-col space-y-6 pb-20">
+            <div>
+                <h3 className="text-lg font-medium">Cấu hình vận hành</h3>
+                <p className="text-sm text-muted-foreground">
+                    Quản lý giờ mở cửa và ngày nghỉ lễ của hệ thống.
+                </p>
             </div>
             <Separator />
 
@@ -120,6 +140,13 @@ export function OperationalSettingsView() {
                     </Tabs>
                 </form>
             </Form>
+
+            <UnsavedChangesBar
+                isDirty={isDirty}
+                isPending={isPending}
+                onSave={handleSave}
+                onDiscard={handleDiscard}
+            />
         </div>
     )
 }

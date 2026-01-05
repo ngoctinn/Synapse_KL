@@ -203,7 +203,7 @@ export function ExceptionDateForm() {
                         {fields.map((field, index) => (
                             <TableRow key={field.id}>
                                 <TableCell>
-                                    {format(field.date, "dd/MM/yyyy")}
+                                    {field.date ? format(field.date, "dd/MM/yyyy") : "-"}
                                 </TableCell>
                                 <TableCell>{field.reason}</TableCell>
                                 <TableCell>
