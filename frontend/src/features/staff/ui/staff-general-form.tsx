@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useTransition } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, type SubmitHandler } from "react-hook-form"
 import { toast } from "sonner"
 import { z } from "zod"
 
@@ -30,22 +30,24 @@ interface StaffGeneralFormProps {
 export function StaffGeneralForm({ staff }: StaffGeneralFormProps) {
   const [isPending, startTransition] = useTransition()
 
-  const form = useForm<z.infer<typeof staffUpdateSchema>>({
+  type FormValues = z.infer<typeof staffUpdateSchema>
+
+  const form = useForm<FormValues>({
     resolver: zodResolver(staffUpdateSchema),
     defaultValues: {
       fullName: staff.fullName,
       title: staff.title,
-      bio: staff.bio || "",
+      bio: staff.bio ?? "",
       colorCode: staff.colorCode,
       isActive: staff.isActive,
     },
   })
 
-  const onSubmit = async (values: z.infer<typeof staffUpdateSchema>) => {
+  const onSubmit: SubmitHandler<FormValues> = async (values) => {
     const formData = new FormData()
     formData.append("fullName", values.fullName)
     formData.append("title", values.title)
-    formData.append("bio", values.bio || "")
+    formData.append("bio", values.bio ?? "")
     formData.append("colorCode", values.colorCode)
     formData.append("isActive", values.isActive ? "true" : "false")
 

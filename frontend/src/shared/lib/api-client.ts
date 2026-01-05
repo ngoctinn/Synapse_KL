@@ -2,8 +2,9 @@ import { createClient } from "./supabase/server"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
-// WHY: Wrapper để tự động đính kèm Bearer Token từ Supabase session
-export async function fetchWithAuth(
+// WHY: Internal helper để tự động đính kèm Bearer Token từ Supabase session
+// NOTE: Không export - chỉ dùng nội bộ bởi fetchApi
+async function fetchWithAuth(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<Response> {

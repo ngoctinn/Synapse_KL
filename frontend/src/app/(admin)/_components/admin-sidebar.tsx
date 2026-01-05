@@ -1,4 +1,4 @@
-import { Bed, Calendar, Home, Settings, Users } from "lucide-react"
+import { Bed, Calendar, Home, Settings, Sparkles, Users } from "lucide-react"
 
 import {
   Sidebar,
@@ -29,6 +29,11 @@ const items = [
     icon: Users,
   },
   {
+    title: "Dịch vụ",
+    url: "/admin/services",
+    icon: Sparkles,
+  },
+  {
     title: "Tài nguyên",
     url: "/admin/resources",
     icon: Bed,
@@ -39,6 +44,7 @@ const items = [
     icon: Settings,
   },
 ]
+
 
 export function AdminSidebar() {
   return (

@@ -26,7 +26,7 @@ export type StaffInviteValues = z.infer<typeof staffInviteSchema>
 export const staffUpdateSchema = z.object({
     fullName: z.string().min(2, { error: "Tên phải có ít nhất 2 ký tự" }),
     title: z.string().min(2, { error: "Chức danh không được để trống" }),
-    bio: z.string().optional(),
+    bio: z.string(),
     colorCode: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, { error: "Mã màu không hợp lệ" }),
     isActive: z.boolean(),
 })
