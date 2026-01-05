@@ -37,7 +37,8 @@ export function OperationalSettingsView() {
 
     const form = useForm({
         resolver: zodResolver(operationalSettingsFormSchema),
-        defaultValues
+        defaultValues,
+        mode: "onChange"
     })
 
     const { isDirty } = form.formState
@@ -81,9 +82,16 @@ export function OperationalSettingsView() {
         })
     }
 
-    const onInvalid = (errors: unknown) => {
-        console.error("Validation errors:", errors)
-        toast.error("Vui lòng kiểm tra lại dữ liệu nhập (có lỗi validation)")
+    const onInvalid = (errors: any) => {
+        console.error("Validation errors:", JSON.stringify(errors, null, 2))
+
+        // Flatten errors to find the first message
+        const firstErrorKey = Object.keys(errors)[0]
+        const firstErrorMsg = errors[firstErrorKey]?.message || "Vui lòng kiểm tra lại dữ liệu nhập"
+
+        toast.error(`Có lỗi validation: ${firstErrorMsg}`, {
+            description: "Xem chi tiết trong Console (F12) nếu cần thiết."
+        })
     }
 
     const handleDiscard = () => {

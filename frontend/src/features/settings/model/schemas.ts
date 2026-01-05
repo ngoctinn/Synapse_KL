@@ -54,9 +54,10 @@ export const operatingDaySchema = z.object({
   if (!data.isEnabled || data.slots.length <= 1) return
 
   // WHY: Sort slots để kiểm tra theo thứ tự thời gian
-  const sortedSlots = [...data.slots].sort((a, b) =>
-    timeToMinutes(a.openTime) - timeToMinutes(b.openTime)
-  )
+  // Clone array and map with original index to track errors back to correct field
+  const sortedSlots = data.slots
+    .map((slot, index) => ({ ...slot, originalIndex: index }))
+    .sort((a, b) => timeToMinutes(a.openTime) - timeToMinutes(b.openTime))
 
   for (let i = 0; i < sortedSlots.length - 1; i++) {
     const current = sortedSlots[i]
@@ -70,20 +71,17 @@ export const operatingDaySchema = z.object({
     if (gapMinutes < 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: `Ca ${i + 1} và ${i + 2} bị trùng giờ`,
-        path: ["slots"],
+        message: `Trùng giờ với ca trước (${current.openTime}-${current.closeTime})`,
+        path: ["slots", next.originalIndex, "openTime"],
       })
-      return
     }
-
     // WHY: Domain rule - Recovery time 10-15 phút để vệ sinh/chuẩn bị
-    if (gapMinutes < 10) {
+    else if (gapMinutes < 10) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Các ca phải cách nhau tối thiểu 10 phút (recovery time)",
-        path: ["slots"],
+        message: `Cần cách ca trước tối thiểu 10p (hiện tại: ${gapMinutes}p)`,
+        path: ["slots", next.originalIndex, "openTime"],
       })
-      return
     }
   }
 })
