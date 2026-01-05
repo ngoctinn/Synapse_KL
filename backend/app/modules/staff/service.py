@@ -21,6 +21,9 @@ from app.modules.staff.schemas import (
     StaffSkillsUpdate,
 )
 import requests
+from starlette.concurrency import run_in_threadpool
+
+
 
 
 async def get_all_staff(session: AsyncSession) -> Sequence[StaffProfile]:
@@ -93,8 +96,11 @@ async def invite_staff(session: AsyncSession, invite_in: StaffInviteRequest) -> 
 
             logger.info(f"📡 Direct Invite via Requests: {auth_url}")
 
-            # FIX: Dùng requests (Sync) để đảm bảo tính ổn định và tương thích
-            resp = requests.post(auth_url, headers=headers, json=payload)
+            # FIX: Use requests + run_in_threadpool to avoid Windows asyncio hangs while keeping non-blocking behavior
+            # FIX: Use requests + run_in_threadpool with partial to handle kwargs correctly
+            from functools import partial
+            post_cmd = partial(requests.post, auth_url, headers=headers, json=payload)
+            resp = await run_in_threadpool(post_cmd)
 
             # Xử lý trường hợp Exception từ Supabase
             if resp.status_code != 200:
@@ -189,10 +195,7 @@ async def invite_staff(session: AsyncSession, invite_in: StaffInviteRequest) -> 
         return staff_profile
 
 
-    except Exception as e:
-        error_str = str(e)
-        logger.error(f"DEBUG - Invite Error: {error_str}")
-        raise e
+
 
 
 async def create_staff_profile(
