@@ -30,6 +30,7 @@ interface BackendServiceWithDetails extends BackendService {
     skills: { id: string; name: string; code: string }[]
     resource_requirements: {
         group_id: string
+        group: { id: string; name: string; type: string }
         quantity: number
         start_delay: number
         usage_duration: number | null
@@ -77,6 +78,11 @@ function transformServiceWithDetails(data: BackendServiceWithDetails): ServiceWi
         })),
         resourceRequirements: data.resource_requirements.map((r) => ({
             groupId: r.group_id,
+            group: {
+                id: r.group.id,
+                name: r.group.name,
+                type: r.group.type,
+            },
             quantity: r.quantity,
             startDelay: r.start_delay,
             usageDuration: r.usage_duration,

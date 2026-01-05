@@ -1,7 +1,7 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Plus, Trash } from "lucide-react"
+import { Edit, Plus, Trash } from "lucide-react"
 import { useState, useTransition } from "react"
 import { useFieldArray, useForm, type SubmitHandler } from "react-hook-form"
 import { toast } from "sonner"
@@ -40,9 +40,9 @@ import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group"
 
 import type { ResourceGroup } from "@/features/resources/model/schemas"
 import type { Skill } from "@/features/skills/model/schemas"
-import { createService } from "../api/actions"
+import { updateService } from "../api/actions"
 import type { Category } from "../api/category-actions"
-import { serviceCreateSchema } from "../model/schemas"
+import { serviceUpdateSchema, type ServiceWithDetails } from "../model/schemas"
 
 // WHY: Solver granularity yêu cầu time slots chuẩn 15p increments để tối ưu scheduling
 const DURATION_OPTIONS = [15, 30, 45, 60, 75, 90, 120, 150, 180, 240] as const
@@ -55,33 +55,44 @@ function formatDuration(minutes: number): string {
   return mins > 0 ? `${hours}h ${mins}p` : `${hours} giờ`
 }
 
-interface CreateServiceSheetProps {
+interface EditServiceSheetProps {
+  service: ServiceWithDetails
   categories: Category[]
   skills: Skill[]
   resourceGroups: ResourceGroup[]
 }
 
-export function CreateServiceSheet({ categories, skills, resourceGroups }: CreateServiceSheetProps) {
+export function EditServiceSheet({ service, categories, skills, resourceGroups }: EditServiceSheetProps) {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
 
-  type FormValues = z.infer<typeof serviceCreateSchema>
+  type FormValues = z.infer<typeof serviceUpdateSchema>
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(serviceCreateSchema),
+    resolver: zodResolver(serviceUpdateSchema),
     defaultValues: {
-      name: "",
-      categoryId: null,
-      duration: 60,
-      bufferTime: 10,
-      price: 0,
-      description: null,
-      imageUrl: null,
-      isActive: true,
-      skillIds: [],
-      resourceRequirements: [],
+      name: service.name,
+      categoryId: service.category?.id ?? null,
+      duration: service.duration,
+      bufferTime: service.bufferTime,
+      price: service.price,
+      description: service.description,
+      imageUrl: service.imageUrl,
+      isActive: service.isActive,
+      skillIds: service.skills.map((s) => s.id),
+      resourceRequirements: service.resourceRequirements.map((r) => ({
+        groupId: r.group.id,
+        quantity: r.quantity,
+        startDelay: r.startDelay,
+        usageDuration: r.usageDuration,
+      })),
     },
   })
+
+  // Update form values when service prop changes (re-fetch)
+  // Trong trường hợp này service được pass từ Server Component nên sẽ fresh khi page reload
+  // Tuy nhiên nếu switch giữa các service khác nhau mà không reload page thì cần useEffect
+  // Nhưng ở đây sheet nằm trong page [id], id đổi -> page đổi -> component unmount/remount -> ok.
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -90,23 +101,22 @@ export function CreateServiceSheet({ categories, skills, resourceGroups }: Creat
 
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
     const formData = new FormData()
-    formData.append("name", values.name)
-    if (values.categoryId) formData.append("categoryId", values.categoryId)
-    formData.append("duration", String(values.duration))
-    formData.append("bufferTime", String(values.bufferTime))
-    formData.append("price", String(values.price))
-    if (values.description) formData.append("description", values.description)
-    if (values.imageUrl) formData.append("imageUrl", values.imageUrl)
-    formData.append("isActive", String(values.isActive))
-    formData.append("skillIds", JSON.stringify(values.skillIds))
-    formData.append("resourceRequirements", JSON.stringify(values.resourceRequirements))
+    if (values.name) formData.append("name", values.name)
+    if (values.categoryId !== undefined) formData.append("categoryId", values.categoryId ?? "")
+    if (values.duration) formData.append("duration", String(values.duration))
+    if (values.bufferTime !== undefined) formData.append("bufferTime", String(values.bufferTime))
+    if (values.price !== undefined) formData.append("price", String(values.price))
+    if (values.description !== undefined) formData.append("description", values.description ?? "")
+    if (values.imageUrl !== undefined) formData.append("imageUrl", values.imageUrl ?? "")
+    if (values.isActive !== undefined) formData.append("isActive", String(values.isActive))
+    if (values.skillIds) formData.append("skillIds", JSON.stringify(values.skillIds))
+    if (values.resourceRequirements) formData.append("resourceRequirements", JSON.stringify(values.resourceRequirements))
 
     startTransition(async () => {
-      const result = await createService(null, formData)
+      const result = await updateService(service.id, null, formData)
       if (result.success) {
         toast.success(result.message)
         setOpen(false)
-        form.reset()
       } else {
         toast.error(result.message)
       }
@@ -116,16 +126,16 @@ export function CreateServiceSheet({ categories, skills, resourceGroups }: Creat
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Thêm dịch vụ
+        <Button variant="outline" size="sm">
+          <Edit className="mr-2 h-4 w-4" />
+          Chỉnh sửa
         </Button>
       </SheetTrigger>
       <SheetContent className="w-[500px] sm:w-[600px] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>Thêm dịch vụ mới</SheetTitle>
+          <SheetTitle>Chỉnh sửa dịch vụ</SheetTitle>
           <SheetDescription>
-            Điền thông tin để tạo dịch vụ mới. Các trường có dấu * là bắt buộc.
+            Cập nhật thông tin dịch vụ.
           </SheetDescription>
         </SheetHeader>
 
@@ -475,7 +485,7 @@ export function CreateServiceSheet({ categories, skills, resourceGroups }: Creat
 
             <SheetFooter>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Đang tạo..." : "Tạo dịch vụ"}
+                {isPending ? "Đang lưu..." : "Lưu thay đổi"}
               </Button>
             </SheetFooter>
           </form>
@@ -484,4 +494,3 @@ export function CreateServiceSheet({ categories, skills, resourceGroups }: Creat
     </Sheet>
   )
 }
-

@@ -18,7 +18,7 @@ export const serviceCreateSchema = z.object({
     bufferTime: z.number().int().min(0, { error: "Thời gian nghỉ không được âm" }),
     price: z.number().min(0, { error: "Giá không được âm" }),
     description: z.string().nullable(),
-    imageUrl: z.string().url().nullable(),
+    imageUrl: z.string().url().or(z.literal("")).nullable(),
     isActive: z.boolean(),
     skillIds: z.array(z.string().uuid()).min(1, { error: "Phải chọn ít nhất 1 kỹ năng" }),
     resourceRequirements: z.array(serviceResourceRequirementSchema),
@@ -46,8 +46,15 @@ export interface ServiceSkill {
     code: string
 }
 
+export interface ServiceResourceGroup {
+    id: string
+    name: string
+    type: string
+}
+
 export interface ServiceResourceRequirementRead {
     groupId: string
+    group: ServiceResourceGroup
     quantity: number
     startDelay: number
     usageDuration: number | null

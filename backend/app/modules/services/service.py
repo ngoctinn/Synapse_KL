@@ -49,7 +49,9 @@ async def get_service_by_id(session: AsyncSession, service_id: UUID) -> Service 
         .options(
             selectinload(Service.category),
             selectinload(Service.skills),
-            selectinload(Service.resource_requirements),
+            selectinload(Service.resource_requirements).selectinload(
+                ServiceResourceRequirement.group
+            ),
         )
         .where(Service.id == service_id, Service.deleted_at.is_(None))
     )

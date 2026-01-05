@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation"
 
+import { getResourceGroups } from "@/features/resources/api/actions"
 import { getServiceDetail } from "@/features/services/api/actions"
+import { getCategories } from "@/features/services/api/category-actions"
+import { EditServiceSheet } from "@/features/services/ui"
 import { getSkills } from "@/features/skills/api/actions"
-import { ArrowLeft, Edit } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
 import { Badge } from "@/shared/ui/badge"
@@ -33,14 +36,18 @@ export default async function ServiceDetailPage({
   const { id } = await params
 
   try {
-    const [service, allSkills] = await Promise.all([
+    const [service, allSkills, categories, resourceGroupsResult] = await Promise.all([
       getServiceDetail(id),
       getSkills(),
+      getCategories(),
+      getResourceGroups(),
     ])
 
     if (!service) {
       notFound()
     }
+
+    const resourceGroups = resourceGroupsResult.success ? resourceGroupsResult.data : []
 
     return (
       <div className="flex h-full flex-col space-y-6 p-8">
@@ -69,10 +76,12 @@ export default async function ServiceDetailPage({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
-              <Edit className="mr-2 h-4 w-4" />
-              Chỉnh sửa
-            </Button>
+            <EditServiceSheet
+              service={service}
+              categories={categories}
+              skills={allSkills}
+              resourceGroups={resourceGroups}
+            />
           </div>
         </div>
 
@@ -109,6 +118,28 @@ export default async function ServiceDetailPage({
                     <div>
                       <p className="text-sm text-muted-foreground">Mô tả</p>
                       <p className="text-sm">{service.description}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-none">
+                <CardHeader className="px-0 pt-0">
+                  <CardTitle>Hình ảnh</CardTitle>
+                </CardHeader>
+                <CardContent className="px-0">
+                  {service.imageUrl ? (
+                    <div className="aspect-video w-full overflow-hidden rounded-lg border bg-muted">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={service.imageUrl}
+                        alt={service.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex aspect-video w-full items-center justify-center rounded-lg border bg-muted text-muted-foreground">
+                      Không có hình ảnh
                     </div>
                   )}
                 </CardContent>
@@ -154,7 +185,19 @@ export default async function ServiceDetailPage({
                     <div className="space-y-2">
                       {service.resourceRequirements.map((req, idx) => (
                         <div key={idx} className="flex items-center justify-between border p-3">
-                          <span className="text-sm">Nhóm {req.groupId.slice(0, 8)}...</span>
+                          <div>
+                            <span className="font-medium">{req.group.name}</span>
+                            <span className="text-sm text-muted-foreground ml-2">
+                              ({req.group.type})
+                            </span>
+                            {/* Hiển thị thêm thông tin timing nếu khác mặc định */}
+                            {(req.startDelay > 0 || req.usageDuration !== null) && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {req.startDelay > 0 && <span>Bắt đầu sau {req.startDelay}p</span>}
+                                {req.usageDuration !== null && <span> • Dùng {req.usageDuration}p</span>}
+                              </div>
+                            )}
+                          </div>
                           <span className="text-sm text-muted-foreground">
                             x{req.quantity}
                           </span>

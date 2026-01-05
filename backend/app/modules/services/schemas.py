@@ -13,6 +13,16 @@ from app.modules.categories.schemas import CategoryRead
 from app.modules.skills.schemas import SkillRead
 
 
+# WHY: Frontend cần group name để hiển thị, không thể chỉ có UUID
+class ResourceGroupMinimal(SQLModel):
+    """Minimal ResourceGroup info for nested responses."""
+    id: UUID
+    name: str
+    type: str  # ResourceType enum serialized as string
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 # Resource Requirement (nested in Service)
 class ServiceResourceRequirementCreate(SQLModel):
     group_id: UUID
@@ -23,6 +33,7 @@ class ServiceResourceRequirementCreate(SQLModel):
 
 class ServiceResourceRequirementRead(SQLModel):
     group_id: UUID
+    group: ResourceGroupMinimal  # WHY: Include nested để frontend có name
     quantity: int
     start_delay: int
     usage_duration: int | None
