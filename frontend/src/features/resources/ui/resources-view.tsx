@@ -160,14 +160,12 @@ export function ResourcesView({ groups, resources }: ResourcesViewProps) {
             </div>
 
             <div className="flex-1 overflow-auto p-6 bg-muted/5">
-              <div className="bg-background rounded-lg border shadow-sm p-4">
-                <ResourceList
-                  resources={resources}
-                  onEdit={handleEditResource}
-                  onDelete={handleDeleteResource}
-                  onCreate={handleCreateResource}
-                />
-              </div>
+              <ResourceList
+                resources={resources}
+                onEdit={handleEditResource}
+                onDelete={handleDeleteResource}
+                onCreate={handleCreateResource}
+              />
             </div>
           </>
         ) : (

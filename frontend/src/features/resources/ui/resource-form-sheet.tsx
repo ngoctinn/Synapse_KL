@@ -129,46 +129,91 @@ export function ResourceFormSheet({
         </SheetHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-6">
-            <FormField
-              control={form.control}
-              name="group_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Thuộc nhóm</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    value={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn nhóm tài nguyên" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {groups.map((group) => (
-                        <SelectItem key={group.id} value={group.id}>
-                          {group.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+            <div className="space-y-6 px-4">
               <FormField
                 control={form.control}
-                name="name"
+                name="group_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tên thiết bị</FormLabel>
-                    <FormControl>
-                      <Input placeholder="VD: Giường 01" {...field} />
-                    </FormControl>
+                    <FormLabel>Thuộc nhóm</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Chọn nhóm tài nguyên" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {groups.map((group) => (
+                          <SelectItem key={group.id} value={group.id}>
+                            {group.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tên thiết bị</FormLabel>
+                      <FormControl>
+                        <Input placeholder="VD: Giường 01" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="code"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mã (Code)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="VD: BED-01" {...field} value={field.value || ""} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Trạng thái</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Chọn trạng thái" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.entries(RESOURCE_STATUS_LABELS).map(([value, label]) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -176,67 +221,24 @@ export function ResourceFormSheet({
 
               <FormField
                 control={form.control}
-                name="code"
+                name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mã (Code)</FormLabel>
+                    <FormLabel>Mô tả (Tùy chọn)</FormLabel>
                     <FormControl>
-                      <Input placeholder="VD: BED-01" {...field} value={field.value || ""} />
+                      <Textarea
+                        placeholder="Ghi chú về tình trạng, vị trí..."
+                        className="resize-none"
+                        {...field}
+                        value={field.value || ""}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
             </div>
-
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Trạng thái</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    value={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn trạng thái" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {Object.entries(RESOURCE_STATUS_LABELS).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Mô tả (Tùy chọn)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Ghi chú về tình trạng, vị trí..."
-                      className="resize-none"
-                      {...field}
-                      value={field.value || ""}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <SheetFooter>
               <Button type="submit" disabled={isPending}>
                 {isPending ? "Đang lưu..." : isEditMode ? "Lưu thay đổi" : "Thêm thiết bị"}

@@ -305,7 +305,7 @@ export function ExceptionDateForm() {
         </Sheet>
       </div>
 
-      <div className="border rounded-md">
+      <div className="border rounded-md bg-background">
         <Table>
           <TableHeader>
             <TableRow>

@@ -85,7 +85,7 @@ export function ServiceList({ services, onEdit, onDelete }: ServiceListProps) {
 
   return (
     <>
-      <div className="rounded-md border">
+      <div className="rounded-md border bg-background">
         <Table>
           <TableHeader>
             <TableRow>

@@ -115,11 +115,11 @@ export function ServiceView({
             </Button>
           </div>
 
-          <ServiceTableToolbar />
         </div>
 
         <div className="flex-1 overflow-auto p-6">
-          <div className="bg-background rounded-lg border shadow-sm p-4">
+          <div className="flex flex-col gap-4">
+            <ServiceTableToolbar />
             <ServiceList
               services={services}
               onEdit={handleEditClick}

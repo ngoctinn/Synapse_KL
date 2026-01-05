@@ -115,68 +115,70 @@ export function ResourceGroupSheet({
         </SheetHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-6">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tên nhóm</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ví dụ: Giường Massage" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Loại tài nguyên</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={isEditMode} // WHY: Không đổi loại khi đã tạo
-                  >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+            <div className="space-y-6 px-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tên nhóm</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn loại" />
-                      </SelectTrigger>
+                      <Input placeholder="Ví dụ: Giường Massage" {...field} />
                     </FormControl>
-                    <SelectContent>
-                      {Object.entries(RESOURCE_TYPE_LABELS).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Mô tả (Tùy chọn)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Ghi chú thêm về nhóm này..."
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Loại tài nguyên</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={isEditMode} // WHY: Không đổi loại khi đã tạo
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Chọn loại" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.entries(RESOURCE_TYPE_LABELS).map(([value, label]) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mô tả (Tùy chọn)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Ghi chú thêm về nhóm này..."
+                        className="resize-none"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+            </div>
             <SheetFooter>
               <Button type="submit" disabled={isPending}>
                 {isPending ? "Đang lưu..." : isEditMode ? "Lưu thay đổi" : "Tạo nhóm"}

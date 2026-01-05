@@ -1,9 +1,8 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Plus, Trash } from "lucide-react"
 import { useState, useTransition } from "react"
-import { useFieldArray, useForm, type SubmitHandler } from "react-hook-form"
+import { useForm, type SubmitHandler } from "react-hook-form"
 import { toast } from "sonner"
 import { z } from "zod"
 
@@ -45,6 +44,7 @@ import { formatDuration } from "@/shared/lib/format"
 import { createService } from "../api/actions"
 import { SERVICE_BUFFER_OPTIONS, SERVICE_DURATION_OPTIONS } from "../config/constants"
 import { serviceCreateSchema } from "../model/schemas"
+import { ResourceRequirementsList } from "./resource-requirements-list"
 
 interface CreateServiceSheetProps {
   categories: Category[]
@@ -85,10 +85,7 @@ export function CreateServiceSheet({
     },
   })
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "resourceRequirements",
-  })
+
 
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
     const formData = new FormData()
@@ -127,70 +124,42 @@ export function CreateServiceSheet({
         </SheetHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-6">
-            {/* Thông tin cơ bản */}
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tên dịch vụ *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="VD: Massage Thái 90 phút" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="categoryId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Danh mục</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value ?? undefined}
-                  >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+            <div className="space-y-6 px-4">
+              {/* Thông tin cơ bản */}
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tên dịch vụ *</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn danh mục" />
-                      </SelectTrigger>
+                      <Input placeholder="VD: Massage Thái 90 phút" {...field} />
                     </FormControl>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="duration"
+                name="categoryId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Thời lượng *</FormLabel>
+                    <FormLabel>Danh mục</FormLabel>
                     <Select
-                      onValueChange={(v) => field.onChange(Number(v))}
-                      value={String(field.value)}
+                      onValueChange={field.onChange}
+                      value={field.value ?? undefined}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue placeholder="Chọn danh mục" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {SERVICE_DURATION_OPTIONS.map((m) => (
-                          <SelectItem key={m} value={String(m)}>
-                            {formatDuration(m)}
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.id}>
+                            {cat.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -200,290 +169,192 @@ export function CreateServiceSheet({
                 )}
               />
 
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="duration"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Thời lượng *</FormLabel>
+                      <Select
+                        onValueChange={(v) => field.onChange(Number(v))}
+                        value={String(field.value)}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {SERVICE_DURATION_OPTIONS.map((m) => (
+                            <SelectItem key={m} value={String(m)}>
+                              {formatDuration(m)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="bufferTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Thời gian nghỉ</FormLabel>
+                      <Select
+                        onValueChange={(v) => field.onChange(Number(v))}
+                        value={String(field.value)}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {SERVICE_BUFFER_OPTIONS.map((m) => (
+                            <SelectItem key={m} value={String(m)}>
+                              {m === 0 ? "Không cần" : `${m} phút`}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>Vệ sinh/chuẩn bị (khuyến nghị: 10-15p)</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
                 control={form.control}
-                name="bufferTime"
+                name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Thời gian nghỉ</FormLabel>
-                    <Select
-                      onValueChange={(v) => field.onChange(Number(v))}
-                      value={String(field.value)}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {SERVICE_BUFFER_OPTIONS.map((m) => (
-                          <SelectItem key={m} value={String(m)}>
-                            {m === 0 ? "Không cần" : `${m} phút`}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>Vệ sinh/chuẩn bị (khuyến nghị: 10-15p)</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Giá (VNĐ) *</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        min={0}
-                        step={1000}
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                        className="pr-12"
-                      />
-                      <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-muted-foreground text-sm">
-                        VNĐ
+                    <FormLabel>Giá (VNĐ) *</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1000}
+                          {...field}
+                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          className="pr-12"
+                        />
+                        <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-muted-foreground text-sm">
+                          VNĐ
+                        </div>
                       </div>
-                    </div>
-                  </FormControl>
-                  <FormDescription>
-                    Hiển thị: {field.value ? new Intl.NumberFormat("vi-VN").format(Number(field.value)) : "0"} VNĐ
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Mô tả</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Mô tả chi tiết về dịch vụ..."
-                      className="min-h-[80px] resize-none"
-                      {...field}
-                      value={field.value ?? ""}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="imageUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Hình ảnh</FormLabel>
-                  <FormControl>
-                    <ImageUpload
-                      value={field.value}
-                      onChange={field.onChange}
-                      bucketName="service-images"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Kỹ năng yêu cầu */}
-            <FormField
-              control={form.control}
-              name="skillIds"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Kỹ năng yêu cầu *</FormLabel>
-                  <FormDescription>
-                    Nhân viên cần có TẤT CẢ các kỹ năng này để thực hiện dịch vụ.
-                  </FormDescription>
-                  <ToggleGroup
-                    type="multiple"
-                    variant="outline"
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    className="flex flex-wrap gap-2"
-                  >
-                    {skills.map((skill) => (
-                      <ToggleGroupItem
-                        key={skill.id}
-                        value={skill.id}
-                        className="data-[state=on]:border-primary data-[state=on]:bg-primary/5"
-                      >
-                        {skill.name}
-                      </ToggleGroupItem>
-                    ))}
-                  </ToggleGroup>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Tài nguyên yêu cầu - useFieldArray */}
-            <div className="space-y-4">
-              <FormLabel>Tài nguyên yêu cầu</FormLabel>
-              <FormDescription>
-                Thiết bị/phòng cần thiết. Mặc định dùng suốt thời gian dịch vụ.
-              </FormDescription>
-
-              {fields.map((field, index) => (
-                <div key={field.id} className="grid gap-4 border p-4 relative">
-                  <div className="grid grid-cols-12 gap-2">
-                    <FormField
-                      control={form.control}
-                      name={`resourceRequirements.${index}.groupId`}
-                      render={({ field }) => (
-                        <FormItem className="col-span-8">
-                          <FormLabel className="text-xs">Nhóm tài nguyên *</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Chọn nhóm" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {resourceGroups.map((g) => (
-                                <SelectItem key={g.id} value={g.id}>
-                                  {g.name} ({g.type})
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name={`resourceRequirements.${index}.quantity`}
-                      render={({ field }) => (
-                        <FormItem className="col-span-3">
-                          <FormLabel className="text-xs">Số lượng *</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              min={1}
-                              {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="col-span-1 flex items-end justify-end">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
-                        onClick={() => remove(index)}
-                      >
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Advanced Timing */}
-                  <div className="grid grid-cols-2 gap-4 pt-2 border-t border-dashed">
-                    <FormField
-                      control={form.control}
-                      name={`resourceRequirements.${index}.startDelay`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs text-muted-foreground">Bắt đầu sau</FormLabel>
-                          <Select
-                            onValueChange={(v) => field.onChange(Number(v))}
-                            value={String(field.value ?? 0)}
-                          >
-                            <FormControl>
-                              <SelectTrigger className="h-8 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="0">Ngay lập tức (0p)</SelectItem>
-                              {SERVICE_DURATION_OPTIONS.map((m) => (
-                                <SelectItem key={m} value={String(m)}>{m} phút</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name={`resourceRequirements.${index}.usageDuration`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs text-muted-foreground">Dùng trong</FormLabel>
-                          <Select
-                            onValueChange={(v) => field.onChange(v === "null" ? null : Number(v))}
-                            value={String(field.value ?? "null")}
-                          >
-                            <FormControl>
-                              <SelectTrigger className="h-8 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="null">Hết dịch vụ</SelectItem>
-                              {SERVICE_DURATION_OPTIONS.map((m) => (
-                                <SelectItem key={m} value={String(m)}>{m} phút</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              ))}
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => append({ groupId: "", quantity: 1, startDelay: 0, usageDuration: null })}
-              >
-                <Plus className="mr-2 h-4 w-4" /> Thêm tài nguyên
-              </Button>
-            </div>
-
-            {/* Trạng thái */}
-            <FormField
-              control={form.control}
-              name="isActive"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel>Kích hoạt dịch vụ</FormLabel>
+                    </FormControl>
                     <FormDescription>
-                      Dịch vụ sẽ xuất hiện trong danh sách đặt lịch.
+                      Hiển thị: {field.value ? new Intl.NumberFormat("vi-VN").format(Number(field.value)) : "0"} VNĐ
                     </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mô tả</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Mô tả chi tiết về dịch vụ..."
+                        className="min-h-[80px] resize-none"
+                        {...field}
+                        value={field.value ?? ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="imageUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Hình ảnh</FormLabel>
+                    <FormControl>
+                      <ImageUpload
+                        value={field.value}
+                        onChange={field.onChange}
+                        bucketName="service-images"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Kỹ năng yêu cầu */}
+              <FormField
+                control={form.control}
+                name="skillIds"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Kỹ năng yêu cầu *</FormLabel>
+                    <FormDescription>
+                      Nhân viên cần có TẤT CẢ các kỹ năng này để thực hiện dịch vụ.
+                    </FormDescription>
+                    <ToggleGroup
+                      type="multiple"
+                      variant="outline"
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      className="flex flex-wrap gap-2"
+                    >
+                      {skills.map((skill) => (
+                        <ToggleGroupItem
+                          key={skill.id}
+                          value={skill.id}
+                          className="data-[state=on]:border-primary data-[state=on]:bg-primary/5"
+                        >
+                          {skill.name}
+                        </ToggleGroupItem>
+                      ))}
+                    </ToggleGroup>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Tài nguyên yêu cầu - Refactored */}
+              <ResourceRequirementsList
+                control={form.control}
+                resourceGroups={resourceGroups}
+              />
+
+              {/* Trạng thái */}
+              <FormField
+                control={form.control}
+                name="isActive"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel>Kích hoạt dịch vụ</FormLabel>
+                      <FormDescription>
+                        Dịch vụ sẽ xuất hiện trong danh sách đặt lịch.
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+            </div>
             <SheetFooter>
               <Button type="submit" disabled={isPending}>
                 {isPending ? "Đang tạo..." : "Tạo dịch vụ"}

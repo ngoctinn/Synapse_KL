@@ -106,7 +106,7 @@ export function StaffList({ staff }: StaffListProps) {
 
   return (
     <>
-      <div className="rounded-md border">
+      <div className="rounded-md border bg-background">
         <Table>
           <TableHeader>
             <TableRow>

@@ -82,6 +82,10 @@ export function TimeSlotRow({ dayIndex, onCopyToAll }: TimeSlotRowProps) {
     append({ openTime: newOpenTime, closeTime: newCloseTime })
   }
 
+  // Helper to ensure valid TimePicker value
+  // While TimePicker uses string, ensuring fallback prevents errors
+  const safeTimeValue = (val: any) => typeof val === 'string' ? val : "00:00"
+
   return (
     <Card className="mb-4">
       <CardContent className="p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
@@ -116,7 +120,7 @@ export function TimeSlotRow({ dayIndex, onCopyToAll }: TimeSlotRowProps) {
                         <FormLabel>Giờ mở</FormLabel>
                         <FormControl>
                           <TimePicker
-                            value={field.value}
+                            value={safeTimeValue(field.value)}
                             onChange={(v) => {
                               field.onChange(v);
                               // Trigger validation to re-check "Open < Close" rule
@@ -145,7 +149,7 @@ export function TimeSlotRow({ dayIndex, onCopyToAll }: TimeSlotRowProps) {
                         <FormLabel>Giờ đóng</FormLabel>
                         <FormControl>
                           <TimePicker
-                            value={field.value}
+                            value={safeTimeValue(field.value)}
                             onChange={(v) => {
                               field.onChange(v);
                               // Trigger validation to re-check "Open < Close" rule
@@ -176,8 +180,7 @@ export function TimeSlotRow({ dayIndex, onCopyToAll }: TimeSlotRowProps) {
             <Button
               type="button"
               variant="outline"
-              size="sm"
-              className="w-full sm:w-auto self-start"
+              className="w-full border-dashed"
               onClick={handleAddSlot}
             >
               <Plus className="h-4 w-4 mr-2" /> Thêm ca
@@ -191,7 +194,7 @@ export function TimeSlotRow({ dayIndex, onCopyToAll }: TimeSlotRowProps) {
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 text-xs w-[160px] justify-between">
+                <Button variant="outline" className="w-[160px] justify-between">
                   Sao chép lịch...
                   <Copy className="h-3 w-3 ml-2 opacity-50" />
                 </Button>

@@ -84,35 +84,37 @@ export function CategorySheet({ open, onOpenChange, initialData }: CategorySheet
         </SheetHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tên danh mục</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ví dụ: Chăm sóc da" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+            <div className="space-y-4 px-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tên danh mục</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ví dụ: Chăm sóc da" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Mô tả (Tùy chọn)</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Mô tả ngắn về danh mục..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mô tả (Tùy chọn)</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Mô tả ngắn về danh mục..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
+            </div>
             <SheetFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Hủy
