@@ -26,3 +26,6 @@ from app.modules.staff.models import UserProfile, StaffProfile  # noqa: F401
 
 # 6. Scheduling phụ thuộc StaffProfile
 from app.modules.scheduling.models import StaffSchedule  # noqa: F401
+
+# 7. Bookings phụ thuộc Customer, Service, Staff, Resource
+from app.modules.bookings.models import Booking, BookingItem  # noqa: F401

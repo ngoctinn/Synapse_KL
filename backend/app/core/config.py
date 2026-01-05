@@ -64,6 +64,11 @@ class Settings(BaseSettings):
     SUPABASE_SERVICE_ROLE_KEY: str = "" # Admin Key (Backend only)
     FRONTEND_URL: str = "http://localhost:3000"
 
+    # Redis/Upstash Configuration
+    # WHY: Dùng Upstash Redis cho background job queue (ARQ)
+    UPSTASH_REDIS_URL: str = ""  # Format: redis://default:password@hostname:port
+    UPSTASH_REDIS_TOKEN: str = ""  # REST API token (optional, for Upstash REST API)
+
     # Database SSL Configuration
     # Set to "true" in dev/local environments with self-signed certs (Supabase Pooler)
     # Set to "false" (or leave unset) in production with proper SSL certs

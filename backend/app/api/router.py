@@ -9,11 +9,13 @@ from app.modules.skills.router import router as skills_router
 from app.modules.staff.router import router as staff_router
 from app.modules.system.router import router as system_router
 from app.modules.customers.router import router as customers_router
+from app.modules.bookings.router import router as bookings_router
 
 api_router = APIRouter()
 
 # Đăng ký các module router
 api_router.include_router(system_router, prefix="/system", tags=["System"])
+api_router.include_router(bookings_router)
 api_router.include_router(settings_router)
 api_router.include_router(skills_router)
 api_router.include_router(categories_router)
