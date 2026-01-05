@@ -58,11 +58,11 @@ function RoleBadge({ role }: { role?: UserRole }) {
 
   switch (role) {
     case UserRole.MANAGER:
-      return <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200 border-purple-200">{STAFF_ROLE_LABELS[role]}</Badge>
+      return <Badge className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20">{STAFF_ROLE_LABELS[role]}</Badge>
     case UserRole.RECEPTIONIST:
-      return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200">{STAFF_ROLE_LABELS[role]}</Badge>
+      return <Badge variant="secondary" className="border-secondary-foreground/10">{STAFF_ROLE_LABELS[role]}</Badge>
     case UserRole.TECHNICIAN:
-      return <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200">{STAFF_ROLE_LABELS[role]}</Badge>
+      return <Badge className="bg-accent text-accent-foreground hover:bg-accent/80">{STAFF_ROLE_LABELS[role]}</Badge>
     case UserRole.CUSTOMER:
       return <Badge variant="outline">{STAFF_ROLE_LABELS[role]}</Badge>
     default:
@@ -154,7 +154,7 @@ export function StaffList({ staff }: StaffListProps) {
                       <Avatar className="h-9 w-9">
                         <AvatarImage src={item.avatarUrl} alt={item.fullName} />
                         <AvatarFallback
-                          style={{ backgroundColor: item.colorCode || "#6366F1", color: "white" }}
+                          className="bg-primary text-primary-foreground font-medium"
                         >
                           {getInitials(item.fullName)}
                         </AvatarFallback>

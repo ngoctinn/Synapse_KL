@@ -1,6 +1,6 @@
 "use client"
 
-import { Bed, Calendar, Home, Settings, Sparkles, UserCircle, Users } from "lucide-react"
+import { Award, Bed, Calendar, Home, Settings, Sparkles, UserCircle, Users } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -46,6 +46,11 @@ const items = [
     title: "Tài nguyên",
     url: "/admin/resources",
     icon: Bed,
+  },
+  {
+    title: "Kỹ năng",
+    url: "/admin/skills",
+    icon: Award,
   },
   {
     title: "Cài đặt",

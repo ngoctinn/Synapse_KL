@@ -1,12 +1,30 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
+import { Check, Plus } from "lucide-react"
 import { useState, useTransition } from "react"
 import { useForm, type SubmitHandler } from "react-hook-form"
 import { toast } from "sonner"
 import { z } from "zod"
 
+import { createSkill } from "@/features/skills/api/actions"
+import { formatDuration } from "@/shared/lib/format"
+import { cn } from "@/shared/lib/utils"
+
+import type { Category } from "@/features/categories/model/schemas"
+import type { ResourceGroup } from "@/features/resources/model/schemas"
+import type { Skill } from "@/features/skills/model/schemas"
+import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/shared/ui/dialog"
 import {
   Form,
   FormControl,
@@ -18,6 +36,7 @@ import {
 } from "@/shared/ui/form"
 import { ImageUpload } from "@/shared/ui/image-upload"
 import { Input } from "@/shared/ui/input"
+import { Label } from "@/shared/ui/label"
 import {
   Select,
   SelectContent,
@@ -35,12 +54,7 @@ import {
 } from "@/shared/ui/sheet"
 import { Switch } from "@/shared/ui/switch"
 import { Textarea } from "@/shared/ui/textarea"
-import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group"
 
-import type { Category } from "@/features/categories/model/schemas"
-import type { ResourceGroup } from "@/features/resources/model/schemas"
-import type { Skill } from "@/features/skills/model/schemas"
-import { formatDuration } from "@/shared/lib/format"
 import { createService } from "../api/actions"
 import { SERVICE_BUFFER_OPTIONS, SERVICE_DURATION_OPTIONS } from "../config/constants"
 import { serviceCreateSchema } from "../model/schemas"
@@ -63,6 +77,9 @@ export function CreateServiceSheet({
 }: CreateServiceSheetProps) {
   const [internalOpen, setInternalOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [skillsState, setSkillsState] = useState<Skill[]>(skills)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 
   const open = controlledOpen ?? internalOpen
   const setOpen = setControlledOpen ?? setInternalOpen
@@ -84,6 +101,38 @@ export function CreateServiceSheet({
       resourceRequirements: [],
     },
   })
+
+  // WHY: Lấy danh sách ID đã chọn để toggle
+  const selectedSkillIds = form.watch("skillIds") || []
+
+  const handleToggleSkill = (skillId: string) => {
+    const current = form.getValues("skillIds") || []
+    if (current.includes(skillId)) {
+      form.setValue("skillIds", current.filter(id => id !== skillId))
+    } else {
+      form.setValue("skillIds", [...current, skillId])
+    }
+  }
+
+  const handleCreateNewSkill = async () => {
+    const name = searchQuery.trim()
+    if (!name) return
+
+    startTransition(async () => {
+      const result = await createSkill({ name })
+      if (!result.success) {
+        toast.error(result.error || "Không thể tạo kỹ năng")
+        return
+      }
+
+      const newSkill = result.data as Skill
+      setSkillsState(prev => [...prev, newSkill])
+      handleToggleSkill(newSkill.id)
+      setSearchQuery("")
+      setIsPopoverOpen(false)
+      toast.success(`Đã tạo kỹ năng mới: ${newSkill.name} `)
+    })
+  }
 
 
 
@@ -114,9 +163,9 @@ export function CreateServiceSheet({
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetContent className="w-[500px] sm:w-[600px] overflow-y-auto">
+      <SheetContent className="p-0 w-[500px] sm:w-[600px] overflow-y-auto">
 
-        <SheetHeader>
+        <SheetHeader className="p-4 pb-0">
           <SheetTitle>Thêm dịch vụ mới</SheetTitle>
           <SheetDescription>
             Điền thông tin để tạo dịch vụ mới. Các trường có dấu * là bắt buộc.
@@ -298,29 +347,74 @@ export function CreateServiceSheet({
               <FormField
                 control={form.control}
                 name="skillIds"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <FormLabel>Kỹ năng yêu cầu *</FormLabel>
                     <FormDescription>
                       Nhân viên cần có TẤT CẢ các kỹ năng này để thực hiện dịch vụ.
                     </FormDescription>
-                    <ToggleGroup
-                      type="multiple"
-                      variant="outline"
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      className="flex flex-wrap gap-2"
-                    >
-                      {skills.map((skill) => (
-                        <ToggleGroupItem
-                          key={skill.id}
-                          value={skill.id}
-                          className="data-[state=on]:border-primary data-[state=on]:bg-primary/5"
-                        >
-                          {skill.name}
-                        </ToggleGroupItem>
-                      ))}
-                    </ToggleGroup>
+                    <div className="flex flex-wrap gap-2 p-4 border rounded-lg bg-muted/5 min-h-[100px] items-start mt-2">
+                      {skillsState.map(skill => {
+                        const isSelected = selectedSkillIds.includes(skill.id)
+                        return (
+                          <Badge
+                            key={skill.id}
+                            variant={isSelected ? "default" : "outline"}
+                            className={cn(
+                              "cursor-pointer px-3 py-1.5 transition-all hover:scale-105 active:scale-95 select-none",
+                              isSelected ? "shadow-sm" : "text-muted-foreground hover:bg-background"
+                            )}
+                            onClick={() => handleToggleSkill(skill.id)}
+                          >
+                            {skill.name}
+                            {isSelected && <Check className="ml-1.5 h-3 w-3" />}
+                          </Badge>
+                        )
+                      })}
+
+                      <Dialog open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                        <DialogTrigger asChild>
+                          <Button type="button" variant="outline" size="sm" className="h-8 border-dashed gap-1 px-3">
+                            <Plus className="h-4 w-4" />
+                            <span>Kỹ năng mới</span>
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="p-0 sm:max-w-[425px]">
+                          <DialogHeader className="p-4 pb-0">
+                            <DialogTitle>Thêm kỹ năng mới</DialogTitle>
+                            <DialogDescription>
+                              Tạo kỹ năng mới nhanh chóng để gán ngay cho dịch vụ này.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="grid gap-4 py-4 px-4">
+                            <div className="grid gap-2">
+                              <Label htmlFor="new-skill-service">Tên kỹ năng</Label>
+                              <Input
+                                id="new-skill-service"
+                                placeholder="VD: Massage Thụy Điển chuyên sâu"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.preventDefault()
+                                    handleCreateNewSkill()
+                                  }
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <DialogFooter className="p-4 pt-0">
+                            <Button
+                              type="button"
+                              onClick={handleCreateNewSkill}
+                              disabled={isPending || !searchQuery.trim()}
+                            >
+                              {isPending ? "Đang tạo..." : "Xác nhận tạo"}
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -355,8 +449,8 @@ export function CreateServiceSheet({
               />
 
             </div>
-            <SheetFooter>
-              <Button type="submit" disabled={isPending}>
+            <SheetFooter className="p-4 pt-0">
+              <Button type="submit" disabled={isPending} className="w-full">
                 {isPending ? "Đang tạo..." : "Tạo dịch vụ"}
               </Button>
             </SheetFooter>

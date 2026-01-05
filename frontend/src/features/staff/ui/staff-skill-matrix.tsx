@@ -1,6 +1,6 @@
 "use client"
 
-import { Check, Loader2, Plus, X } from "lucide-react"
+import { Check, Loader2, Plus } from "lucide-react"
 import { useMemo, useState, useTransition } from "react"
 import { toast } from "sonner"
 
@@ -11,14 +11,16 @@ import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card"
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/shared/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover"
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/shared/ui/dialog"
+import { Input } from "@/shared/ui/input"
+import { Label } from "@/shared/ui/label"
 import { updateStaffSkills } from "../api/actions"
 import { type StaffProfile } from "../model/schemas"
 
@@ -105,100 +107,81 @@ export function StaffSkillMatrix({ staff, allSkills }: StaffSkillMatrixProps) {
         </div>
       </CardHeader>
       <CardContent className="px-0 space-y-4">
-        <div className="flex flex-wrap gap-2 p-4 border rounded-lg bg-muted/30 min-h-[100px] items-start content-start">
-          {activeSkills.length === 0 && !isPending && (
-            <p className="text-sm text-muted-foreground w-full text-center py-6">
-              Chưa có kỹ năng nào được gán. Hãy chọn hoặc tạo mới bên dưới.
-            </p>
-          )}
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-2 min-h-[100px] items-start">
+            {skills.map(skill => {
+              const isSelected = selectedSkillIds.includes(skill.id)
+              return (
+                <Badge
+                  key={skill.id}
+                  variant={isSelected ? "default" : "outline"}
+                  className={cn(
+                    "cursor-pointer px-3 py-1.5 transition-all hover:scale-105 active:scale-95 select-none",
+                    isSelected ? "shadow-sm" : "text-muted-foreground hover:bg-accent"
+                  )}
+                  onClick={() => handleToggleSkill(skill.id)}
+                >
+                  {skill.name}
+                  {isSelected && <Check className="ml-1.5 h-3 w-3" />}
+                </Badge>
+              )
+            })}
 
-          {activeSkills.map(skill => (
-            <Badge
-              key={skill.id}
-              variant="secondary"
-              className="pl-3 pr-1 py-1.5 gap-1 group hover:bg-destructive/10 hover:text-destructive transition-colors border-primary/20"
-            >
-              <span className="font-medium text-xs">{skill.name}</span>
-              <button
-                onClick={() => handleToggleSkill(skill.id)}
-                className="p-0.5 rounded-full hover:bg-destructive hover:text-white transition-colors"
-                title="Gỡ bỏ"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
-          ))}
+            <Dialog open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 border-dashed gap-1 px-3">
+                  <Plus className="h-4 w-4" />
+                  <span>Kỹ năng mới</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Thêm kỹ năng mới</DialogTitle>
+                  <DialogDescription>
+                    Tạo một kỹ năng mới để gán cho nhân viên này và những người khác.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="name">Tên kỹ năng</Label>
+                    <Input
+                      id="name"
+                      placeholder="VD: Massage Thụy Điển"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault()
+                          handleCreateNewSkill()
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    onClick={handleCreateNewSkill}
+                    disabled={isPending || !searchQuery.trim()}
+                  >
+                    {isPending ? "Đang tạo..." : "Xác nhận tạo"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
 
-
-          <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 border-dashed gap-1 bg-background">
-                <Plus className="h-4 w-4" />
-                <span>Thêm/Tạo mới</span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[300px] p-0" align="start">
-              <Command>
-                <CommandInput
-                  placeholder="Tìm hoặc nhập kỹ năng mới..."
-                  value={searchQuery}
-                  onValueChange={setSearchQuery}
-                />
-                <CommandList>
-                  <CommandEmpty>
-                    {searchQuery.trim() !== "" ? (
-                      <div className="p-2">
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-start text-primary gap-2 h-9"
-                          onClick={handleCreateNewSkill}
-                          disabled={isPending}
-                        >
-                          <Plus className="h-4 w-4" />
-                          <span className="truncate">Tạo mới: "{searchQuery}"</span>
-                        </Button>
-                      </div>
-                    ) : (
-                      "Không tìm thấy kỹ năng."
-                    )}
-                  </CommandEmpty>
-                  <CommandGroup heading="Kỹ năng hiện có">
-                    {filteredSuggestions.map(skill => (
-                      <CommandItem
-                        key={skill.id}
-                        value={skill.name}
-                        onSelect={() => {
-                          handleToggleSkill(skill.id)
-                          setSearchQuery("")
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            selectedSkillIds.includes(skill.id) ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        <span>{skill.name}</span>
-                        <span className="ml-auto text-[10px] text-muted-foreground opacity-50">{skill.code}</span>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        <div className="rounded-md bg-blue-50 p-4 border border-blue-100">
-          <div className="flex gap-3">
-            <div className="p-1 h-fit rounded-full bg-blue-100 text-blue-600">
-              <Check className="h-4 w-4" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-blue-900">Tính năng thông minh</p>
-              <p className="text-xs text-blue-700 leading-relaxed">
-                Hệ thống tự động sử dụng danh sách Kỹ năng này để tối ưu hóa việc sắp xếp lịch hẹn thông qua bộ giải thuật Synapse RCPSP.
-              </p>
+          <div className="rounded-md bg-blue-50 p-4 border border-blue-100">
+            <div className="flex gap-3">
+              <div className="p-1 h-fit rounded-full bg-blue-100 text-blue-600">
+                <Check className="h-4 w-4" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-blue-900">Tính năng thông minh</p>
+                <p className="text-xs text-blue-700 leading-relaxed">
+                  Hệ thống tự động sử dụng danh sách Kỹ năng này để tối ưu hóa việc sắp xếp lịch hẹn thông qua bộ giải thuật Synapse RCPSP.
+                </p>
+              </div>
             </div>
           </div>
         </div>

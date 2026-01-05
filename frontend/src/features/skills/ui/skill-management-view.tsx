@@ -228,8 +228,8 @@ export function SkillManagementView({ initialSkills }: SkillListViewProps) {
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="p-0 sm:max-w-[425px]">
+          <DialogHeader className="p-4 pb-0">
             <DialogTitle>{editingSkill ? "Cập nhật kỹ năng" : "Thêm kỹ năng mới"}</DialogTitle>
             <DialogDescription>
               Thông tin này giúp hệ thống tự động gán nhân viên phù hợp cho lịch hẹn.
@@ -237,58 +237,62 @@ export function SkillManagementView({ initialSkills }: SkillListViewProps) {
           </DialogHeader>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tên kỹ năng</FormLabel>
-                    <FormControl>
-                      <Input placeholder="VD: Massage Thụy Điển" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+              <div className="space-y-6 px-4">
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tên kỹ năng</FormLabel>
+                        <FormControl>
+                          <Input placeholder="VD: Massage Thụy Điển" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="code"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Mã định danh (Code)</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="VD: MASSAGE_SWEDISH"
-                        {...field}
-                        readOnly={!!editingSkill}
-                        className={editingSkill ? "bg-muted" : ""}
-                      />
-                    </FormControl>
-                    <FormDescription className="text-[10px]">
-                      Mã code là duy nhất và không nên thay đổi sau khi tạo.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={form.control}
+                    name="code"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Mã định danh (Code)</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="VD: MASSAGE_SWEDISH"
+                            {...field}
+                            readOnly={!!editingSkill}
+                            className={editingSkill ? "bg-accent/50" : ""}
+                          />
+                        </FormControl>
+                        <FormDescription className="text-[10px]">
+                          Mã code là duy nhất và không nên thay đổi sau khi tạo.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Mô tả</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Chi tiết về kỹ năng này..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Mô tả</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Chi tiết về kỹ năng này..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
 
-              <DialogFooter>
+              <DialogFooter className="p-4 pt-0">
                 <Button variant="outline" type="button" onClick={() => setIsDialogOpen(false)}>Hủy</Button>
                 <Button type="submit" disabled={isPending}>
                   {isPending ? "Đang xử lý..." : editingSkill ? "Cập nhật" : "Tạo mới"}

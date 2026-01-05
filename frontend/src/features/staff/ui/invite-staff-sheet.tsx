@@ -2,15 +2,18 @@
 
 import { cn } from "@/shared/lib/utils"
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/shared/ui/command"
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/shared/ui/dialog"
+import { Input } from "@/shared/ui/input"
+import { Label } from "@/shared/ui/label"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Check, Plus, X } from "lucide-react"
+import { Check, Plus } from "lucide-react"
 import { useMemo, useState, useTransition } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
 import { toast } from "sonner"
@@ -24,7 +27,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/shared/ui/form"
-import { Input } from "@/shared/ui/input"
 import {
   Select,
   SelectContent,
@@ -53,7 +55,6 @@ import {
 import { createSkill } from "@/features/skills/api/actions"
 import { Skill } from "@/features/skills/model/schemas"
 import { Badge } from "@/shared/ui/badge"
-import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover"
 
 interface InviteStaffSheetProps {
   allSkills: Skill[]
@@ -167,158 +168,148 @@ export function InviteStaffSheet({ allSkills }: InviteStaffSheetProps) {
         </SheetHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6 pt-6">
-            <div className="space-y-4 px-1">
-              <FormField<StaffInviteValues, "email">
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="nguyenvan@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField<StaffInviteValues, "fullName">
-                control={form.control}
-                name="fullName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Họ và tên</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nguyễn Văn A" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField<StaffInviteValues, "role">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+            <div className="space-y-6 px-4">
+              <div className="space-y-4">
+                <FormField<StaffInviteValues, "email">
                   control={form.control}
-                  name="role"
+                  name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Vai trò hệ thống</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Chọn vai trò" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {Object.entries(STAFF_ROLE_LABELS).map(([value, label]) => (
-                            <SelectItem key={value} value={value}>
-                              {label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField<StaffInviteValues, "title">
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Chức danh hiển thị</FormLabel>
+                      <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input placeholder="nguyenvan@example.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
 
-              {/* WHY: Section gán kỹ năng ngay khi mời */}
-              <div className="space-y-3 pt-2">
-                <FormLabel>Kỹ năng chuyên môn</FormLabel>
-                <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-muted/20 min-h-[80px]">
-                  {activeSkills.map(skill => (
-                    <Badge
-                      key={skill.id}
-                      variant="secondary"
-                      className="gap-1 py-1"
-                    >
-                      {skill.name}
-                      <button
-                        type="button"
-                        onClick={() => handleToggleSkill(skill.id)}
-                        className="ml-1 rounded-full hover:bg-destructive hover:text-white"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
+                <FormField<StaffInviteValues, "fullName">
+                  control={form.control}
+                  name="fullName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Họ và tên</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nguyễn Văn A" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-
-                  <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-                    <PopoverTrigger asChild>
-                      <Button type="button" variant="outline" size="sm" className="h-7 border-dashed gap-1">
-                        <Plus className="h-3 w-3" />
-                        <span>Thêm</span>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[280px] p-0" align="start">
-                      <Command>
-                        <CommandInput
-                          placeholder="Tìm kỹ năng..."
-                          value={searchQuery}
-                          onValueChange={setSearchQuery}
-                        />
-                        <CommandList>
-                          <CommandEmpty>
-                            {searchQuery.trim() !== "" ? (
-                              <Button
-                                variant="ghost"
-                                className="w-full justify-start text-primary gap-2 h-9 px-2"
-                                onClick={handleCreateNewSkill}
-                                disabled={isPending}
-                              >
-                                <Plus className="h-4 w-4" />
-                                <span className="truncate">Tạo mới: "{searchQuery}"</span>
-                              </Button>
-                            ) : (
-                              "Không tìm thấy kỹ năng."
-                            )}
-                          </CommandEmpty>
-                          <CommandGroup heading="Gợi ý">
-                            {filteredSuggestions.map(skill => (
-                              <CommandItem
-                                key={skill.id}
-                                value={skill.name}
-                                onSelect={() => {
-                                  handleToggleSkill(skill.id)
-                                  setSearchQuery("")
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    selectedSkillIds.includes(skill.id) ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                                {skill.name}
-                              </CommandItem>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField<StaffInviteValues, "role">
+                    control={form.control}
+                    name="role"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Vai trò hệ thống</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Chọn vai trò" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {Object.entries(STAFF_ROLE_LABELS).map(([value, label]) => (
+                              <SelectItem key={value} value={value}>
+                                {label}
+                              </SelectItem>
                             ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField<StaffInviteValues, "title">
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Chức danh hiển thị</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* WHY: Section gán kỹ năng ngay khi mời */}
+                <div className="space-y-3 pt-2">
+                  <FormLabel>Kỹ năng chuyên môn</FormLabel>
+                  <div className="flex flex-wrap gap-2 p-4 border rounded-lg bg-muted/5 min-h-[100px] items-start">
+                    {skills.map(skill => {
+                      const isSelected = selectedSkillIds.includes(skill.id)
+                      return (
+                        <Badge
+                          key={skill.id}
+                          variant={isSelected ? "default" : "outline"}
+                          className={cn(
+                            "cursor-pointer px-3 py-1.5 transition-all hover:scale-105 active:scale-95 select-none",
+                            isSelected ? "shadow-sm" : "text-muted-foreground hover:bg-background"
+                          )}
+                          onClick={() => handleToggleSkill(skill.id)}
+                        >
+                          {skill.name}
+                          {isSelected && <Check className="ml-1.5 h-3 w-3" />}
+                        </Badge>
+                      )
+                    })}
+
+                    <Dialog open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                      <DialogTrigger asChild>
+                        <Button type="button" variant="outline" size="sm" className="h-8 border-dashed gap-1 px-3">
+                          <Plus className="h-4 w-4" />
+                          <span>Kỹ năng mới</span>
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>Thêm kỹ năng mới</DialogTitle>
+                          <DialogDescription>
+                            Tạo kỹ năng mới nhanh chóng để gán ngay cho nhân viên này.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid gap-2">
+                            <Label htmlFor="new-skill-invite">Tên kỹ năng</Label>
+                            <Input
+                              id="new-skill-invite"
+                              placeholder="VD: Chăm sóc da chuyên sâu"
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault()
+                                  handleCreateNewSkill()
+                                }
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button
+                            type="button"
+                            onClick={handleCreateNewSkill}
+                            disabled={isPending || !searchQuery.trim()}
+                          >
+                            {isPending ? "Đang tạo..." : "Xác nhận tạo"}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </div>
               </div>
-
             </div>
-            <SheetFooter className="pt-4">
+
+            <SheetFooter className="px-4">
               <Button type="submit" disabled={isPending} className="w-full">
                 {isPending ? "Đang xử lý..." : "Mời nhân viên"}
               </Button>
