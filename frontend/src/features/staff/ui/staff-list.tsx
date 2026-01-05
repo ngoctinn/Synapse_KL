@@ -1,6 +1,6 @@
 "use client"
 
-import { Mail, MoreHorizontal, ShieldCheck, Trash } from "lucide-react"
+import { MoreHorizontal, ShieldCheck, Trash } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 import { toast } from "sonner"
@@ -77,9 +77,9 @@ function ActiveStatus({ isActive }: { isActive: boolean }) {
     )
   }
   return (
-    <div className="flex items-center text-sm text-yellow-600">
-      <Mail className="mr-1 h-4 w-4" />
-      Đã mời
+    <div className="flex items-center text-sm text-muted-foreground">
+      <ShieldCheck className="mr-1 h-4 w-4 text-gray-400" />
+      Đã vô hiệu hóa
     </div>
   )
 }
@@ -169,11 +169,7 @@ export function StaffList({ staff }: StaffListProps) {
                           Copy ID
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        {!item.isActive && (
-                          <DropdownMenuItem>
-                            <Mail className="mr-2 h-4 w-4" /> Gửi lại lời mời
-                          </DropdownMenuItem>
-                        )}
+
                         <DropdownMenuItem
                           className="text-destructive focus:text-destructive"
                           onClick={() => setDeleteId(item.userId)}

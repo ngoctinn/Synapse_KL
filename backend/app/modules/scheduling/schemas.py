@@ -61,6 +61,11 @@ class StaffScheduleBatchCreate(SQLModel):
     status: ScheduleStatus = ScheduleStatus.DRAFT
 
 
+class StaffScheduleBatchDelete(SQLModel):
+    """Schema xóa hàng loạt phân công lịch."""
+    schedule_ids: list[UUID]
+
+
 class StaffScheduleUpdate(SQLModel):
     """Schema cập nhật lịch làm việc (chỉ đổi status hoặc shift)."""
     shift_id: UUID | None = None

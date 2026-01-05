@@ -15,6 +15,7 @@ from app.modules.scheduling.schemas import (
     ShiftRead,
     ShiftUpdate,
     StaffScheduleBatchCreate,
+    StaffScheduleBatchDelete,
     StaffScheduleCreate,
     StaffScheduleRead,
     StaffScheduleReadWithDetails,
@@ -139,4 +140,14 @@ async def delete_schedule(
 ):
     """Xóa một phân công lịch làm việc."""
     await service.delete_schedule(session, schedule_id)
+    return None
+
+
+@router.delete("/schedules/batch", status_code=status.HTTP_204_NO_CONTENT)
+async def batch_delete_schedules(
+    batch_in: StaffScheduleBatchDelete,
+    session: AsyncSession = Depends(get_db),
+):
+    """Xóa hàng loạt phân công lịch làm việc."""
+    await service.batch_delete_schedules(session, batch_in.schedule_ids)
     return None

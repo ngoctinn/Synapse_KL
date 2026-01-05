@@ -65,3 +65,12 @@ export const batchCreateScheduleSchema = z.object({
 })
 
 export type BatchCreateSchedule = z.infer<typeof batchCreateScheduleSchema>
+
+/**
+ * WHY: Schema cho xóa lịch hàng loạt.
+ */
+export const batchDeleteScheduleSchema = z.object({
+  schedule_ids: z.array(z.string().uuid()),
+})
+
+export type BatchDeleteSchedule = z.infer<typeof batchDeleteScheduleSchema>

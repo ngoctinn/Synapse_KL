@@ -107,3 +107,15 @@ export async function deleteStaffSchedule(id: string) {
   if (res.success) revalidatePath("/admin/schedule")
   return res
 }
+
+/**
+ * WHY: Xóa hàng loạt lịch làm việc.
+ */
+export async function batchDeleteStaffSchedules(ids: string[]) {
+  const res = await fetchApi<void>("/scheduling/schedules/batch", {
+    method: "DELETE",
+    body: JSON.stringify({ schedule_ids: ids }),
+  })
+  if (res.success) revalidatePath("/admin/schedule")
+  return res
+}

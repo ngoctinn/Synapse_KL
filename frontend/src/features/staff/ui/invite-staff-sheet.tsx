@@ -97,7 +97,7 @@ export function InviteStaffSheet() {
         <SheetHeader>
           <SheetTitle>Mời nhân viên mới</SheetTitle>
           <SheetDescription>
-            Gửi email mời nhân viên tham gia hệ thống. Họ sẽ nhận được liên kết để thiết lập mật khẩu.
+            Mời nhân viên mới hoặc kích hoạt lại nhân viên cũ. Hệ thống sẽ gửi email mời nếu là tài khoản mới.
           </SheetDescription>
         </SheetHeader>
 

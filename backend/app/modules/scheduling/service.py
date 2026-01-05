@@ -297,3 +297,22 @@ async def delete_schedule(session: AsyncSession, schedule_id: UUID) -> bool:
     await session.delete(schedule)
     await session.commit()
     return True
+
+
+async def batch_delete_schedules(
+    session: AsyncSession, schedule_ids: list[UUID]
+) -> bool:
+    """Xóa hàng loạt phân công lịch làm việc."""
+    if not schedule_ids:
+        return False
+
+    # Dùng delete statement bulk
+    stmt = select(StaffSchedule).where(StaffSchedule.id.in_(schedule_ids))
+    result = await session.execute(stmt)
+    schedules = result.scalars().all()
+
+    for sch in schedules:
+        await session.delete(sch)
+
+    await session.commit()
+    return True

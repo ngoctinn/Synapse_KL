@@ -20,6 +20,7 @@ from app.modules.staff.schemas import (
     StaffProfileUpdate,
     StaffSkillsUpdate,
 )
+import requests
 
 
 async def get_all_staff(session: AsyncSession) -> Sequence[StaffProfile]:
@@ -49,100 +50,94 @@ async def get_staff_by_id(session: AsyncSession, user_id: UUID) -> StaffProfile 
 async def invite_staff(session: AsyncSession, invite_in: StaffInviteRequest) -> StaffProfile:
     """
     Mời nhân viên mới:
-    1. Gọi Supabase Admin Invite API -> Tạo User + Gửi Email.
-    2. Trigger DB tự tạo UserProfile.
-    3. Tạo StaffProfile bổ sung.
+    1. Check Local DB: Nếu User đã tồn tại -> Kích hoạt lại (Không gửi mail).
+    2. Nếu chưa có -> Gọi Supabase Admin Invite API -> Tạo User + Gửi Email.
     """
-    try:
-        # WHY: Supabase Trigger sẽ tự tạo UserProfile từ metadata này
-        invite_data = {
-            "email": invite_in.email,
-            "data": {
-                "full_name": invite_in.full_name,
-                "role": invite_in.role
-            }
-        }
+    # B1: Check Local Data trước để tránh spam mail invite cho nhân viên cũ
+    existing_profile = (await session.execute(
+        select(UserProfile).where(UserProfile.email == invite_in.email)
+    )).scalars().first()
 
-        # FIX: Dùng create_user để bypass lỗi 403 (Email Invite Blocked/SMTP issues)
-        # Tạo user trực tiếp, không gửi email, auto-verify.
-        # FIX: Dùng DIRECT HTTP REQUEST để mời nhân viên
-        # Lý do: Thư viện supabase-py bị lỗi 403 (Forbidden) dù Key đúng.
-        # Script debug_raw.py đã chứng minh direct request chạy ngon lành.
-        # FIX: Dùng DIRECT REQUESTS (Sync) để mời nhân viên
-        # Lý do: HTTPX có thể chưa được cài hoặc conflict trong môi trường venv hiện tại.
-        # Requests là thư viện chuẩn nhất để đảm bảo call thành công.
-        import requests
-        from app.core.config import settings
+    user_id: UUID
 
-        # Chuẩn bị URL và Header thủ công (bypass thư viện)
-        auth_url = f"{settings.SUPABASE_URL}/auth/v1/invite"
-        headers = {
-            "apikey": settings.SUPABASE_SERVICE_ROLE_KEY,
-            "Authorization": f"Bearer {settings.SUPABASE_SERVICE_ROLE_KEY}",
-            "Content-Type": "application/json"
-        }
-        # Payload chuẩn
-        payload = {
-            "email": invite_in.email,
-            "data": invite_data["data"]
-        }
+    if existing_profile:
+        # CASE 1: Đã có hồ sơ -> Kích hoạt lại
+        logger.info(f"♻️ User {invite_in.email} already exists locally. Reactivating instantly.")
+        user_id = existing_profile.id
 
-        print(f"📡 Direct Invite via REQUESTS: {auth_url}")
-        print(f"🔑 Key used: {settings.SUPABASE_SERVICE_ROLE_KEY[:10]}...")
-
+        # Đảm bảo active luôn tại đây
+        existing_profile.is_active = True
+        existing_profile.role = invite_in.role
+        session.add(existing_profile)
+    else:
+        # CASE 2: Chưa có -> Mời mới qua Supabase
         try:
-            # Dùng requests.post (Sync) - Chấp nhận block xíu để đảm bảo chạy được
-            resp = requests.post(auth_url, headers=headers, json=payload, timeout=10)
+            invite_data = {
+                "email": invite_in.email,
+                "data": {
+                    "full_name": invite_in.full_name,
+                    "role": invite_in.role
+                }
+            }
 
+            auth_url = f"{settings.SUPABASE_URL}/auth/v1/invite"
+            headers = {
+                "apikey": settings.SUPABASE_SERVICE_ROLE_KEY,
+                "Authorization": f"Bearer {settings.SUPABASE_SERVICE_ROLE_KEY}",
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "email": invite_in.email,
+                "data": invite_data["data"]
+            }
+
+            logger.info(f"📡 Direct Invite via Requests: {auth_url}")
+
+            # FIX: Dùng requests (Sync) để đảm bảo tính ổn định và tương thích
+            resp = requests.post(auth_url, headers=headers, json=payload)
+
+            # Xử lý trường hợp Exception từ Supabase
             if resp.status_code != 200:
-                print(f"❌ Direct Invite Failed: {resp.status_code}")
-                print(f"❌ Response Body: {resp.text}")
-                # Ném lỗi để fallback/catch ở dưới xử lý
-                raise Exception(f"Invite Failed: {resp.status_code} {resp.text}")
+                error_data = resp.json()
+                error_msg = error_data.get("msg", "") or error_data.get("message", "")
 
-            # Parse response để lấy user object giả lập
+                # Fallback: Nếu Supabase bảo đã tồn tại (mà Local DB lại không thấy - Data lệch)
+                if "already been registered" in error_msg or "already signed up" in error_msg:
+                    logger.warning(f"⚠️ User {invite_in.email} exists in Auth but MISSING in Local DB.")
+                    # Trường hợp này buộc phải báo lỗi để Admin check lại data sync
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail="Email này đã đăng ký tài khoản nhưng thiếu hồ sơ hệ thống. Vui lòng liên hệ Admin."
+                    )
+                else:
+                    logger.error(f"❌ Direct Invite Failed: {resp.status_code} - {resp.text}")
+                    raise Exception(f"Invite Failed: {resp.status_code} {error_msg}")
+
+            # Invite thành công
             data_res = resp.json()
-            # Cấu trúc trả về: User object trực tiếp
-            class MockUser:
-                def __init__(self, id):
-                    self.id = id
+            user_id = UUID(data_res.get("id"))
+            logger.info(f"✅ Invite Success! New User ID: {user_id}")
 
-            user = MockUser(id=data_res.get("id"))
-            print(f"✅ Invite Success via REQUESTS! User ID: {user.id}")
-        except Exception as http_err:
-             print(f"❌ REQUESTS Exception: {str(http_err)}")
-             raise http_err
+        except Exception as e:
+            error_str = str(e)
+            logger.error(f"DEBUG - Invite Logic Error: {error_str}")
+            raise e
 
-        if not user or not user.id:
-             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Supabase Invite/Create failed")
+    # --- LOGIC CHUNG SAU KHI CÓ USER_ID ---
 
-        user_id = UUID(user.id)
-
-        # WHY: Tránh tạo trùng khi re-invite cùng email
-        existing_staff = await get_staff_by_id(session, user_id)
-        if existing_staff:
-            existing_staff.title = invite_in.title
-            session.add(existing_staff)
-            await session.commit()
-            await session.refresh(existing_staff)
-            return existing_staff
-
-        # FIX: Race Condition - Chờ Trigger tạo UserProfile xong mới tạo StaffProfile
-        # Nếu insert ngay lập tức, có thể bị lỗi FK do bảng profiles chưa có record.
-        for _ in range(10): # Thử 10 lần, mỗi lần 0.5s = tối đa 5s
-            profile_exists = await session.get(UserProfile, user_id)
-            if profile_exists:
-                break
-            await asyncio.sleep(0.5)
-            # Refresh session to see new data
-            # Note: session.get should fetch fresh if not in identity map, but trigger is external tx.
-            # In asyncpg/sqlalchemy, changes from other tx are visible after commit if isolation level permits.
-            # Here we just wait.
-
-        # Fallback: Nếu trigger quá chậm hoặc lỗi, ta tự tạo Profile (dù có thể conflict nếu trigger chạy sau)
-        # Nhưng thường trigger rất nhanh. Nếu sau 5s chưa có thì coi như lỗi Trigger.
+    # Chỉ wait trigger nếu là User Mới (tức là không phải existing_profile)
+    if not existing_profile:
+        # Wait for Supabase Trigger to create UserProfile
+        profile_exists = await session.get(UserProfile, user_id)
         if not profile_exists:
-            print(f"⚠️ Trigger quá chậm/lỗi. Fallback: Tự tạo Profile cho {user_id}")
+            for _ in range(10): # Wait up to 5s
+                profile_exists = await session.get(UserProfile, user_id)
+                if profile_exists:
+                    break
+                await asyncio.sleep(0.5)
+
+        if not profile_exists:
+            logger.warning(f"⚠️ Trigger slow. Fallback creating profile for {user_id}")
             new_profile = UserProfile(
                 id=user_id,
                 email=invite_in.email,
@@ -153,46 +148,50 @@ async def invite_staff(session: AsyncSession, invite_in: StaffInviteRequest) -> 
             session.add(new_profile)
             try:
                 await session.flush()
-            except Exception as e:
-                print(f"⚠️ Fallback create profile failed (maybe trigger just finished): {e}")
+            except Exception:
                 await session.rollback()
 
-        staff_profile = StaffProfile(
-            user_id=user_id,
-            title=invite_in.title,
-            bio="",
-            color_code="#6366F1"
-        )
+    # 2. Xử lý StaffProfile
+        staff_profile = await session.get(StaffProfile, user_id)
 
-        session.add(staff_profile)
+        if staff_profile:
+            # Nếu đã là nhân viên -> Cập nhật thông tin mới nhất
+            staff_profile.title = invite_in.title
+            session.add(staff_profile) # Mark for update
+            logger.info(f"♻️ Updating existing Staff Profile: {user_id}")
+        else:
+            # Nếu chưa là nhân viên -> Tạo mới
+            staff_profile = StaffProfile(
+                user_id=user_id,
+                title=invite_in.title,
+                bio="",
+                color_code="#6366F1"
+            )
+            session.add(staff_profile)
+            logger.info(f"✨ Creating NEW Staff Profile: {user_id}")
+
+        # 3. Đảm bảo UserProfile Active (trường hợp nhân viên cũ nghỉ việc quay lại)
+        user_profile = await session.get(UserProfile, user_id)
+        if user_profile:
+             user_profile.is_active = True
+             user_profile.role = invite_in.role # Cập nhật role mới luôn
+             session.add(user_profile)
+
         await session.commit()
         await session.refresh(staff_profile)
+        # Refresh relation để api trả về full data - QUAN TRỌNG
+        try:
+            await session.refresh(staff_profile, ["profile"])
+        except Exception:
+            # Fallback nếu refresh relation fail (hiếm)
+            pass
 
         return staff_profile
 
+
     except Exception as e:
         error_str = str(e)
-
-        # DEBUG: Try to extract more details if available
-        if hasattr(e, 'response') and e.response is not None:
-            # For httpx/requests exceptions
-            try:
-                print(f"🔴 SUPABASE ERROR BODY: {e.response.text}")
-                print(f"🔴 SUPABASE HEADERS: {e.response.headers}")
-            except:
-                pass
-        if hasattr(e, 'message'):
-            print(f"🔴 ERROR MESSAGE: {e.message}")
-
-        # WHY: Supabase trả về message khác nhau cho duplicate email
-        if "already been registered" in error_str or "already signed up" in error_str:
-             # Nếu user đã có ở Supabase Auth nhưng chưa có trong StaffProfile (do lỗi trước đó)
-             # Ta có thể support recovery ở đây, nhưng tạm thời báo lỗi conflict chuẩn
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Email này đã được đăng ký hoặc mời tham gia hệ thống trước đó."
-            )
-        print(f"DEBUG - Invite Error: {error_str}")
+        logger.error(f"DEBUG - Invite Error: {error_str}")
         raise e
 
 
