@@ -4,11 +4,11 @@ Bao gồm: Booking (phiếu đặt), BookingItem (chi tiết từng dịch vụ)
 """
 from datetime import datetime, timezone
 from enum import Enum as PyEnum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, Text
-from sqlmodel import Column, Field, Relationship, SQLModel
+from sqlalchemy import Column, DateTime, String, Text
+from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from app.modules.customers.models import Customer
@@ -51,8 +51,15 @@ class Booking(SQLModel, table=True):
     guest_name: str | None = Field(default=None, max_length=255)
     guest_phone: str | None = Field(default=None, max_length=50)
 
-    status: BookingStatus = Field(default=BookingStatus.PENDING)
-    source: BookingSource = Field(default=BookingSource.ONLINE)
+    # WHY: Dùng String thay vì native PostgreSQL ENUM để đơn giản hóa migration
+    status: BookingStatus = Field(
+        default=BookingStatus.PENDING,
+        sa_column=Column(String(20), nullable=False, default="PENDING")
+    )
+    source: BookingSource = Field(
+        default=BookingSource.ONLINE,
+        sa_column=Column(String(20), nullable=False, default="ONLINE")
+    )
 
     # Khung thời gian mong muốn (input cho optimizer)
     preferred_date: datetime = Field(sa_type=DateTime(timezone=True))
@@ -93,8 +100,8 @@ class Booking(SQLModel, table=True):
     )
 
     # Relationships
-    customer: "Customer | None" = Relationship()
-    preferred_staff: "StaffProfile | None" = Relationship()
+    customer: Optional["Customer"] = Relationship()
+    preferred_staff: Optional["StaffProfile"] = Relationship()
     items: list["BookingItem"] = Relationship(
         back_populates="booking",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"}
@@ -136,7 +143,7 @@ class BookingItem(SQLModel, table=True):
     )
 
     # Relationships
-    booking: Booking = Relationship(back_populates="items")
+    booking: "Booking" = Relationship(back_populates="items")
     service: "Service" = Relationship()
-    assigned_staff: "StaffProfile | None" = Relationship()
-    assigned_resource: "Resource | None" = Relationship()
+    assigned_staff: Optional["StaffProfile"] = Relationship()
+    assigned_resource: Optional["Resource"] = Relationship()
